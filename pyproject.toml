@@ -36,6 +36,7 @@ dev = [
     "black>=24.1.0",
     "isort>=5.13.0",
     "flake8>=7.0.0",
+    "pylint>=3.0.0",
     "ruff>=0.1.0",
     "mypy>=1.8.0",
     "pre-commit>=3.6.0",
@@ -109,3 +110,25 @@ python_files = ["test_*.py"]
 python_functions = ["test_*"]
 asyncio_mode = "auto"
 addopts = "-v --tb=short"
+
+# ============== Pylint ==============
+[tool.pylint.main]
+py-version = "3.11"
+jobs = 0  # Auto-detect CPU cores
+ignore = [".venv", "tests", "__pycache__"]
+
+[tool.pylint.messages_control]
+disable = [
+    "missing-module-docstring",
+    "missing-class-docstring",
+    "missing-function-docstring",
+    "too-few-public-methods",
+    "line-too-long",  # Handled by black
+]
+
+[tool.pylint.format]
+max-line-length = 100
+
+[tool.pylint.design]
+max-args = 10
+max-locals = 20

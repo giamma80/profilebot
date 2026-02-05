@@ -1,4 +1,4 @@
-.PHONY: help install dev lint format test clean run docker-up docker-down
+.PHONY: help install dev lint lint-all format test clean run docker-up docker-down api-lint
 
 # Default target
 help:
@@ -9,9 +9,11 @@ help:
 	@echo "  make dev         Install dev dependencies + pre-commit hooks"
 	@echo ""
 	@echo "Code Quality:"
-	@echo "  make lint        Run linters (ruff + flake8 + mypy)"
+	@echo "  make lint        Run fast linters (ruff + flake8 + mypy)"
+	@echo "  make lint-all    Run ALL linters (+ pylint)"
 	@echo "  make format      Format code with black + isort"
 	@echo "  make check       Run all checks (lint + format check)"
+	@echo "  make api-lint    Lint OpenAPI spec with Spectral"
 	@echo ""
 	@echo "Testing:"
 	@echo "  make test        Run tests with pytest"
@@ -37,20 +39,31 @@ dev: install
 	uv pip install -e ".[dev]"
 	@echo "🪝 Setting up pre-commit hooks..."
 	uv run pre-commit install
+	@echo "📡 Installing Spectral (API linting)..."
+	npm install -g @stoplight/spectral-cli 2>/dev/null || echo "⚠️  npm not found, skip Spectral"
 	@echo "✅ Dev environment ready!"
 
 # ============== Code Quality ==============
 
 lint:
-	@echo "🔍 Running linters..."
+	@echo "🔍 Running linters (fast)..."
 	uv run ruff check src/ tests/
 	uv run flake8 src/ tests/ --max-line-length=100 --ignore=E501,W503
 	uv run mypy src/ --ignore-missing-imports
+
+lint-all: lint
+	@echo "🔍 Running pylint (thorough)..."
+	uv run pylint src/ --rcfile=pyproject.toml || true
+
+pylint:
+	@echo "🔍 Running pylint..."
+	uv run pylint src/ --rcfile=pyproject.toml
 
 format:
 	@echo "✨ Formatting code..."
 	uv run isort src/ tests/
 	uv run black src/ tests/
+	uv run ruff check src/ tests/ --fix
 
 format-check:
 	@echo "🔍 Checking format..."
@@ -59,6 +72,14 @@ format-check:
 
 check: lint format-check
 	@echo "✅ All checks passed!"
+
+api-lint:
+	@echo "📡 Linting OpenAPI spec with Spectral..."
+	@if [ -f "docs/openapi.yaml" ]; then \
+		spectral lint docs/openapi.yaml; \
+	else \
+		echo "⚠️  No OpenAPI spec found at docs/openapi.yaml"; \
+	fi
 
 # ============== Testing ==============
 

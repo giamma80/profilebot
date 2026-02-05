@@ -1,0 +1,36 @@
+# Spectral - OpenAPI Linting Configuration
+# Run with: spectral lint docs/openapi.yaml
+
+extends:
+  - spectral:oas
+
+rules:
+  # Severity levels: error, warn, info, hint, off
+
+  # Require operation descriptions
+  operation-description: warn
+
+  # Require operation IDs
+  operation-operationId: error
+
+  # Require tags on operations
+  operation-tags: warn
+
+  # Info section requirements
+  info-contact: warn
+  info-description: error
+  info-license: off
+
+  # Path conventions
+  path-keys-no-trailing-slash: error
+  path-not-include-query: error
+
+  # Response requirements
+  oas3-api-servers: warn
+
+  # Security
+  oas3-operation-security-defined: error
+
+  # Custom rules for ProfileBot API
+  # Ensure all endpoints have examples
+  oas3-valid-media-example: warn
