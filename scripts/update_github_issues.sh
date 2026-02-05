@@ -8,6 +8,48 @@ set -e
 echo "🔄 Aggiornamento GitHub Issues con specifiche dettagliate..."
 echo ""
 
+# US-001: Setup Repository e CI/CD (già completata, aggiungiamo il branch)
+echo "📝 Aggiornando US-001..."
+gh issue edit 6 --body "**Come** sviluppatore
+**Voglio** un repository Git configurato con CI/CD
+**Per** poter collaborare e deployare in modo automatizzato
+
+## 🎯 Acceptance Criteria
+- [x] Repository GitHub creato con struttura standard
+- [x] Branch protection su \`main\` (require PR, require CI pass)
+- [x] GitHub Actions workflow per lint e test
+- [x] Pre-commit hooks configurati (ruff, black, mypy)
+- [x] Makefile con comandi standard
+- [x] pyproject.toml con dipendenze e configurazioni tool
+
+## 🔧 Technical Stack
+- **Package Manager:** \`uv\`
+- **Linting:** ruff, flake8, pylint, mypy
+- **Formatting:** black, isort
+- **Security:** bandit
+- **Pre-commit:** pre-commit framework
+
+## 📁 File creati
+\`\`\`
+├── .github/workflows/ci.yml
+├── .pre-commit-config.yaml
+├── pyproject.toml
+├── Makefile
+└── README.md
+\`\`\`
+
+## ✅ Definition of Done
+- [x] CI pipeline verde su ogni commit
+- [x] Pre-commit hooks funzionanti
+- [x] Documentazione setup nel README
+- [x] Branch protection attiva
+
+## 🌿 Feature Branch
+\`feature/US-001-repo-cicd\` ✅ COMPLETED
+
+**Story Points:** 3
+**Status:** ✅ DONE"
+
 # US-002: Setup Qdrant Vector Store
 echo "📝 Aggiornando US-002..."
 gh issue edit 7 --body "**Come** data scientist
@@ -448,13 +490,11 @@ echo ""
 echo "✅ Tutte le issues aggiornate!"
 echo ""
 echo "📋 Riepilogo:"
-echo "  - US-002: Setup Qdrant Vector Store"
-echo "  - US-003: Parser CV DOCX"
-echo "  - US-004: Skill Extraction e Normalizzazione"
-echo "  - US-005: Embedding e Indexing Pipeline"
-echo "  - US-006: API Ricerca Profili per Skill"
-echo "  - US-007: Filtro Disponibilità"
-echo "  - US-008: Match con Job Description"
-echo ""
-echo "⚠️  Nota: I numeri delle issue (#7-#13) potrebbero variare."
-echo "   Verifica i numeri corretti con: gh issue list"
+echo "  - #6  US-001: Setup Repository e CI/CD ✅"
+echo "  - #7  US-002: Setup Qdrant Vector Store"
+echo "  - #8  US-003: Parser CV DOCX"
+echo "  - #9  US-004: Skill Extraction e Normalizzazione"
+echo "  - #10 US-005: Embedding e Indexing Pipeline"
+echo "  - #11 US-006: API Ricerca Profili per Skill"
+echo "  - #12 US-007: Filtro Disponibilità"
+echo "  - #13 US-008: Match con Job Description"
