@@ -11,6 +11,10 @@ from pathlib import Path
 from docx import Document
 from docx.document import Document as DocxDocument
 from docx.opc.exceptions import PackageNotFoundError
+from docx.oxml.table import CT_Tbl
+from docx.oxml.text.paragraph import CT_P
+from docx.table import Table
+from docx.text.paragraph import Paragraph
 
 from src.core.parser.metadata_extractor import extract_metadata
 from src.core.parser.schemas import CVMetadata, ExperienceItem, ParsedCV, SkillSection
@@ -84,29 +88,37 @@ class DocxParser:
 
     def _extract_lines(self, document: DocxDocument) -> Iterable[str]:
         """Extract text lines from paragraphs and tables in a DOCX document."""
-        for paragraph in document.paragraphs:
-            text = paragraph.text.strip()
-            if not text:
-                continue
-            style_name = paragraph.style.name if paragraph.style else ""
-            if style_name and style_name.lower().startswith("heading"):
+        for block in self._iter_block_items(document):
+            if isinstance(block, Paragraph):
+                text = block.text.strip()
+                if not text:
+                    continue
+                style_name = block.style.name if block.style else ""
+                if style_name and style_name.lower().startswith("heading"):
+                    yield text
+                    continue
                 yield text
-                continue
-            yield text
+            elif isinstance(block, Table):
+                yield from self._extract_table_lines(block)
 
-        yield from self._extract_table_lines(document)
+    def _extract_table_lines(self, table: Table) -> Iterable[str]:
+        """Extract text lines from a DOCX table."""
+        for row in table.rows:
+            for cell in row.cells:
+                text = cell.text.strip()
+                if text:
+                    for line in text.splitlines():
+                        line = line.strip()
+                        if line:
+                            yield line
 
-    def _extract_table_lines(self, document: DocxDocument) -> Iterable[str]:
-        """Extract text lines from tables in a DOCX document."""
-        for table in document.tables:
-            for row in table.rows:
-                for cell in row.cells:
-                    text = cell.text.strip()
-                    if text:
-                        for line in text.splitlines():
-                            line = line.strip()
-                            if line:
-                                yield line
+    def _iter_block_items(self, document: DocxDocument) -> Iterable[Paragraph | Table]:
+        """Yield paragraphs and tables in document order."""
+        for child in document.element.body.iterchildren():
+            if isinstance(child, CT_P):
+                yield Paragraph(child, document)
+            elif isinstance(child, CT_Tbl):
+                yield Table(child, document)
 
     def _extract_sections(self, lines: list[str], raw_text: str) -> ParsedSections:
         """Detect and group content into sections."""

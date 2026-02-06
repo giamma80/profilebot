@@ -13,7 +13,7 @@ SECTION_PATTERNS: dict[str, list[str]] = {
         r"(?i)^(hard skills|soft skills|competenze tecniche)",
     ],
     "experience": [
-        r"(?i)^(esperienza|experience|work history|career)",
+        r"(?i)^(esperienza|esperienze|experience|work history|career)",
         r"(?i)^(esperienze professionali|professional experience)",
         r"(?i)^(posizioni ricoperte|employment)",
     ],
