@@ -1,4 +1,4 @@
-.PHONY: help install dev lint lint-all format test clean run docker-up docker-down api-lint
+.PHONY: help install dev lint lint-all format format-check preflight test clean run docker-up docker-down api-lint
 
 # Default target
 help:
@@ -11,6 +11,7 @@ help:
 	@echo "Code Quality:"
 	@echo "  make lint        Run fast linters (ruff + flake8 + mypy)"
 	@echo "  make lint-all    Run ALL linters (+ pylint)"
+	@echo "  make preflight   Run all local checks (lint-all + format check)"
 	@echo "  make format      Format code with black + isort"
 	@echo "  make check       Run all checks (lint + format check)"
 	@echo "  make api-lint    Lint OpenAPI spec with Spectral"
@@ -69,6 +70,9 @@ format-check:
 	@echo "🔍 Checking format..."
 	uv run isort --check-only src/ tests/
 	uv run black --check src/ tests/
+
+preflight: lint-all format-check
+	@echo "✅ Preflight checks passed!"
 
 check: lint format-check
 	@echo "✅ All checks passed!"
