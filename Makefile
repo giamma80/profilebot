@@ -32,7 +32,7 @@ help:
 
 install:
 	@echo "📦 Installing dependencies with uv..."
-	uv venv
+	uv venv --clear
 	uv pip install -r pyproject.toml
 
 dev: install
@@ -46,7 +46,7 @@ dev: install
 
 # ============== Code Quality ==============
 
-lint:
+lint: dev
 	@echo "🔍 Running linters (fast)..."
 	uv run ruff check src/ tests/
 	uv run flake8 src/ tests/ --max-line-length=100 --ignore=E501,W503

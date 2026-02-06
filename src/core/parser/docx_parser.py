@@ -4,11 +4,12 @@ from __future__ import annotations
 
 import logging
 import time
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable
 
 from docx import Document
+from docx.document import Document as DocxDocument
 from docx.opc.exceptions import PackageNotFoundError
 
 from src.core.parser.metadata_extractor import extract_metadata
@@ -81,7 +82,7 @@ class DocxParser:
         self._log_parse_result(parsed, sections, start_time)
         return parsed
 
-    def _extract_lines(self, document: Document) -> Iterable[str]:
+    def _extract_lines(self, document: DocxDocument) -> Iterable[str]:
         """Extract text lines from paragraphs and tables in a DOCX document."""
         for paragraph in document.paragraphs:
             text = paragraph.text.strip()

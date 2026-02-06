@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from datetime import date, datetime
-from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -13,8 +12,8 @@ class CVMetadata(BaseModel):
 
     cv_id: str = Field(..., description="Unique CV identifier")
     file_name: str = Field(..., description="Original file name")
-    full_name: Optional[str] = Field(None, description="Candidate full name")
-    current_role: Optional[str] = Field(None, description="Current role or title")
+    full_name: str | None = Field(None, description="Candidate full name")
+    current_role: str | None = Field(None, description="Current role or title")
     parsed_at: datetime = Field(default_factory=datetime.utcnow)
 
 
@@ -28,10 +27,10 @@ class SkillSection(BaseModel):
 class ExperienceItem(BaseModel):
     """Single experience item."""
 
-    company: Optional[str] = Field(None, description="Company name")
-    role: Optional[str] = Field(None, description="Role or title")
-    start_date: Optional[date] = Field(None, description="Start date")
-    end_date: Optional[date] = Field(None, description="End date")
+    company: str | None = Field(None, description="Company name")
+    role: str | None = Field(None, description="Role or title")
+    start_date: date | None = Field(None, description="Start date")
+    end_date: date | None = Field(None, description="End date")
     description: str = Field("", description="Experience description")
     is_current: bool = Field(False, description="Whether the role is current")
 
@@ -40,7 +39,7 @@ class ParsedCV(BaseModel):
     """Parsed CV output schema."""
 
     metadata: CVMetadata
-    skills: Optional[SkillSection] = None
+    skills: SkillSection | None = None
     experiences: list[ExperienceItem] = Field(default_factory=list)
     education: list[str] = Field(default_factory=list)
     certifications: list[str] = Field(default_factory=list)

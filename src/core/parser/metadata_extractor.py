@@ -3,17 +3,17 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Iterable, Optional
 
 
 @dataclass(frozen=True)
 class MetadataCandidates:
     """Holds raw candidates extracted from CV text."""
 
-    full_name: Optional[str]
-    current_role: Optional[str]
+    full_name: str | None
+    current_role: str | None
 
 
 @dataclass(frozen=True)
@@ -21,8 +21,8 @@ class ParsedMetadata:
     """Normalized metadata returned by the extractor."""
 
     cv_id: str
-    full_name: Optional[str]
-    current_role: Optional[str]
+    full_name: str | None
+    current_role: str | None
     parsed_at: datetime
 
 
@@ -36,9 +36,7 @@ ROLE_PATTERNS = [
     re.compile(r"(?i)^(?:current\s*role|current\s*position)\s*[:\-]\s*(.+)$"),
 ]
 
-EMAIL_PATTERN = re.compile(
-    r"(?i)\b[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}\b"
-)
+EMAIL_PATTERN = re.compile(r"(?i)\b[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}\b")
 
 
 def extract_metadata_candidates(lines: Iterable[str]) -> MetadataCandidates:
@@ -50,8 +48,8 @@ def extract_metadata_candidates(lines: Iterable[str]) -> MetadataCandidates:
     - Fall back to the first likely full name line (Title Case, two tokens).
     - Ignore email-only lines.
     """
-    full_name: Optional[str] = None
-    current_role: Optional[str] = None
+    full_name: str | None = None
+    current_role: str | None = None
 
     for raw in lines:
         line = raw.strip()
@@ -78,7 +76,7 @@ def extract_metadata_candidates(lines: Iterable[str]) -> MetadataCandidates:
     return MetadataCandidates(full_name=full_name, current_role=current_role)
 
 
-def _match_first(patterns: Iterable[re.Pattern[str]], line: str) -> Optional[str]:
+def _match_first(patterns: Iterable[re.Pattern[str]], line: str) -> str | None:
     for pattern in patterns:
         match = pattern.match(line)
         if match:
@@ -119,7 +117,7 @@ def extract_metadata(text: str) -> ParsedMetadata:
     )
 
 
-def _first_non_empty_line(lines: Iterable[str]) -> Optional[str]:
+def _first_non_empty_line(lines: Iterable[str]) -> str | None:
     for line in lines:
         if line:
             return line
