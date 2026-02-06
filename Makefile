@@ -32,21 +32,21 @@ help:
 
 install:
 	@echo "📦 Installing dependencies with uv..."
-	uv venv
+	uv venv --clear
 	uv pip install -r pyproject.toml
 
 dev: install
 	@echo "🔧 Installing dev dependencies..."
 	uv pip install -e ".[dev]"
 	@echo "🪝 Setting up pre-commit hooks..."
-	uv run pre-commit install
+	uv run pre-commit install --install-hooks
 	@echo "📡 Installing Spectral (API linting)..."
 	npm install -g @stoplight/spectral-cli 2>/dev/null || echo "⚠️  npm not found, skip Spectral"
 	@echo "✅ Dev environment ready!"
 
 # ============== Code Quality ==============
 
-lint:
+lint: dev
 	@echo "🔍 Running linters (fast)..."
 	uv run ruff check src/ tests/
 	uv run flake8 src/ tests/ --max-line-length=100 --ignore=E501,W503

@@ -20,7 +20,7 @@ def health_check() -> JSONResponse:
     try:
         qdrant_status = check_qdrant_health(client)
         status = "ok"
-    except Exception as exc:  # pragma: no cover - defensive health check
+    except Exception as exc:  # pylint: disable=broad-exception-caught  # pragma: no cover
         qdrant_status = {"status": "down", "error": str(exc)}
         status = "degraded"
 

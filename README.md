@@ -227,20 +227,20 @@ feature/US-XXX-descrizione-breve
 ```
 
 **Workflow:**
-1. Crea branch da `main`
+1. Crea branch da `master`
 2. Sviluppa con commit atomici (Conventional Commits)
 3. Push e apri Pull Request
 4. Code review + CI green
-5. Squash merge su main
+5. Squash merge su master
 
 ```mermaid
 gitGraph
-    commit id: "main"
+    commit id: "master"
     branch feature/US-002-qdrant
     checkout feature/US-002-qdrant
     commit id: "feat: add Qdrant client"
     commit id: "test: add connection tests"
-    checkout main
+    checkout master
     merge feature/US-002-qdrant tag: "PR #12"
 ```
 
@@ -388,6 +388,7 @@ profilebot/
 - [User Stories Dettagliate](docs/USER_STORIES_DETAILED.md)
 - [Contributing Guide](docs/CONTRIBUTING.md)
 - [Analisi Preliminare](docs/analisi_preliminare.md)
+- [Guida Formato CV](docs/cv_format_guide.md)
 - [Appendice Tecnica - Indexing](docs/Appendice%20tecnica%20—%20Indexing.md)
 - [Team Structure](docs/TEAM_STRUCTURE.md)
 - [Product Backlog](docs/BACKLOG.md)
