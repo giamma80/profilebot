@@ -33,6 +33,7 @@ data/
 *.db
 *.docx
 !docs/*.docx
+!tests/fixtures/sample_cvs/*.docx
 
 # Qdrant
 qdrant_storage/
