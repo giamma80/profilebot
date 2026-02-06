@@ -33,13 +33,14 @@ class ExperienceItem(BaseModel):
     start_date: Optional[date] = Field(None, description="Start date")
     end_date: Optional[date] = Field(None, description="End date")
     description: str = Field("", description="Experience description")
+    is_current: bool = Field(False, description="Whether the role is current")
 
 
 class ParsedCV(BaseModel):
     """Parsed CV output schema."""
 
     metadata: CVMetadata
-    skills: SkillSection
+    skills: Optional[SkillSection] = None
     experiences: list[ExperienceItem] = Field(default_factory=list)
     education: list[str] = Field(default_factory=list)
     certifications: list[str] = Field(default_factory=list)

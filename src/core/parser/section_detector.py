@@ -9,17 +9,21 @@ from typing import Iterable
 SECTION_PATTERNS: dict[str, list[str]] = {
     "skills": [
         r"(?i)^(competenze|skills?|technical skills?|conoscenze)",
-        r"(?i)^(tecnologie|tools?|linguaggi)",
+        r"(?i)^(tecnologie|tools?|linguaggi|frameworks?)",
+        r"(?i)^(hard skills|soft skills|competenze tecniche)",
     ],
     "experience": [
         r"(?i)^(esperienza|experience|work history|career)",
         r"(?i)^(esperienze professionali|professional experience)",
+        r"(?i)^(posizioni ricoperte|employment)",
     ],
     "education": [
         r"(?i)^(formazione|education|istruzione|studi)",
+        r"(?i)^(titoli di studio|qualifiche|academic)",
     ],
     "certifications": [
         r"(?i)^(certificazioni|certifications?|qualifiche)",
+        r"(?i)^(attestati|corsi|training)",
     ],
 }
 
@@ -34,7 +38,9 @@ class SectionMatch:
     heading: str
 
 
-def detect_section(heading: str, patterns: dict[str, list[str]] | None = None) -> SectionMatch | None:
+def detect_section(
+    heading: str, patterns: dict[str, list[str]] | None = None
+) -> SectionMatch | None:
     """
     Detect the section for a given heading line.
 

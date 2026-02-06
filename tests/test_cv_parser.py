@@ -8,7 +8,6 @@ import pytest
 
 from src.core.parser.docx_parser import CVParseError, parse_docx
 
-
 FIXTURES_DIR = Path(__file__).parent / "fixtures" / "sample_cvs"
 
 
@@ -32,9 +31,9 @@ def test_parse_docx_returns_parsed_cv(docx_path: Path) -> None:
     assert parsed.metadata.cv_id
     assert parsed.metadata.file_name
 
-    assert parsed.skills is not None
-    assert isinstance(parsed.skills.raw_text, str)
-    assert isinstance(parsed.skills.skill_keywords, list)
+    if parsed.skills is not None:
+        assert isinstance(parsed.skills.raw_text, str)
+        assert isinstance(parsed.skills.skill_keywords, list)
 
     assert isinstance(parsed.experiences, list)
     assert isinstance(parsed.education, list)
@@ -50,3 +49,33 @@ def test_parse_invalid_docx_raises(tmp_path: Path) -> None:
 
     with pytest.raises(CVParseError):
         parse_docx(invalid_path)
+
+
+def test_parse_standard_cv_has_sections() -> None:
+    parsed = parse_docx(FIXTURES_DIR / "cv_standard.docx")
+    assert parsed.skills is not None
+    assert parsed.experiences
+    assert parsed.education
+    assert parsed.certifications
+
+
+def test_parse_cv_with_tables_includes_skills() -> None:
+    parsed = parse_docx(FIXTURES_DIR / "cv_with_tables.docx")
+    assert parsed.skills is not None
+    assert parsed.skills.skill_keywords
+
+
+def test_parse_unstructured_cv_has_raw_text() -> None:
+    parsed = parse_docx(FIXTURES_DIR / "cv_unstructured.docx")
+    assert parsed.raw_text.strip() != ""
+
+
+def test_parse_italian_chars_cv() -> None:
+    parsed = parse_docx(FIXTURES_DIR / "cv_italian_chars.docx")
+    assert "è" in parsed.raw_text or "à" in parsed.raw_text or "ù" in parsed.raw_text
+
+
+def test_parse_minimal_cv_skills() -> None:
+    parsed = parse_docx(FIXTURES_DIR / "cv_minimal.docx")
+    assert parsed.skills is not None
+    assert parsed.skills.skill_keywords

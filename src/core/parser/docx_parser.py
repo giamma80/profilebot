@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import logging
+import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
@@ -12,6 +14,8 @@ from docx.opc.exceptions import PackageNotFoundError
 from src.core.parser.metadata_extractor import extract_metadata
 from src.core.parser.schemas import CVMetadata, ExperienceItem, ParsedCV, SkillSection
 from src.core.parser.section_detector import detect_sections
+
+logger = logging.getLogger(__name__)
 
 
 class CVParseError(Exception):
@@ -38,6 +42,8 @@ class DocxParser:
         if not path.exists():
             raise CVParseError(f"File not found: {path}")
 
+        start_time = time.perf_counter()
+
         try:
             document = Document(str(path))
         except PackageNotFoundError as exc:
@@ -50,19 +56,21 @@ class DocxParser:
 
         if not raw_text:
             metadata = self._build_metadata(path, raw_text)
-            return ParsedCV(
+            parsed = ParsedCV(
                 metadata=metadata,
-                skills=SkillSection(raw_text="", skill_keywords=[]),
+                skills=None,
                 experiences=[],
                 education=[],
                 certifications=[],
                 raw_text="",
             )
+            self._log_parse_result(parsed, ParsedSections([], [], [], [], raw_text), start_time)
+            return parsed
 
         sections = self._extract_sections(lines, raw_text)
         metadata = self._build_metadata(path, raw_text)
 
-        return ParsedCV(
+        parsed = ParsedCV(
             metadata=metadata,
             skills=self._parse_skills(sections.skills),
             experiences=self._parse_experiences(sections.experience),
@@ -70,13 +78,20 @@ class DocxParser:
             certifications=sections.certifications,
             raw_text=sections.raw_text,
         )
+        self._log_parse_result(parsed, sections, start_time)
+        return parsed
 
     def _extract_lines(self, document: Document) -> Iterable[str]:
         """Extract text lines from paragraphs and tables in a DOCX document."""
         for paragraph in document.paragraphs:
             text = paragraph.text.strip()
-            if text:
+            if not text:
+                continue
+            style_name = paragraph.style.name if paragraph.style else ""
+            if style_name and style_name.lower().startswith("heading"):
                 yield text
+                continue
+            yield text
 
         for table in document.tables:
             for row in table.rows:
@@ -100,6 +115,26 @@ class DocxParser:
             raw_text=raw_text,
         )
 
+    def _log_parse_result(
+        self, parsed: ParsedCV, sections: ParsedSections, start_time: float
+    ) -> None:
+        parse_time_ms = int((time.perf_counter() - start_time) * 1000)
+        sections_found = {
+            "skills": len(sections.skills),
+            "experience": len(sections.experience),
+            "education": len(sections.education),
+            "certifications": len(sections.certifications),
+        }
+        logger.info(
+            "cv_parsed",
+            extra={
+                "cv_id": parsed.metadata.cv_id,
+                "file_name": parsed.metadata.file_name,
+                "sections_found": sections_found,
+                "parse_time_ms": parse_time_ms,
+            },
+        )
+
     def _build_metadata(self, path: Path, raw_text: str) -> CVMetadata:
         """Extract metadata from the document content."""
         metadata = extract_metadata(raw_text)
@@ -111,10 +146,12 @@ class DocxParser:
             parsed_at=metadata.parsed_at,
         )
 
-    def _parse_skills(self, lines: list[str]) -> SkillSection:
+    def _parse_skills(self, lines: list[str]) -> SkillSection | None:
         """Parse the skills section into raw text and keywords."""
         raw = "\n".join(lines).strip()
-        keywords = self._split_keywords(raw) if raw else []
+        if not raw:
+            return None
+        keywords = self._split_keywords(raw)
         return SkillSection(raw_text=raw, skill_keywords=keywords)
 
     def _parse_experiences(self, lines: list[str]) -> list[ExperienceItem]:
@@ -140,12 +177,15 @@ class DocxParser:
     def _buffer_to_experience(self, lines: list[str]) -> ExperienceItem:
         """Convert a list of lines into an ExperienceItem."""
         description = "\n".join(lines).strip()
+        lowered = description.lower()
+        is_current = any(token in lowered for token in ("present", "current", "oggi", "attuale"))
         return ExperienceItem(
             company=None,
             role=None,
             start_date=None,
             end_date=None,
             description=description,
+            is_current=is_current,
         )
 
     def _is_new_experience_line(self, line: str) -> bool:
