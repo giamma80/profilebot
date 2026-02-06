@@ -29,7 +29,7 @@ feature/US-XXX-descrizione-breve
 
 ```mermaid
 gitGraph
-    commit id: "main"
+    commit id: "initial"
     branch feature/US-XXX-nome
     checkout feature/US-XXX-nome
     commit id: "feat: initial structure"

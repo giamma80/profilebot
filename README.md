@@ -235,12 +235,12 @@ feature/US-XXX-descrizione-breve
 
 ```mermaid
 gitGraph
-    commit id: "master"
+    commit id: "initial"
     branch feature/US-002-qdrant
     checkout feature/US-002-qdrant
     commit id: "feat: add Qdrant client"
     commit id: "test: add connection tests"
-    checkout master
+    checkout main
     merge feature/US-002-qdrant tag: "PR #12"
 ```
 
