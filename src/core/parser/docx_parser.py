@@ -94,6 +94,10 @@ class DocxParser:
                 continue
             yield text
 
+        yield from self._extract_table_lines(document)
+
+    def _extract_table_lines(self, document: DocxDocument) -> Iterable[str]:
+        """Extract text lines from tables in a DOCX document."""
         for table in document.tables:
             for row in table.rows:
                 for cell in row.cells:
