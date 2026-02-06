@@ -274,12 +274,13 @@ make install      # Install production dependencies
 make dev          # Install dev dependencies + pre-commit hooks
 
 # Code Quality
-make lint         # Run fast linters (ruff + flake8 + mypy)
-make lint-all     # Run ALL linters (+ pylint)
-make pylint       # Run only pylint
-make format       # Format code (black + isort + ruff --fix)
-make check        # Run all checks (lint + format check)
-make api-lint     # Lint OpenAPI spec with Spectral
+make lint         Run fast linters (ruff + flake8 + mypy)
+make lint-all     Run ALL linters (+ pylint)
+make preflight    Run all local checks (lint-all + format check)
+make pylint       Run only pylint
+make format       Format code (black + isort + ruff --fix)
+make check        Run all checks (lint + format check)
+make api-lint     Lint OpenAPI spec with Spectral
 
 # Testing
 make test         # Run tests with pytest
