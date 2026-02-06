@@ -27,6 +27,8 @@ auth_state.json
 
 # Data
 data/
+!data/
+!data/skills_dictionary.yaml
 *.csv
 *.xlsx
 *.sqlite

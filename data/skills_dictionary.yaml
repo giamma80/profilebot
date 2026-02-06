@@ -1,0 +1,771 @@
+version: "1.0.0"
+updated_at: "2025-02-06"
+
+domains:
+  - backend
+  - frontend
+  - data
+  - devops
+  - management
+  - qa
+  - security
+  - mobile
+  - cloud
+  - database
+  - ai
+
+skills:
+  # Backend
+  python:
+    canonical: "python"
+    domain: "backend"
+    aliases: ["py", "python3", "python 3", "python3.x"]
+    related: ["django", "fastapi", "flask"]
+  java:
+    canonical: "java"
+    domain: "backend"
+    aliases: ["java 8", "java 11", "jdk", "jvm"]
+    related: ["spring", "maven", "gradle"]
+  csharp:
+    canonical: "csharp"
+    domain: "backend"
+    aliases: ["c#", "dotnet", ".net"]
+    related: ["asp.net", "entity framework"]
+  nodejs:
+    canonical: "nodejs"
+    domain: "backend"
+    aliases: ["node.js", "node", "npm"]
+    related: ["express", "nestjs"]
+  go:
+    canonical: "go"
+    domain: "backend"
+    aliases: ["golang"]
+    related: ["gin", "grpc"]
+  ruby:
+    canonical: "ruby"
+    domain: "backend"
+    aliases: ["ruby on rails", "rails"]
+    related: ["rails", "sinatra"]
+  php:
+    canonical: "php"
+    domain: "backend"
+    aliases: ["php7", "php8"]
+    related: ["laravel", "symfony"]
+  scala:
+    canonical: "scala"
+    domain: "backend"
+    aliases: ["scala 2", "scala 3"]
+    related: ["akka", "play"]
+  kotlin:
+    canonical: "kotlin"
+    domain: "backend"
+    aliases: ["kotlin/jvm"]
+    related: ["ktor", "spring"]
+  rust:
+    canonical: "rust"
+    domain: "backend"
+    aliases: ["rustlang"]
+    related: ["tokio", "actix"]
+  spring:
+    canonical: "spring"
+    domain: "backend"
+    aliases: ["spring boot", "spring framework"]
+    related: ["java", "hibernate"]
+  django:
+    canonical: "django"
+    domain: "backend"
+    aliases: ["django rest", "drf"]
+    related: ["python"]
+  fastapi:
+    canonical: "fastapi"
+    domain: "backend"
+    aliases: ["fast-api", "fast api"]
+    related: ["python", "pydantic"]
+  flask:
+    canonical: "flask"
+    domain: "backend"
+    aliases: ["flask api"]
+    related: ["python"]
+  express:
+    canonical: "express"
+    domain: "backend"
+    aliases: ["express.js"]
+    related: ["nodejs"]
+  nestjs:
+    canonical: "nestjs"
+    domain: "backend"
+    aliases: ["nest.js"]
+    related: ["nodejs", "typescript"]
+  graphql:
+    canonical: "graphql"
+    domain: "backend"
+    aliases: ["apollo", "graphql api"]
+    related: ["nodejs", "typescript"]
+  rest:
+    canonical: "rest"
+    domain: "backend"
+    aliases: ["rest api", "restful"]
+    related: ["http", "openapi"]
+
+  # Frontend
+  javascript:
+    canonical: "javascript"
+    domain: "frontend"
+    aliases: ["js", "es6", "ecmascript"]
+    related: ["react", "vue", "angular"]
+  typescript:
+    canonical: "typescript"
+    domain: "frontend"
+    aliases: ["ts"]
+    related: ["react", "angular", "vue"]
+  react:
+    canonical: "react"
+    domain: "frontend"
+    aliases: ["react.js", "reactjs"]
+    related: ["javascript", "typescript"]
+  angular:
+    canonical: "angular"
+    domain: "frontend"
+    aliases: ["angularjs", "ng"]
+    related: ["typescript"]
+  vue:
+    canonical: "vue"
+    domain: "frontend"
+    aliases: ["vue.js", "vuejs"]
+    related: ["javascript"]
+  svelte:
+    canonical: "svelte"
+    domain: "frontend"
+    aliases: ["sveltekit"]
+    related: ["javascript", "typescript"]
+  html:
+    canonical: "html"
+    domain: "frontend"
+    aliases: ["html5"]
+    related: ["css", "javascript"]
+  css:
+    canonical: "css"
+    domain: "frontend"
+    aliases: ["css3"]
+    related: ["sass", "less"]
+  sass:
+    canonical: "sass"
+    domain: "frontend"
+    aliases: ["scss"]
+    related: ["css"]
+  webpack:
+    canonical: "webpack"
+    domain: "frontend"
+    aliases: ["webpack 5"]
+    related: ["javascript"]
+  vite:
+    canonical: "vite"
+    domain: "frontend"
+    aliases: ["vitejs"]
+    related: ["javascript"]
+  tailwind:
+    canonical: "tailwind"
+    domain: "frontend"
+    aliases: ["tailwindcss"]
+    related: ["css"]
+
+  # Data
+  sql:
+    canonical: "sql"
+    domain: "data"
+    aliases: ["structured query language"]
+    related: ["postgresql", "mysql", "oracle"]
+  pandas:
+    canonical: "pandas"
+    domain: "data"
+    aliases: ["pandas python"]
+    related: ["python"]
+  numpy:
+    canonical: "numpy"
+    domain: "data"
+    aliases: ["numpy python"]
+    related: ["python"]
+  spark:
+    canonical: "spark"
+    domain: "data"
+    aliases: ["apache spark", "pyspark"]
+    related: ["hadoop"]
+  hadoop:
+    canonical: "hadoop"
+    domain: "data"
+    aliases: ["apache hadoop"]
+    related: ["spark", "hdfs"]
+  airflow:
+    canonical: "airflow"
+    domain: "data"
+    aliases: ["apache airflow"]
+    related: ["etl"]
+  etl:
+    canonical: "etl"
+    domain: "data"
+    aliases: ["data pipeline", "data integration"]
+    related: ["airflow", "spark"]
+  bi:
+    canonical: "bi"
+    domain: "data"
+    aliases: ["business intelligence"]
+    related: ["powerbi", "tableau"]
+  powerbi:
+    canonical: "powerbi"
+    domain: "data"
+    aliases: ["power bi"]
+    related: ["bi"]
+  tableau:
+    canonical: "tableau"
+    domain: "data"
+    aliases: []
+    related: ["bi"]
+
+  # DevOps / Cloud
+  docker:
+    canonical: "docker"
+    domain: "devops"
+    aliases: ["container", "containerization"]
+    related: ["kubernetes", "docker-compose"]
+  kubernetes:
+    canonical: "kubernetes"
+    domain: "devops"
+    aliases: ["k8s"]
+    related: ["docker", "helm"]
+  helm:
+    canonical: "helm"
+    domain: "devops"
+    aliases: ["helm charts"]
+    related: ["kubernetes"]
+  terraform:
+    canonical: "terraform"
+    domain: "devops"
+    aliases: ["iac", "infrastructure as code"]
+    related: ["aws", "azure", "gcp"]
+  ansible:
+    canonical: "ansible"
+    domain: "devops"
+    aliases: []
+    related: ["automation"]
+  jenkins:
+    canonical: "jenkins"
+    domain: "devops"
+    aliases: ["jenkins ci"]
+    related: ["ci/cd"]
+  cicd:
+    canonical: "ci/cd"
+    domain: "devops"
+    aliases: ["ci", "cd", "pipeline"]
+    related: ["jenkins", "github actions", "gitlab ci"]
+  github_actions:
+    canonical: "github actions"
+    domain: "devops"
+    aliases: ["gha"]
+    related: ["ci/cd"]
+  gitlab_ci:
+    canonical: "gitlab ci"
+    domain: "devops"
+    aliases: ["gitlab pipelines"]
+    related: ["ci/cd"]
+  monitoring:
+    canonical: "monitoring"
+    domain: "devops"
+    aliases: []
+    related: ["prometheus", "grafana"]
+  prometheus:
+    canonical: "prometheus"
+    domain: "devops"
+    aliases: []
+    related: ["monitoring", "grafana"]
+  grafana:
+    canonical: "grafana"
+    domain: "devops"
+    aliases: []
+    related: ["monitoring"]
+
+  # Cloud Providers
+  aws:
+    canonical: "aws"
+    domain: "cloud"
+    aliases: ["amazon web services"]
+    related: ["ec2", "s3", "lambda"]
+  azure:
+    canonical: "azure"
+    domain: "cloud"
+    aliases: ["microsoft azure"]
+    related: ["azure devops"]
+  gcp:
+    canonical: "gcp"
+    domain: "cloud"
+    aliases: ["google cloud"]
+    related: ["bigquery", "cloud run"]
+  lambda:
+    canonical: "lambda"
+    domain: "cloud"
+    aliases: ["aws lambda"]
+    related: ["aws"]
+  s3:
+    canonical: "s3"
+    domain: "cloud"
+    aliases: ["aws s3"]
+    related: ["aws"]
+  cloud_run:
+    canonical: "cloud run"
+    domain: "cloud"
+    aliases: ["gcp cloud run"]
+    related: ["gcp"]
+
+  # Databases
+  postgresql:
+    canonical: "postgresql"
+    domain: "database"
+    aliases: ["postgres"]
+    related: ["sql"]
+  mysql:
+    canonical: "mysql"
+    domain: "database"
+    aliases: []
+    related: ["sql"]
+  oracle:
+    canonical: "oracle"
+    domain: "database"
+    aliases: ["oracle db"]
+    related: ["sql"]
+  mongodb:
+    canonical: "mongodb"
+    domain: "database"
+    aliases: ["mongo"]
+    related: ["nosql"]
+  redis:
+    canonical: "redis"
+    domain: "database"
+    aliases: ["redis cache"]
+    related: ["cache"]
+  elasticsearch:
+    canonical: "elasticsearch"
+    domain: "database"
+    aliases: ["elastic"]
+    related: ["search"]
+
+  # QA
+  testing:
+    canonical: "testing"
+    domain: "qa"
+    aliases: ["test", "qa"]
+    related: ["pytest", "selenium"]
+  pytest:
+    canonical: "pytest"
+    domain: "qa"
+    aliases: []
+    related: ["python", "testing"]
+  junit:
+    canonical: "junit"
+    domain: "qa"
+    aliases: ["junit5"]
+    related: ["java", "testing"]
+  selenium:
+    canonical: "selenium"
+    domain: "qa"
+    aliases: ["selenium webdriver"]
+    related: ["testing"]
+  cypress:
+    canonical: "cypress"
+    domain: "qa"
+    aliases: ["cypress io"]
+    related: ["javascript", "testing"]
+
+  # Security
+  security:
+    canonical: "security"
+    domain: "security"
+    aliases: ["cybersecurity"]
+    related: ["owasp", "iam"]
+  owasp:
+    canonical: "owasp"
+    domain: "security"
+    aliases: ["owasp top 10"]
+    related: ["security"]
+  iam:
+    canonical: "iam"
+    domain: "security"
+    aliases: ["identity and access management"]
+    related: ["security"]
+  oauth:
+    canonical: "oauth"
+    domain: "security"
+    aliases: []
+    related: ["iam"]
+  jwt:
+    canonical: "jwt"
+    domain: "security"
+    aliases: ["json web token"]
+    related: ["oauth"]
+
+  # Mobile
+  android:
+    canonical: "android"
+    domain: "mobile"
+    aliases: ["android sdk"]
+    related: ["kotlin", "java"]
+  ios:
+    canonical: "ios"
+    domain: "mobile"
+    aliases: ["apple ios"]
+    related: ["swift"]
+  swift:
+    canonical: "swift"
+    domain: "mobile"
+    aliases: ["swiftui"]
+    related: ["ios"]
+  react_native:
+    canonical: "react native"
+    domain: "mobile"
+    aliases: ["reactnative"]
+    related: ["react", "javascript"]
+  flutter:
+    canonical: "flutter"
+    domain: "mobile"
+    aliases: ["dart"]
+    related: ["mobile"]
+
+  # Management
+  project_management:
+    canonical: "project_management"
+    domain: "management"
+    aliases: ["pm", "project manager", "gestione progetti"]
+    related: ["agile", "scrum"]
+    certifications: ["pmp", "prince2", "scrum master"]
+  agile:
+    canonical: "agile"
+    domain: "management"
+    aliases: ["agile methodology"]
+    related: ["scrum", "kanban"]
+  scrum:
+    canonical: "scrum"
+    domain: "management"
+    aliases: ["scrum framework"]
+    related: ["agile"]
+  kanban:
+    canonical: "kanban"
+    domain: "management"
+    aliases: []
+    related: ["agile"]
+  product_management:
+    canonical: "product_management"
+    domain: "management"
+    aliases: ["product manager"]
+    related: ["roadmap", "mvp"]
+  leadership:
+    canonical: "leadership"
+    domain: "management"
+    aliases: ["team leadership"]
+    related: ["management"]
+
+  # AI / ML
+  machine_learning:
+    canonical: "machine_learning"
+    domain: "ai"
+    aliases: ["ml", "machine learning"]
+    related: ["scikit-learn", "tensorflow", "pytorch"]
+  deep_learning:
+    canonical: "deep_learning"
+    domain: "ai"
+    aliases: ["dl", "deep learning"]
+    related: ["tensorflow", "pytorch"]
+  nlp:
+    canonical: "nlp"
+    domain: "ai"
+    aliases: ["natural language processing"]
+    related: ["spacy", "transformers"]
+  scikit_learn:
+    canonical: "scikit-learn"
+    domain: "ai"
+    aliases: ["sklearn"]
+    related: ["machine_learning"]
+  tensorflow:
+    canonical: "tensorflow"
+    domain: "ai"
+    aliases: ["tf"]
+    related: ["deep_learning"]
+  pytorch:
+    canonical: "pytorch"
+    domain: "ai"
+    aliases: ["torch"]
+    related: ["deep_learning"]
+  transformers:
+    canonical: "transformers"
+    domain: "ai"
+    aliases: ["huggingface transformers"]
+    related: ["nlp"]
+
+  # Additional commonly used skills (to exceed 100 entries)
+  linux:
+    canonical: "linux"
+    domain: "devops"
+    aliases: ["unix"]
+    related: ["bash"]
+  bash:
+    canonical: "bash"
+    domain: "devops"
+    aliases: ["shell", "shell scripting"]
+    related: ["linux"]
+  git:
+    canonical: "git"
+    domain: "devops"
+    aliases: ["git scm"]
+    related: ["github", "gitlab"]
+  github:
+    canonical: "github"
+    domain: "devops"
+    aliases: []
+    related: ["git"]
+  gitlab:
+    canonical: "gitlab"
+    domain: "devops"
+    aliases: []
+    related: ["git"]
+  openapi:
+    canonical: "openapi"
+    domain: "backend"
+    aliases: ["swagger"]
+    related: ["rest"]
+  grpc:
+    canonical: "grpc"
+    domain: "backend"
+    aliases: []
+    related: ["protobuf"]
+  protobuf:
+    canonical: "protobuf"
+    domain: "backend"
+    aliases: ["protocol buffers"]
+    related: ["grpc"]
+  rabbitmq:
+    canonical: "rabbitmq"
+    domain: "backend"
+    aliases: ["amqp"]
+    related: ["messaging"]
+  kafka:
+    canonical: "kafka"
+    domain: "backend"
+    aliases: ["apache kafka"]
+    related: ["streaming"]
+  microservices:
+    canonical: "microservices"
+    domain: "backend"
+    aliases: ["microservice architecture"]
+    related: ["docker", "kubernetes"]
+  serverless:
+    canonical: "serverless"
+    domain: "cloud"
+    aliases: ["serverless architecture"]
+    related: ["lambda", "cloud functions"]
+  bigquery:
+    canonical: "bigquery"
+    domain: "data"
+    aliases: ["google bigquery"]
+    related: ["gcp"]
+  snowflake:
+    canonical: "snowflake"
+    domain: "data"
+    aliases: ["snowflake data cloud"]
+    related: ["data warehouse"]
+  databricks:
+    canonical: "databricks"
+    domain: "data"
+    aliases: []
+    related: ["spark"]
+  data_warehouse:
+    canonical: "data warehouse"
+    domain: "data"
+    aliases: ["dwh"]
+    related: ["etl"]
+  nosql:
+    canonical: "nosql"
+    domain: "database"
+    aliases: ["non relational"]
+    related: ["mongodb", "cassandra"]
+  cassandra:
+    canonical: "cassandra"
+    domain: "database"
+    aliases: ["apache cassandra"]
+    related: ["nosql"]
+  sqlite:
+    canonical: "sqlite"
+    domain: "database"
+    aliases: []
+    related: ["sql"]
+  redis_streams:
+    canonical: "redis streams"
+    domain: "database"
+    aliases: []
+    related: ["redis"]
+  qdrant:
+    canonical: "qdrant"
+    domain: "data"
+    aliases: ["vector database"]
+    related: ["embeddings"]
+  embeddings:
+    canonical: "embeddings"
+    domain: "ai"
+    aliases: ["vector embeddings"]
+    related: ["nlp"]
+  pydantic:
+    canonical: "pydantic"
+    domain: "backend"
+    aliases: ["pydantic v2"]
+    related: ["python"]
+  fastify:
+    canonical: "fastify"
+    domain: "backend"
+    aliases: ["fastify.js"]
+    related: ["nodejs"]
+  gin:
+    canonical: "gin"
+    domain: "backend"
+    aliases: ["gin gonic"]
+    related: ["go"]
+  actix:
+    canonical: "actix"
+    domain: "backend"
+    aliases: ["actix-web"]
+    related: ["rust"]
+  tokio:
+    canonical: "tokio"
+    domain: "backend"
+    aliases: ["tokio runtime"]
+    related: ["rust"]
+  playwright:
+    canonical: "playwright"
+    domain: "qa"
+    aliases: []
+    related: ["testing"]
+  jest:
+    canonical: "jest"
+    domain: "qa"
+    aliases: ["jest.js"]
+    related: ["javascript", "testing"]
+  mocha:
+    canonical: "mocha"
+    domain: "qa"
+    aliases: []
+    related: ["javascript", "testing"]
+  sonarqube:
+    canonical: "sonarqube"
+    domain: "qa"
+    aliases: ["sonar"]
+    related: ["code quality"]
+  code_quality:
+    canonical: "code quality"
+    domain: "qa"
+    aliases: ["static analysis"]
+    related: ["sonarqube"]
+  oauth2:
+    canonical: "oauth2"
+    domain: "security"
+    aliases: ["oauth 2.0"]
+    related: ["oauth"]
+  saml:
+    canonical: "saml"
+    domain: "security"
+    aliases: ["saml2"]
+    related: ["iam"]
+  pentesting:
+    canonical: "pentesting"
+    domain: "security"
+    aliases: ["penetration testing"]
+    related: ["security"]
+  vault:
+    canonical: "vault"
+    domain: "security"
+    aliases: ["hashicorp vault"]
+    related: ["secrets management"]
+  secrets_management:
+    canonical: "secrets management"
+    domain: "security"
+    aliases: ["secrets"]
+    related: ["vault"]
+  api_gateway:
+    canonical: "api gateway"
+    domain: "backend"
+    aliases: ["gateway"]
+    related: ["microservices"]
+  nginx:
+    canonical: "nginx"
+    domain: "devops"
+    aliases: []
+    related: ["reverse proxy"]
+  apache:
+    canonical: "apache"
+    domain: "devops"
+    aliases: ["apache httpd"]
+    related: ["web server"]
+  load_balancing:
+    canonical: "load balancing"
+    domain: "devops"
+    aliases: ["load balancer"]
+    related: ["nginx"]
+  reverse_proxy:
+    canonical: "reverse proxy"
+    domain: "devops"
+    aliases: []
+    related: ["nginx"]
+  caching:
+    canonical: "caching"
+    domain: "backend"
+    aliases: ["cache"]
+    related: ["redis"]
+  rate_limiting:
+    canonical: "rate limiting"
+    domain: "backend"
+    aliases: ["throttling"]
+    related: ["api gateway"]
+  logging:
+    canonical: "logging"
+    domain: "devops"
+    aliases: ["log management"]
+    related: ["elk"]
+  elk:
+    canonical: "elk"
+    domain: "devops"
+    aliases: ["elastic stack", "elk stack"]
+    related: ["elasticsearch"]
+  observability:
+    canonical: "observability"
+    domain: "devops"
+    aliases: []
+    related: ["monitoring", "tracing"]
+  tracing:
+    canonical: "tracing"
+    domain: "devops"
+    aliases: ["distributed tracing"]
+    related: ["observability"]
+  opentelemetry:
+    canonical: "opentelemetry"
+    domain: "devops"
+    aliases: ["otel", "open telemetry"]
+    related: ["tracing"]
+  jira:
+    canonical: "jira"
+    domain: "management"
+    aliases: []
+    related: ["project_management"]
+  confluence:
+    canonical: "confluence"
+    domain: "management"
+    aliases: []
+    related: ["documentation"]
+  documentation:
+    canonical: "documentation"
+    domain: "management"
+    aliases: ["docs"]
+    related: ["confluence"]
+  roadmap:
+    canonical: "roadmap"
+    domain: "management"
+    aliases: []
+    related: ["product_management"]
+  mvp:
+    canonical: "mvp"
+    domain: "management"
+    aliases: ["minimum viable product"]
+    related: ["product_management"]
