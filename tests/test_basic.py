@@ -1,5 +1,6 @@
 """Basic tests to verify CI pipeline works."""
 
+
 def test_import_src():
     """Test that src package can be imported."""
     import src
