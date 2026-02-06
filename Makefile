@@ -39,7 +39,7 @@ dev: install
 	@echo "🔧 Installing dev dependencies..."
 	uv pip install -e ".[dev]"
 	@echo "🪝 Setting up pre-commit hooks..."
-	uv run pre-commit install
+	uv run pre-commit install --install-hooks
 	@echo "📡 Installing Spectral (API linting)..."
 	npm install -g @stoplight/spectral-cli 2>/dev/null || echo "⚠️  npm not found, skip Spectral"
 	@echo "✅ Dev environment ready!"
