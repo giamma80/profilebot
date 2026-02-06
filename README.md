@@ -208,6 +208,12 @@ make docker-up    # Qdrant + Redis
 make run
 ```
 
+### Docker build exclusions
+
+Le build Docker escludono file e directory locali/temporanei tramite `.dockerignore`.
+Esempi esclusi: `.venv`, `__pycache__`, `.env*`, `qdrant_storage/`, `redis_data/`, `logs/`, `.git/`.
+Questo evita di includere segreti o artefatti di sviluppo nelle immagini.
+
 ---
 
 ## Development Workflow
