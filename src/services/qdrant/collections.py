@@ -2,17 +2,16 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 import os
-from typing import Dict, Iterable
 
-from qdrant_client import QdrantClient
-from qdrant_client import models
+from qdrant_client import QdrantClient, models
 
 DEFAULT_VECTOR_SIZE = int(os.getenv("QDRANT_VECTOR_SIZE", "1536"))
 DEFAULT_DISTANCE = models.Distance.COSINE
 
 
-def get_collections_config() -> Dict[str, dict]:
+def get_collections_config() -> dict[str, dict]:
     """Return schema configuration for all Qdrant collections."""
     return {
         "cv_skills": {
@@ -72,7 +71,7 @@ def _collection_exists(client: QdrantClient, collection_name: str) -> bool:
 def _ensure_payload_indexes(
     client: QdrantClient,
     collection_name: str,
-    payload_schema: Dict[str, models.PayloadSchemaType],
+    payload_schema: dict[str, models.PayloadSchemaType],
 ) -> None:
     existing_fields = _get_existing_payload_fields(client, collection_name)
 

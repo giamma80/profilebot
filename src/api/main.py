@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
-from dotenv import load_dotenv
 
 from src.services.qdrant import check_qdrant_health, get_qdrant_client
 

@@ -1,6 +1,6 @@
 """Basic tests to verify CI pipeline works."""
 
-import pytest
+
 
 
 def test_import_src():
