@@ -1,6 +1,8 @@
 # Python
 __pycache__/
 *.py[cod]
+*.pyo
+*.pyd
 *$py.class
 *.so
 .Python
@@ -19,17 +21,23 @@ env/
 # Environment
 .env
 .env.local
+.env.*.local
 *.local
+auth_state.json
 
 # Data
 data/
 *.csv
 *.xlsx
+*.sqlite
+*.db
 *.docx
 !docs/*.docx
 
 # Qdrant
 qdrant_storage/
+redis_data/
+storage/
 
 # Logs
 logs/
@@ -39,6 +47,8 @@ logs/
 .coverage
 htmlcov/
 .pytest_cache/
+.mypy_cache/
+.ruff_cache/
 .tox/
 
 # Build
@@ -49,6 +59,8 @@ build/
 # OS
 .DS_Store
 Thumbs.db
+.git/
+.gitignore
 
 # Secrets
 *.pem
