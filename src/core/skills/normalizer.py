@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from typing import Literal
 
 from rapidfuzz import fuzz, process
 
@@ -128,7 +129,7 @@ class SkillNormalizer:
         raw_skill: str,
         entry: SkillEntry,
         confidence: float,
-        match_type: str,
+        match_type: Literal["exact", "alias", "fuzzy"],
     ) -> NormalizedSkill:
         """Create a NormalizedSkill from a dictionary entry."""
         return NormalizedSkill(
