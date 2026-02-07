@@ -451,15 +451,13 @@ def normalize_skill(raw_skill: str, dictionary: dict) -> NormalizedSkill:
 - Vector Store: Qdrant
 - Queue (optional): Redis per async processing
 
-**Embedding Models:**
+**Embedding Model (decisione MVP):**
 ```python
-# Opzione 1: OpenAI (recommended)
-EMBEDDING_MODEL = "text-embedding-ada-002"
+# OpenAI (unico per MVP - decisione architetturale)
+EMBEDDING_MODEL = "text-embedding-3-small"
 EMBEDDING_DIM = 1536
 
-# Opzione 2: Open Source
-EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
-EMBEDDING_DIM = 384
+# Nota: sentence-transformers rimandato a future iteration
 ```
 
 **Pipeline Flow:**
@@ -471,7 +469,7 @@ ParsedCV
     └──► Experience Items ──► Embedding (each) ──► cv_experiences collection
 ```
 
-**Point Schema per cv_skills:**
+**Point Schema per cv_skills (allineato a collections.py):**
 ```python
 {
     "id": "cv_001_skills",  # Deterministic ID for idempotency
@@ -482,31 +480,30 @@ ParsedCV
         "normalized_skills": ["python", "fastapi", "postgresql"],
         "skill_domain": "backend",
         "seniority_bucket": "senior",
-        "raw_text": "Python, FastAPI, PostgreSQL...",
         "dictionary_version": "1.0.0",
-        "indexed_at": "2025-02-05T10:30:00Z"
+        "created_at": "2025-02-05T10:30:00Z"  # Campo esistente in schema
     }
 }
 ```
 
-**File da creare:**
+> **Nota:** Schema adattato a collections.py esistente. `raw_text` NON incluso per MVP.
+
+**File da creare (decisione architetturale approvata):**
 ```
-├── src/services/embedding/
+├── src/core/embedding/          # Core logic unificato
 │   ├── __init__.py
-│   ├── embedder.py        # Embedding generation
-│   ├── openai_client.py   # OpenAI wrapper
-│   └── local_embedder.py  # Sentence transformers fallback
-├── src/core/indexing/
-│   ├── __init__.py
-│   ├── pipeline.py        # Main orchestrator
-│   ├── cv_indexer.py      # CV-specific logic
-│   └── batch_processor.py # Batch handling
+│   ├── service.py               # EmbeddingService (OpenAI + tenacity retry)
+│   ├── schemas.py               # EmbeddingResult, BatchResult
+│   └── pipeline.py              # Orchestrazione CV → embed → upsert
 ├── scripts/
-│   ├── index_single_cv.py
-│   └── index_all_cvs.py
+│   ├── embed_cv.py              # CLI singolo CV
+│   └── embed_batch.py           # CLI batch con asyncio
 └── tests/
-    └── test_indexing_pipeline.py
+    └── test_embedding_pipeline.py
 ```
+
+> **Nota:** Entry points in `pyproject.toml` rimandati a US-013 (Celery).
+> Gli script usano: `uv run python scripts/embed_cv.py --cv data/cv/sample.docx`
 
 **Idempotency Strategy:**
 ```python
@@ -967,33 +964,191 @@ Output JSON:
 
 ---
 
+## US-013: Celery Job Queue e API Endpoints
+
+**Epic:** Document Ingestion (scalabilità)
+**Story Points:** 8
+**Priority:** P0 - Critical
+**Sprint:** 2/3
+**Feature Branch:** `feature/US-013-celery-job-queue`
+**Dipende da:** US-005 (Embedding Pipeline Core)
+
+### User Story
+**Come** sistema ProfileBot
+**Voglio** una job queue scalabile per processare embedding di CV in modo asincrono
+**In modo da** gestire 10.000+ CV con richieste multiple al giorno senza bloccare l'API
+
+### Requisiti di Volume
+
+| Parametro | Valore |
+|-----------|--------|
+| Volume CV | **10.000+** |
+| Frequenza | **Multiple volte/giorno** |
+| Modalità | On-demand + Batch schedulato |
+| Throughput target | ~5.000 CV/minuto (con 4 worker) |
+
+### Acceptance Criteria
+- [ ] Redis broker configurato e funzionante
+- [ ] Celery worker con task per singolo CV e batch
+- [ ] API endpoint `POST /api/v1/embeddings/trigger` per avvio job
+- [ ] API endpoint `POST /api/v1/embeddings/trigger/{cv_id}` per singolo CV
+- [ ] API endpoint `GET /api/v1/embeddings/status/{task_id}` per polling stato
+- [ ] Docker compose con worker scalabili (replicas)
+- [ ] Flower dashboard per monitoring (porta 5555)
+- [ ] Retry automatico con exponential backoff su rate limit
+- [ ] Test coverage ≥ 80%
+- [ ] Documentazione API (OpenAPI)
+
+### Technical Details
+
+**Stack:**
+- Broker: Redis
+- Job Queue: Celery
+- Monitoring: Flower
+- API: FastAPI
+
+**Architettura:**
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         FastAPI                                  │
+│  POST /api/v1/embeddings/trigger                                │
+│  POST /api/v1/embeddings/trigger/{cv_id}                        │
+│  GET  /api/v1/embeddings/status/{task_id}                       │
+└─────────────────────┬───────────────────────────────────────────┘
+                      │
+                      ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                         Redis (Celery Broker)                    │
+└─────────────────────┬───────────────────────────────────────────┘
+                      │
+        ┌─────────────┼─────────────┐
+        ▼             ▼             ▼
+┌─────────────┐ ┌─────────────┐ ┌─────────────┐
+│  Worker 1   │ │  Worker 2   │ │  Worker N   │
+└──────┬──────┘ └──────┬──────┘ └──────┬──────┘
+       │               │               │
+       └───────────────┼───────────────┘
+                       ▼
+              ┌─────────────────┐
+              │  US-005 Core    │
+              │  (EmbeddingService, CVIndexer)    │
+              └────────┬────────┘
+                       ▼
+              ┌─────────────────┐
+              │     Qdrant      │
+              └─────────────────┘
+```
+
+**File da creare:**
+```
+├── src/services/embedding/
+│   ├── celery_app.py      # Celery app configuration
+│   ├── tasks.py           # Celery tasks (embed_cv, embed_batch, embed_all)
+│   └── worker.py          # Worker entry point
+├── src/api/v1/
+│   └── embeddings.py      # API endpoints trigger/status
+├── src/core/config.py     # Redis/Celery settings
+└── tests/
+    └── test_celery_tasks.py
+```
+
+**Celery Tasks:**
+```python
+@celery_app.task(bind=True, max_retries=3)
+def embed_cv_task(self, cv_id: str) -> dict:
+    """Embed singolo CV (skills + experiences)."""
+
+@celery_app.task
+def embed_batch_task(cv_ids: list[str]) -> dict:
+    """Batch di CV - parallelizza su worker."""
+
+@celery_app.task
+def embed_all_task(force: bool = False) -> dict:
+    """Full re-embed di tutti i CV."""
+```
+
+**API Endpoints:**
+```python
+POST /api/v1/embeddings/trigger       # Avvia full embedding
+POST /api/v1/embeddings/trigger/{id}  # Embedding singolo CV
+GET  /api/v1/embeddings/status/{id}   # Stato task
+GET  /api/v1/embeddings/stats         # Statistiche queue
+```
+
+**Docker Compose (aggiunte):**
+```yaml
+services:
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+
+  celery-worker:
+    command: celery -A src.services.embedding.celery_app worker -l info -c 4
+    deploy:
+      replicas: 2
+
+  flower:
+    command: celery -A src.services.embedding.celery_app flower --port=5555
+    ports: ["5555:5555"]
+```
+
+### Process
+1. Configurare Redis come Celery broker
+2. Implementare `celery_app.py` con configurazione production-ready
+3. Creare task per embed singolo, batch, e full
+4. Implementare API endpoints FastAPI
+5. Aggiornare docker-compose con worker e Flower
+6. Aggiungere Makefile targets (worker, flower, beat)
+7. Scrivere test unitari e integration
+
+### Definition of Done
+- [ ] `celery_app.py` con configurazione production-ready
+- [ ] `tasks.py` con task per embed singolo, batch, e full
+- [ ] `embeddings.py` API router con tutti gli endpoint
+- [ ] `docker-compose.yml` aggiornato con Redis, worker, Flower
+- [ ] Test unitari e integration per tasks
+- [ ] Makefile target: `make worker`, `make flower`
+- [ ] README aggiornato con istruzioni worker
+- [ ] Linting passa (`make lint`)
+- [ ] PR approvata e CI green
+
+### Estimate
+**2 giorni** (dipende da US-005 completata)
+
+---
+
 ## Dipendenze tra User Stories
 
 ```mermaid
 graph LR
     US001[US-001: Repo/CI] --> US002[US-002: Qdrant]
     US001 --> US003[US-003: Parser]
-    US002 --> US005[US-005: Indexing]
+    US002 --> US005[US-005: Indexing Core]
     US003 --> US004[US-004: Skills]
     US004 --> US005
+    US005 --> US013[US-013: Celery Queue]
     US005 --> US006[US-006: Search API]
+    US013 --> US006
     US002 --> US006
     US006 --> US007[US-007: Availability]
     US006 --> US008[US-008: Job Match]
     US007 --> US008
 ```
 
+> **Note:** US-005 (Core) e US-013 (Celery) sono state separate per gestire volumi di 10.000+ CV con richieste multiple al giorno.
+
 ---
 
 ## Quick Reference: Feature Branches
 
-| US | Branch | Sprint |
-|----|--------|--------|
-| US-001 | `feature/US-001-repo-cicd` | 1 |
-| US-002 | `feature/US-002-qdrant-setup` | 1 |
-| US-003 | `feature/US-003-cv-parser` | 1 |
-| US-004 | `feature/US-004-skill-extraction` | 2 |
-| US-005 | `feature/US-005-embedding-pipeline` | 2 |
-| US-006 | `feature/US-006-search-api` | 3 |
-| US-007 | `feature/US-007-availability-filter` | 3 |
-| US-008 | `feature/US-008-job-match` | 4 |
+| US | Branch | Sprint | Note |
+|----|--------|--------|------|
+| US-001 | `feature/US-001-repo-cicd` | 1 | ✅ Done |
+| US-002 | `feature/US-002-qdrant-setup` | 1 | ✅ Done |
+| US-003 | `feature/US-003-cv-parser` | 1 | ✅ Done |
+| US-004 | `feature/US-004-skill-extraction` | 2 | ✅ Done |
+| US-005 | `feature/US-005-embedding-pipeline` | 2 | Core logic |
+| US-006 | `feature/US-006-search-api` | 3 | |
+| US-007 | `feature/US-007-availability-filter` | 3 | |
+| US-008 | `feature/US-008-job-match` | 4 | |
+| US-013 | `feature/US-013-celery-job-queue` | 2/3 | Dipende da US-005 |

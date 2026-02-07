@@ -7,7 +7,7 @@ from collections.abc import Iterable
 
 from qdrant_client import QdrantClient, models
 
-DEFAULT_VECTOR_SIZE = int(os.getenv("QDRANT_VECTOR_SIZE", "1536"))
+DEFAULT_VECTOR_SIZE = int(os.getenv("EMBEDDING_DIMENSIONS", "1536"))
 DEFAULT_DISTANCE = models.Distance.COSINE
 
 
