@@ -390,6 +390,31 @@ make docker-up    # Avvia Qdrant + Redis
 
 ---
 
+## Code Style - AI Agent Guidelines
+
+> **alwaysApply: true** - Queste regole si applicano SEMPRE quando un AI agent genera codice.
+
+### Comments
+- **Don't** add comments that restate what code does
+- **Don't** add JSDoc/docstrings unless required by the codebase (in questo progetto: solo su funzioni pubbliche)
+- Only comment **why**, not **what**
+- **No** "Added by Claude" or attribution comments
+- **No** placeholder TODOs like `// TODO: implement`
+
+### Don't Over-Engineer
+- No helper functions for one-time operations
+- No abstractions for single use cases
+- No extra error handling "just in case"
+- No backwards-compatibility shims when changing code directly works
+
+### Stay Focused
+- Only modify code relevant to the task
+- No drive-by refactoring of unrelated code
+- No reformatting lines you didn't change
+- No adding type annotations where inference works (in questo progetto: type hints richiesti su funzioni pubbliche, opzionali su variabili locali)
+
+---
+
 ## References
 
 - [CONTRIBUTING.md](docs/CONTRIBUTING.md) - Git workflow

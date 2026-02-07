@@ -142,7 +142,7 @@ erDiagram
         string skill_domain
         string seniority_bucket
         string dictionary_version
-        datetime indexed_at
+        datetime created_at
     }
 
     CV_EXPERIENCES {
@@ -151,7 +151,7 @@ erDiagram
         vector embedding
         string[] related_skills
         int experience_years
-        datetime indexed_at
+        datetime created_at
     }
 
     AVAILABILITY_CACHE {
@@ -177,7 +177,10 @@ erDiagram
 | RAG Framework | LlamaIndex |
 | Vector Store | Qdrant |
 | LLM | OpenAI / Azure OpenAI |
-| Cache | Redis |
+| Embedding | `text-embedding-3-small` (1536 dim) |
+| Cache/Broker | Redis |
+| Job Queue | Celery |
+| Monitoring | Flower |
 | API | FastAPI |
 
 ---
@@ -274,22 +277,27 @@ make install      # Install production dependencies
 make dev          # Install dev dependencies + pre-commit hooks
 
 # Code Quality
-make lint         Run fast linters (ruff + flake8 + mypy)
-make lint-all     Run ALL linters (+ pylint)
-make preflight    Run all local checks (lint-all + format check)
-make pylint       Run only pylint
-make format       Format code (black + isort + ruff --fix)
-make check        Run all checks (lint + format check)
-make api-lint     Lint OpenAPI spec with Spectral
+make lint         # Run fast linters (ruff + flake8 + mypy)
+make lint-all     # Run ALL linters (+ pylint)
+make preflight    # Run all local checks (lint-all + format check)
+make pylint       # Run only pylint
+make format       # Format code (black + isort + ruff --fix)
+make check        # Run all checks (lint + format check)
+make api-lint     # Lint OpenAPI spec with Spectral
 
 # Testing
-make test         # Run tests with pytest
+make test         # Run tests with pytest (requires Qdrant running via make docker-up)
 make test-cov     # Run tests with coverage report
 
 # Run
 make run          # Start API server (uvicorn)
-make docker-up    # Start Qdrant + Redis
+make docker-up    # Start Qdrant + Redis + Celery workers
 make docker-down  # Stop Docker services
+
+# Celery (Job Queue)
+make worker       # Start Celery worker locally
+make flower       # Start Flower monitoring dashboard (port 5555)
+make beat         # Start Celery beat scheduler
 
 # Cleanup
 make clean        # Remove cache and build files
@@ -329,26 +337,35 @@ profilebot/
 ├── src/
 │   ├── api/              # FastAPI endpoints
 │   │   └── v1/           # API version 1
+│   │       └── embeddings.py  # Trigger/status endpoints (US-013)
 │   ├── core/             # Core business logic
-│   │   ├── parser/       # CV parsing
-│   │   ├── skills/       # Skill extraction
-│   │   └── indexing/     # Embedding pipeline
+│   │   ├── parser/       # CV parsing (US-003)
+│   │   ├── skills/       # Skill extraction (US-004)
+│   │   └── embedding/    # Embedding pipeline (US-005)
+│   │       ├── service.py      # EmbeddingService (OpenAI)
+│   │       ├── schemas.py      # EmbeddingResult, BatchResult
+│   │       └── pipeline.py     # CV → embed → upsert
 │   ├── services/         # External services
-│   │   ├── qdrant/       # Vector store
-│   │   ├── embedding/    # Embedding generation
-│   │   └── availability/ # Status service
+│   │   ├── qdrant/       # Vector store (US-002)
+│   │   ├── celery/       # Job queue (US-013)
+│   │   │   ├── app.py          # Celery configuration
+│   │   │   ├── tasks.py        # Async tasks
+│   │   │   └── worker.py       # Worker entry point
+│   │   └── availability/ # Status service (US-007)
 │   └── utils/            # Utilities
 ├── data/
 │   └── skills_dictionary.yaml
+├── scripts/              # CLI scripts
+│   ├── embed_cv.py       # Single CV embedding
+│   └── embed_batch.py    # Batch processing
 ├── tests/                # Test suite
 ├── docs/                 # Documentation
-├── scripts/              # Utility scripts
 ├── .github/
 │   ├── workflows/        # CI/CD pipelines
 │   └── ISSUE_TEMPLATE/
 ├── Makefile              # Project automation
 ├── pyproject.toml        # Dependencies & tool config
-├── docker-compose.yml
+├── docker-compose.yml    # Qdrant + Redis + Celery workers
 └── .pre-commit-config.yaml
 ```
 
@@ -362,10 +379,13 @@ profilebot/
 | US-002 | Setup Qdrant Vector Store | 1 | P0 |
 | US-003 | Parser CV DOCX | 1 | P0 |
 | US-004 | Skill Extraction e Normalizzazione | 2 | P0 |
-| US-005 | Embedding e Indexing Pipeline | 2 | P0 |
+| US-005 | Embedding e Indexing Pipeline (Core) | 2 | P0 |
 | US-006 | API Ricerca Profili per Skill | 3 | P1 |
 | US-007 | Filtro Disponibilità | 3 | P1 |
 | US-008 | Match con Job Description | 4 | P1 |
+| US-013 | Celery Job Queue e API Endpoints | 2/3 | P0 |
+
+> **Note:** US-005 e US-013 sono collegate - US-005 fornisce la core logic, US-013 aggiunge scalabilità con Redis + Celery per gestire 10.000+ CV.
 
 📖 **Vedi [USER_STORIES_DETAILED.md](docs/USER_STORIES_DETAILED.md) per specifiche complete**
 

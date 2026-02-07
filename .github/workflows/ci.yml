@@ -32,7 +32,7 @@ jobs:
         run: uv run ruff check src/ tests/ --output-format=github
 
       - name: Run Flake8
-        run: uv run flake8 src/ tests/ --max-line-length=100 --ignore=E501,W503
+        run: uv run flake8 src/ tests/ --max-line-length=100 --ignore=E501,W503,E203
 
       - name: Run Black (formatter check)
         run: uv run black --check src/ tests/
@@ -49,6 +49,8 @@ jobs:
   test:
     name: Tests
     runs-on: ubuntu-latest
+    env:
+      QDRANT_URL: http://localhost:6333
     services:
       qdrant:
         image: qdrant/qdrant:latest
