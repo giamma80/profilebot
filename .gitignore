@@ -36,6 +36,7 @@ data/
 *.docx
 !docs/*.docx
 !tests/fixtures/sample_cvs/*.docx
+tests/fixtures/sample_cvs/campione/
 
 # Qdrant
 qdrant_storage/

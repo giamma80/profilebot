@@ -21,6 +21,7 @@ def get_collections_config() -> dict[str, dict]:
             ),
             "payload_schema": {
                 "cv_id": models.PayloadSchemaType.KEYWORD,
+                "res_id": models.PayloadSchemaType.INTEGER,
                 "section_type": models.PayloadSchemaType.KEYWORD,
                 "normalized_skills": models.PayloadSchemaType.KEYWORD,
                 "skill_domain": models.PayloadSchemaType.KEYWORD,
@@ -36,6 +37,7 @@ def get_collections_config() -> dict[str, dict]:
             ),
             "payload_schema": {
                 "cv_id": models.PayloadSchemaType.KEYWORD,
+                "res_id": models.PayloadSchemaType.INTEGER,
                 "section_type": models.PayloadSchemaType.KEYWORD,
                 "related_skills": models.PayloadSchemaType.KEYWORD,
                 "experience_years": models.PayloadSchemaType.INTEGER,

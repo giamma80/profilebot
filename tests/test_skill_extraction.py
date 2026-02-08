@@ -115,7 +115,7 @@ def test_extract_skills__stats_percentages_are_consistent(extractor):
 
 def test_extract_from_parsed_cv__uses_skill_keywords_when_available(extractor):
     # Arrange
-    metadata = CVMetadata(cv_id="cv-1", file_name="cv.docx")
+    metadata = CVMetadata(cv_id="cv-1", file_name="cv.docx", res_id=1001)
     skills = SkillSection(raw_text="Python, FastAPI", skill_keywords=["Python", "FastAPI"])
     parsed = ParsedCV(
         metadata=metadata,
@@ -136,7 +136,7 @@ def test_extract_from_parsed_cv__uses_skill_keywords_when_available(extractor):
 
 def test_extract_from_parsed_cv__falls_back_to_raw_text_when_missing_keywords(extractor):
     # Arrange
-    metadata = CVMetadata(cv_id="cv-2", file_name="cv.docx")
+    metadata = CVMetadata(cv_id="cv-2", file_name="cv.docx", res_id=1002)
     skills = SkillSection(raw_text="Python, FastAPI", skill_keywords=[])
     parsed = ParsedCV(
         metadata=metadata,

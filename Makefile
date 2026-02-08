@@ -1,4 +1,4 @@
-.PHONY: help install dev lint lint-all format format-check preflight test clean run docker-up docker-down api-lint
+.PHONY: help install dev lint lint-all format format-check preflight test clean run worker beat flower docker-up docker-down api-lint
 
 # Default target
 help:
@@ -22,6 +22,9 @@ help:
 	@echo ""
 	@echo "Run:"
 	@echo "  make run         Start the API server"
+	@echo "  make worker      Start Celery worker"
+	@echo "  make beat        Start Celery beat scheduler"
+	@echo "  make flower      Start Flower dashboard"
 	@echo "  make docker-up   Start Qdrant + Redis"
 	@echo "  make docker-down Stop Docker services"
 	@echo ""
@@ -49,7 +52,7 @@ dev: install
 lint: dev
 	@echo "🔍 Running linters (fast)..."
 	uv run ruff check src/ tests/
-	uv run flake8 src/ tests/ --max-line-length=100 --ignore=E501,W503
+	uv run flake8 src/ tests/ --max-line-length=100 --ignore=E501,W503,E203
 	uv run mypy src/ --ignore-missing-imports
 
 lint-all: lint
@@ -101,6 +104,18 @@ test-cov:
 run:
 	@echo "🚀 Starting ProfileBot API..."
 	uv run uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000
+
+worker:
+	@echo "🧵 Starting Celery worker..."
+	uv run celery -A src.services.embedding.celery_app worker -l info -c 4
+
+beat:
+	@echo "⏲️ Starting Celery beat..."
+	uv run celery -A src.services.embedding.celery_app beat -l info
+
+flower:
+	@echo "🌸 Starting Flower dashboard..."
+	uv run celery -A src.services.embedding.celery_app flower --port=5555
 
 docker-up:
 	@echo "🐳 Starting Qdrant + Redis..."
