@@ -42,6 +42,7 @@ tests/fixtures/sample_cvs/campione/
 qdrant_storage/
 redis_data/
 storage/
+celerybeat-schedule*
 
 # Logs
 logs/

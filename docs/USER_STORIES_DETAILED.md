@@ -437,12 +437,12 @@ def normalize_skill(raw_skill: str, dictionary: dict) -> NormalizedSkill:
 **Per** abilitare la ricerca semantica
 
 ### Acceptance Criteria
-- [ ] Embedding con OpenAI text-embedding-ada-002 (o alternative)
-- [ ] Upsert in collection `cv_skills` con payload completo
-- [ ] Upsert in collection `cv_experiences` con payload completo
-- [ ] Metadata completi su ogni punto
-- [ ] Pipeline idempotente (re-run safe)
-- [ ] Batch processing per performance
+- [x] Embedding con OpenAI text-embedding-ada-002 (o alternative)
+- [x] Upsert in collection `cv_skills` con payload completo
+- [x] Upsert in collection `cv_experiences` con payload completo
+- [x] Metadata completi su ogni punto
+- [x] Pipeline idempotente (re-run safe)
+- [x] Batch processing per performance
 
 ### Technical Details
 
@@ -536,11 +536,11 @@ qdrant_client.upsert(
 - Caching embeddings (optional)
 
 ### Definition of Done
-- [ ] Pipeline end-to-end funzionante
-- [ ] Metadata completi su ogni punto
-- [ ] Re-run non duplica dati
-- [ ] Performance: < 5 sec per CV
-- [ ] Test con 10+ CV reali
+- [x] Pipeline end-to-end funzionante
+- [x] Metadata completi su ogni punto
+- [x] Re-run non duplica dati
+- [x] Performance: < 5 sec per CV
+- [x] Test con 10+ CV reali
 
 ---
 
@@ -550,7 +550,9 @@ qdrant_client.upsert(
 **Story Points:** 8
 **Priority:** P1 - High
 **Sprint:** 3
+**Status:** 🚧 In Progress
 **Feature Branch:** `feature/US-006-search-api`
+**Dipende da:** US-005 (Embedding Pipeline), US-013 (Celery - per infrastruttura Qdrant popolata)
 
 ### User Story
 **Come** utente
@@ -559,11 +561,12 @@ qdrant_client.upsert(
 
 ### Acceptance Criteria
 - [ ] Endpoint `POST /api/v1/search/skills`
-- [ ] Input: lista skill, filtri opzionali (seniority, domain)
-- [ ] Output: lista profili ranked con score
+- [ ] Input: lista skill, filtri opzionali (seniority, domain, res_ids)
+- [ ] Output: lista profili ranked con score e `res_id`
 - [ ] Paginazione risultati (limit, offset)
 - [ ] Response time < 500ms per query standard
 - [ ] OpenAPI documentation
+- [ ] Filtro per `res_id` opzionale (per ricerche mirate)
 
 ### Technical Details
 
@@ -581,6 +584,7 @@ class SkillSearchRequest(BaseModel):
     offset: int = 0
 
 class SearchFilters(BaseModel):
+    res_ids: Optional[list[int]]         # 🆕 Filtra per matricole specifiche
     skill_domains: Optional[list[str]]   # ["backend", "data"]
     seniority: Optional[list[str]]       # ["senior", "mid"]
     availability: Optional[str]          # "only_free" | "any"
@@ -589,6 +593,7 @@ class SearchFilters(BaseModel):
 **Response Schema:**
 ```python
 class ProfileMatch(BaseModel):
+    res_id: int                          # 🆕 Matricola risorsa (chiave riconciliazione)
     cv_id: str
     score: float                         # 0.0 - 1.0
     matched_skills: list[str]
@@ -662,6 +667,15 @@ async def search_by_skills(request: SkillSearchRequest) -> SkillSearchResponse:
 - [ ] Paginazione corretta
 - [ ] Test coverage ≥ 80%
 - [ ] OpenAPI spec validata
+- [ ] `res_id` incluso in tutti i response
+- [ ] Filtro `res_ids` funzionante
+- [ ] Linting passa (`make lint`)
+- [ ] PR approvata e CI green
+
+### Commitment
+- **Data:** 2026-02-08
+- **Issue:** #25
+- **Assignee:** Team Development
 
 ---
 
@@ -1040,18 +1054,18 @@ Output JSON:
 ---
 
 ### Acceptance Criteria
-- [ ] Redis broker configurato e funzionante
-- [ ] Celery worker con task per singolo CV e batch
-- [ ] API endpoint `POST /api/v1/embeddings/trigger` per avvio job batch
-- [ ] API endpoint `POST /api/v1/embeddings/trigger/{res_id}` per singola risorsa
-- [ ] API endpoint `GET /api/v1/embeddings/status/{task_id}` per polling stato
-- [ ] Celery Beat per scheduling periodico
-- [ ] Docker compose con worker scalabili (replicas)
-- [ ] Flower dashboard per monitoring (porta 5555) - **PRODUZIONE**
-- [ ] Retry automatico con exponential backoff su rate limit
-- [ ] `res_id` incluso in tutti i payload Qdrant
-- [ ] Test coverage ≥ 80%
-- [ ] Documentazione API (OpenAPI)
+- [x] Redis broker configurato e funzionante
+- [x] Celery worker con task per singolo CV e batch
+- [x] API endpoint `POST /api/v1/embeddings/trigger` per avvio job batch
+- [x] API endpoint `POST /api/v1/embeddings/trigger/{res_id}` per singola risorsa
+- [x] API endpoint `GET /api/v1/embeddings/status/{task_id}` per polling stato
+- [x] Celery Beat per scheduling periodico
+- [x] Docker compose con worker scalabili (replicas)
+- [x] Flower dashboard per monitoring (porta 5555) - **PRODUZIONE**
+- [x] Retry automatico con exponential backoff su rate limit
+- [x] `res_id` incluso in tutti i payload Qdrant
+- [ ] Test coverage ≥ 80% *(tracked in US-014)*
+- [x] Documentazione API (OpenAPI)
 
 ### Technical Details
 
@@ -1286,19 +1300,19 @@ services:
 12. Aggiornare test esistenti con `res_id`
 
 ### Definition of Done
-- [ ] `res_id` aggiunto a `CVMetadata` (BREAKING CHANGE)
-- [ ] `res_id` incluso in tutti i payload Qdrant
-- [ ] `celery_app.py` con configurazione production-ready
-- [ ] `celery_config.py` con Beat schedule
-- [ ] `tasks.py` con task per embed singolo, batch, e full
-- [ ] `embeddings.py` API router con tutti gli endpoint
-- [ ] `docker-compose.yml` verificato (già presente)
-- [ ] Test unitari e integration per tasks
-- [ ] Test aggiornati con `res_id`
-- [ ] Makefile target: `make worker`, `make flower`, `make beat`
-- [ ] README aggiornato con istruzioni worker
-- [ ] Linting passa (`make lint`)
-- [ ] PR approvata e CI green
+- [x] `res_id` aggiunto a `CVMetadata` (BREAKING CHANGE)
+- [x] `res_id` incluso in tutti i payload Qdrant
+- [x] `celery_app.py` con configurazione production-ready
+- [x] `celery_config.py` con Beat schedule
+- [x] `tasks.py` con task per embed singolo, batch, e full
+- [x] `embeddings.py` API router con tutti gli endpoint
+- [x] `docker-compose.yml` verificato (già presente)
+- [x] Test unitari e integration per tasks
+- [x] Test aggiornati con `res_id`
+- [x] Makefile target: `make worker`, `make flower`, `make beat`
+- [x] README aggiornato con istruzioni worker
+- [x] Linting passa (`make lint`)
+- [x] PR approvata e CI green
 
 ### Estimate
 **3 giorni** (include modifiche schema e test)
@@ -1387,6 +1401,660 @@ services:
 
 ---
 
+## US-014: Test Coverage Improvement (Technical Debt)
+
+**Epic:** Quality Assurance
+**Story Points:** 5
+**Priority:** P1 - High
+**Sprint:** 3
+**Feature Branch:** `feature/US-014-test-coverage`
+**Dipende da:** US-005, US-013
+
+### User Story
+**Come** team di sviluppo
+**Voglio** test coverage completa per parser, embedding pipeline e Celery tasks
+**Per** garantire stabilità e regressione zero nelle future iterazioni
+
+### Contesto
+
+Dalla review dei test esistenti (US-005/US-013) sono emersi gap di copertura che devono essere colmati per raggiungere il target di **≥80% coverage**.
+
+#### Test Esistenti (Analisi)
+
+| File | Lines | Coverage | Status |
+|------|-------|----------|--------|
+| `test_cv_parser.py` | 138 | ⭐⭐⭐⭐ | Buona copertura `res_id` |
+| `test_embedding_pipeline.py` | 228 | ⭐⭐⭐⭐ | Payload, dry_run, dedup |
+| `test_celery_tasks.py` | 88 | ⭐⭐⭐ | Base coverage |
+| `test_skill_extraction.py` | 161 | ⭐⭐⭐⭐ | Completo |
+
+---
+
+### Acceptance Criteria
+
+- [ ] Test `embed_batch_task` con multiple items
+- [ ] Test `embed_all_task` con directory scan
+- [ ] Test retry behavior su rate limit OpenAI
+- [ ] Test `res_id` mismatch tra filename e request
+- [ ] Test Qdrant collection schema con `res_id` index
+- [ ] Test con CV anonimi (100000-100009)
+- [ ] Test leading zeros in `res_id`
+- [ ] Coverage ≥ 80% su tutti i moduli core
+- [ ] CI green con tutti i nuovi test
+
+---
+
+### Technical Details
+
+#### 1. Test Mancanti - `test_cv_parser.py`
+
+**File:** `tests/test_cv_parser.py`
+
+```python
+# === TEST DA AGGIUNGERE ===
+
+def test_parse_docx__leading_zeros__strips_to_int(tmp_path: Path) -> None:
+    """
+    Leading zeros nel res_id devono essere convertiti a int.
+
+    Input: "00123_mario_rossi.docx"
+    Expected: res_id = 123 (int), NOT "00123" (string)
+    """
+    docx_path = tmp_path / "00123_mario_rossi.docx"
+    document = Document()
+    document.add_paragraph("Test CV")
+    document.save(docx_path)
+
+    parsed = parse_docx(docx_path)
+
+    assert parsed.metadata.res_id == 123
+    assert isinstance(parsed.metadata.res_id, int)
+
+
+def test_parse_docx__very_large_res_id__handles_correctly(tmp_path: Path) -> None:
+    """
+    res_id molto grandi devono essere gestiti senza overflow.
+
+    Input: "999999999_mario_rossi.docx"
+    Expected: res_id = 999999999
+    """
+    docx_path = tmp_path / "999999999_mario_rossi.docx"
+    document = Document()
+    document.add_paragraph("Test CV")
+    document.save(docx_path)
+
+    parsed = parse_docx(docx_path)
+
+    assert parsed.metadata.res_id == 999999999
+
+
+@pytest.mark.parametrize("res_id", [100000, 100001, 100002, 100003, 100004,
+                                     100005, 100006, 100007, 100008, 100009])
+def test_parse_anonymous_cvs__extracts_correct_res_id(res_id: int) -> None:
+    """
+    Test parsing su tutti i CV anonimi generati.
+
+    Verifica:
+    - res_id estratto correttamente
+    - Struttura CV valida (skills, experiences)
+    - No eccezioni
+    """
+    import glob
+    pattern = str(FIXTURES_DIR / f"{res_id}_*.docx")
+    matches = glob.glob(pattern)
+    assert len(matches) == 1, f"Expected 1 CV for res_id {res_id}"
+
+    parsed = parse_docx(Path(matches[0]))
+
+    assert parsed.metadata.res_id == res_id
+    assert parsed.skills is not None or parsed.raw_text
+    assert isinstance(parsed.experiences, list)
+
+
+def test_parse_docx__special_characters_in_name__parses_correctly(tmp_path: Path) -> None:
+    """
+    Nomi con caratteri speciali devono essere gestiti.
+
+    Input: "12345_giuseppe_d'amico.docx"
+    Expected: parse senza errori
+    """
+    docx_path = tmp_path / "12345_giuseppe_d'amico.docx"
+    document = Document()
+    document.add_paragraph("Test CV")
+    document.save(docx_path)
+
+    parsed = parse_docx(docx_path)
+
+    assert parsed.metadata.res_id == 12345
+```
+
+---
+
+#### 2. Test Mancanti - `test_embedding_pipeline.py`
+
+**File:** `tests/test_embedding_pipeline.py`
+
+```python
+# === TEST DA AGGIUNGERE ===
+
+def test_process_cv__experiences_payload__includes_related_skills(monkeypatch):
+    """
+    Payload experiences deve includere related_skills dal skill_result.
+
+    Verifica che le skill estratte siano propagate agli experience payload.
+    """
+    parsed_cv = _make_parsed_cv()
+    skill_result = _make_skill_result()
+    embedding_service = DummyEmbeddingService()
+    qdrant_client = MagicMock()
+
+    pipeline = EmbeddingPipeline(
+        embedding_service=embedding_service,
+        qdrant_client=qdrant_client,
+    )
+
+    pipeline.process_cv(parsed_cv, skill_result, dry_run=False)
+
+    cv_exp_call = qdrant_client.upsert.call_args_list[1]
+    cv_exp_points = cv_exp_call.kwargs["points"]
+
+    for point in cv_exp_points:
+        assert "related_skills" in point.payload
+        assert isinstance(point.payload["related_skills"], list)
+
+
+def test_process_cv__no_experiences__skips_cv_experiences_upsert(monkeypatch):
+    """
+    Se il CV non ha esperienze, non deve fare upsert su cv_experiences.
+    """
+    metadata = CVMetadata(cv_id="cv-no-exp", res_id=99999, file_name="cv.docx")
+    skills = SkillSection(raw_text="Python", skill_keywords=["Python"])
+    parsed_cv = ParsedCV(
+        metadata=metadata,
+        skills=skills,
+        experiences=[],  # Nessuna esperienza
+        education=[],
+        certifications=[],
+        raw_text="",
+    )
+    skill_result = _make_skill_result()
+    embedding_service = DummyEmbeddingService()
+    qdrant_client = MagicMock()
+
+    pipeline = EmbeddingPipeline(
+        embedding_service=embedding_service,
+        qdrant_client=qdrant_client,
+    )
+
+    result = pipeline.process_cv(parsed_cv, skill_result, dry_run=False)
+
+    assert result["cv_experiences"] == 0
+    # Solo 1 upsert (skills), no experiences
+    assert qdrant_client.upsert.call_count == 1
+
+
+def test_process_cv__deterministic_point_ids__enables_idempotency(monkeypatch):
+    """
+    Point IDs devono essere deterministici per garantire idempotency.
+
+    Format atteso:
+    - Skills: "{cv_id}_skills"
+    - Experiences: "{cv_id}_exp_{index}"
+    """
+    parsed_cv = _make_parsed_cv()
+    skill_result = _make_skill_result()
+    embedding_service = DummyEmbeddingService()
+    qdrant_client = MagicMock()
+
+    pipeline = EmbeddingPipeline(
+        embedding_service=embedding_service,
+        qdrant_client=qdrant_client,
+    )
+
+    pipeline.process_cv(parsed_cv, skill_result, dry_run=False)
+
+    cv_skills_points = qdrant_client.upsert.call_args_list[0].kwargs["points"]
+    assert cv_skills_points[0].id == "cv-123_skills"
+
+    cv_exp_points = qdrant_client.upsert.call_args_list[1].kwargs["points"]
+    assert cv_exp_points[0].id == "cv-123_exp_0"
+    assert cv_exp_points[1].id == "cv-123_exp_1"
+```
+
+---
+
+#### 3. Test Mancanti - `test_celery_tasks.py` (PRIORITÀ ALTA)
+
+**File:** `tests/test_celery_tasks.py`
+
+```python
+# === TEST DA AGGIUNGERE ===
+
+def test_embed_batch_task__multiple_items__spawns_subtasks(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """
+    embed_batch_task deve creare un gruppo di subtask per ogni item.
+
+    Input: [{"res_id": 100, "cv_path": "..."}, {"res_id": 101, "cv_path": "..."}]
+    Expected: group() con 2 embed_cv_task.s()
+    """
+    from unittest.mock import MagicMock, patch
+
+    items = [
+        {"res_id": 100, "cv_path": "/path/100_a_b.docx"},
+        {"res_id": 101, "cv_path": "/path/101_c_d.docx"},
+        {"res_id": 102, "cv_path": "/path/102_e_f.docx"},
+    ]
+
+    mock_group = MagicMock()
+    mock_group.return_value.apply_async.return_value = MagicMock(id="group-task-id")
+
+    with patch("src.services.embedding.tasks.group", mock_group):
+        result = tasks.embed_batch_task(items)
+
+    # Verifica che group sia stato chiamato con 3 signature
+    assert mock_group.called
+    signatures = mock_group.call_args[0][0]
+    assert len(list(signatures)) == 3
+
+
+def test_embed_all_task__scans_cv_directory__queues_batch(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """
+    embed_all_task deve:
+    1. Scansionare CV_DIRECTORY
+    2. Filtrare file con pattern {res_id}_*.docx
+    3. Lanciare embed_batch_task
+    """
+    # Setup: crea CV fittizi
+    (tmp_path / "100_a_b.docx").write_bytes(b"dummy")
+    (tmp_path / "101_c_d.docx").write_bytes(b"dummy")
+    (tmp_path / "invalid.docx").write_bytes(b"dummy")  # No res_id prefix
+
+    monkeypatch.setenv("CV_DIRECTORY", str(tmp_path))
+
+    batch_calls = []
+    def mock_batch_task(items):
+        batch_calls.append(items)
+        return {"queued": len(items)}
+
+    monkeypatch.setattr(tasks, "embed_batch_task", MagicMock(side_effect=mock_batch_task))
+
+    result = tasks.embed_all_task.run(force=False)
+
+    # Solo 2 CV validi (100, 101), non invalid.docx
+    assert len(batch_calls) == 1
+    assert len(batch_calls[0]) == 2
+
+
+def test_embed_cv_task__rate_limit_error__retries_with_backoff(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """
+    Rate limit OpenAI deve triggerare retry con exponential backoff.
+
+    Retry: countdown = 60 * (retries + 1)
+    - 1st retry: 60s
+    - 2nd retry: 120s
+    - 3rd retry: 180s
+    """
+    from openai import RateLimitError
+
+    cv_path = tmp_path / "12345_mario_rossi.docx"
+    cv_path.write_bytes(b"dummy")
+
+    retry_calls = []
+
+    def mock_retry(*, exc, countdown):
+        retry_calls.append({"exc": exc, "countdown": countdown})
+        raise exc  # Re-raise per simulare failure finale
+
+    def mock_embed_cv(*args, **kwargs):
+        raise RateLimitError("Rate limit exceeded", response=None, body=None)
+
+    monkeypatch.setattr(tasks.embed_cv_task, "retry", mock_retry)
+    monkeypatch.setattr(tasks, "_embed_cv", mock_embed_cv)
+
+    with pytest.raises(RateLimitError):
+        tasks.embed_cv_task.run(cv_path=str(cv_path), res_id="12345")
+
+    assert len(retry_calls) == 1
+    assert retry_calls[0]["countdown"] == 60  # First retry
+
+
+def test_embed_cv_task__res_id_mismatch__logs_warning(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    caplog,
+) -> None:
+    """
+    Se res_id nel filename != res_id richiesto, logga warning.
+
+    Input: filename "12345_...", request res_id="99999"
+    Expected: WARNING log, ma usa res_id del filename (12345)
+    """
+    import logging
+    caplog.set_level(logging.WARNING)
+
+    cv_path = tmp_path / "12345_mario_rossi.docx"
+    cv_path.write_bytes(b"dummy")
+
+    tasks.embed_cv_task.request.id = "task-mismatch"
+    states = []
+
+    def _update_state(*, state, meta):
+        states.append({"state": state, "meta": meta})
+
+    def _embed_cv(*args, **kwargs):
+        return "cv-123", 12345, {"cv_skills": 1, "cv_experiences": 0, "total": 1}
+
+    monkeypatch.setattr(tasks.embed_cv_task, "update_state", _update_state)
+    monkeypatch.setattr(tasks, "_embed_cv", _embed_cv)
+
+    # Request con res_id diverso dal filename
+    result = tasks.embed_cv_task.run(cv_path=str(cv_path), res_id="99999")
+
+    # Il risultato usa res_id del filename
+    assert result["res_id"] == 12345
+
+    # Warning loggato
+    assert "mismatch" in caplog.text.lower() or "99999" in caplog.text
+
+
+def test_embed_cv_task__success__returns_complete_result(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """
+    Task completato con successo deve restituire risultato completo.
+
+    Expected result keys: res_id, cv_id, cv_skills, cv_experiences, total
+    """
+    cv_path = tmp_path / "12345_mario_rossi.docx"
+    cv_path.write_bytes(b"dummy")
+
+    tasks.embed_cv_task.request.id = "task-success"
+
+    def _update_state(*, state, meta):
+        pass
+
+    def _embed_cv(*args, **kwargs):
+        return "cv-123", 12345, {"cv_skills": 1, "cv_experiences": 3, "total": 4}
+
+    monkeypatch.setattr(tasks.embed_cv_task, "update_state", _update_state)
+    monkeypatch.setattr(tasks, "_embed_cv", _embed_cv)
+
+    result = tasks.embed_cv_task.run(cv_path=str(cv_path), res_id="12345")
+
+    assert result["res_id"] == 12345
+    assert result["cv_id"] == "cv-123"
+    assert result["cv_skills"] == 1
+    assert result["cv_experiences"] == 3
+    assert result["total"] == 4
+```
+
+---
+
+#### 4. Test Mancanti - `test_qdrant_collections.py` (NUOVO FILE)
+
+**File:** `tests/test_qdrant_collections.py`
+
+```python
+"""Tests for Qdrant collection schema with res_id payload index."""
+
+from __future__ import annotations
+
+import pytest
+from unittest.mock import MagicMock, patch
+
+from src.services.qdrant.collections import (
+    CV_SKILLS_COLLECTION,
+    CV_EXPERIENCES_COLLECTION,
+    get_cv_skills_schema,
+    get_cv_experiences_schema,
+    ensure_collections,
+)
+
+
+def test_cv_skills_schema__includes_res_id_in_payload_index() -> None:
+    """
+    cv_skills collection schema deve includere res_id come payload index.
+
+    Tipo: INTEGER (per filtering efficiente)
+    """
+    schema = get_cv_skills_schema()
+
+    assert "res_id" in schema.payload_schema
+    assert schema.payload_schema["res_id"] == "integer"
+
+
+def test_cv_experiences_schema__includes_res_id_in_payload_index() -> None:
+    """
+    cv_experiences collection schema deve includere res_id come payload index.
+    """
+    schema = get_cv_experiences_schema()
+
+    assert "res_id" in schema.payload_schema
+    assert schema.payload_schema["res_id"] == "integer"
+
+
+def test_ensure_collections__creates_both_with_res_id_index() -> None:
+    """
+    ensure_collections deve creare entrambe le collection con res_id index.
+    """
+    mock_client = MagicMock()
+    mock_client.collection_exists.return_value = False
+
+    with patch("src.services.qdrant.collections.get_qdrant_client", return_value=mock_client):
+        ensure_collections()
+
+    # Verifica che create_collection sia stato chiamato 2 volte
+    assert mock_client.create_collection.call_count == 2
+
+    # Verifica payload schema include res_id
+    for call in mock_client.create_collection.call_args_list:
+        payload_schema = call.kwargs.get("payload_schema", {})
+        assert "res_id" in payload_schema
+
+
+def test_cv_skills_schema__vector_size_matches_embedding_dimensions() -> None:
+    """
+    Vector size deve corrispondere a EMBEDDING_DIMENSIONS (1536 per OpenAI).
+    """
+    schema = get_cv_skills_schema()
+
+    assert schema.vectors_config.size == 1536
+    assert schema.vectors_config.distance == "Cosine"
+
+
+def test_collection_names__are_correct() -> None:
+    """
+    Nomi collection devono essere consistenti.
+    """
+    assert CV_SKILLS_COLLECTION == "cv_skills"
+    assert CV_EXPERIENCES_COLLECTION == "cv_experiences"
+```
+
+---
+
+#### 5. Test Integration con CV Anonimi
+
+**File:** `tests/test_integration_anonymous_cvs.py` (NUOVO FILE)
+
+```python
+"""Integration tests using anonymous CV fixtures."""
+
+from __future__ import annotations
+
+import glob
+from pathlib import Path
+
+import pytest
+
+from src.core.parser.docx_parser import parse_docx
+from src.core.skills.extractor import SkillExtractor
+from src.core.skills.dictionary import load_skill_dictionary
+
+FIXTURES_DIR = Path(__file__).parent / "fixtures" / "sample_cvs"
+ANONYMOUS_CV_PATTERN = "[0-9]*_*.docx"
+
+
+def _get_anonymous_cvs() -> list[Path]:
+    """Recupera tutti i CV anonimi (100000-100009)."""
+    pattern = str(FIXTURES_DIR / ANONYMOUS_CV_PATTERN)
+    return [Path(p) for p in sorted(glob.glob(pattern))]
+
+
+@pytest.fixture(scope="module")
+def skill_extractor():
+    dictionary = load_skill_dictionary(Path("data/skills_dictionary.yaml"))
+    return SkillExtractor(dictionary)
+
+
+class TestAnonymousCVParsing:
+    """Test parsing su CV anonimi generati."""
+
+    @pytest.mark.parametrize("cv_path", _get_anonymous_cvs())
+    def test_parse__extracts_res_id_from_filename(self, cv_path: Path) -> None:
+        """res_id deve essere estratto correttamente dal filename."""
+        expected_res_id = int(cv_path.name.split("_")[0])
+
+        parsed = parse_docx(cv_path)
+
+        assert parsed.metadata.res_id == expected_res_id
+
+    @pytest.mark.parametrize("cv_path", _get_anonymous_cvs())
+    def test_parse__extracts_skills_section(self, cv_path: Path) -> None:
+        """Sezione skills deve essere estratta."""
+        parsed = parse_docx(cv_path)
+
+        assert parsed.skills is not None
+        assert parsed.skills.raw_text or parsed.skills.skill_keywords
+
+    @pytest.mark.parametrize("cv_path", _get_anonymous_cvs())
+    def test_parse__extracts_experiences(self, cv_path: Path) -> None:
+        """Esperienze devono essere estratte."""
+        parsed = parse_docx(cv_path)
+
+        assert len(parsed.experiences) >= 1
+
+
+class TestAnonymousCVSkillExtraction:
+    """Test skill extraction su CV anonimi."""
+
+    @pytest.mark.parametrize("cv_path", _get_anonymous_cvs())
+    def test_extract__finds_known_skills(
+        self, cv_path: Path, skill_extractor: SkillExtractor
+    ) -> None:
+        """Skill note devono essere riconosciute dal dizionario."""
+        parsed = parse_docx(cv_path)
+        result = skill_extractor.extract_from_parsed_cv(parsed)
+
+        # Almeno alcune skill devono essere riconosciute
+        assert len(result.normalized_skills) >= 1
+
+        # Verifica che canonical skills siano lowercase
+        for skill in result.normalized_skills:
+            assert skill.canonical == skill.canonical.lower()
+
+
+class TestAnonymousCVEndToEnd:
+    """Test end-to-end su CV anonimi (senza Qdrant)."""
+
+    @pytest.mark.parametrize("cv_path", _get_anonymous_cvs()[:3])  # Solo primi 3 per speed
+    def test_full_pipeline__dry_run__returns_counts(
+        self, cv_path: Path, skill_extractor: SkillExtractor
+    ) -> None:
+        """Pipeline completa in dry_run deve restituire conteggi."""
+        from unittest.mock import MagicMock
+        from src.core.embedding.pipeline import EmbeddingPipeline
+
+        parsed = parse_docx(cv_path)
+        skill_result = skill_extractor.extract_from_parsed_cv(parsed)
+
+        # Mock embedding service e Qdrant
+        mock_embedding = MagicMock()
+        mock_embedding.embed.return_value = [0.1] * 1536
+        mock_embedding.embed_batch.return_value = [[0.1] * 1536]
+        mock_embedding.dimensions = 1536
+
+        pipeline = EmbeddingPipeline(
+            embedding_service=mock_embedding,
+            qdrant_client=MagicMock(),
+        )
+
+        result = pipeline.process_cv(parsed, skill_result, dry_run=True)
+
+        assert result["cv_skills"] >= 0
+        assert result["cv_experiences"] >= 0
+        assert result["total"] == result["cv_skills"] + result["cv_experiences"]
+```
+
+---
+
+### Struttura File Test Finale
+
+```
+tests/
+├── __init__.py
+├── fixtures/
+│   └── sample_cvs/
+│       ├── README.md
+│       ├── 100000_marco_rossi.docx      # CV anonimi
+│       ├── 100001_luca_bianchi.docx
+│       ├── ...
+│       ├── cv_standard.docx             # CV legacy
+│       └── campione/                    # CV reali (gitignored)
+├── test_basic.py
+├── test_cv_parser.py                    # +4 test
+├── test_embedding_pipeline.py           # +3 test
+├── test_celery_tasks.py                 # +5 test
+├── test_qdrant_collections.py           # NUOVO: +5 test
+├── test_qdrant_connection.py
+├── test_skill_extraction.py
+└── test_integration_anonymous_cvs.py    # NUOVO: +7 test
+```
+
+---
+
+### Definition of Done
+
+- [ ] Test `test_cv_parser.py`: +4 nuovi test (leading zeros, large res_id, anonymous CVs, special chars)
+- [ ] Test `test_embedding_pipeline.py`: +3 nuovi test (related_skills, no experiences, deterministic IDs)
+- [ ] Test `test_celery_tasks.py`: +5 nuovi test (batch, all, retry, mismatch, success)
+- [ ] Nuovo file `test_qdrant_collections.py`: 5 test
+- [ ] Nuovo file `test_integration_anonymous_cvs.py`: 7 test
+- [ ] Tutti i test passano (`pytest -v`)
+- [ ] Coverage ≥ 80% sui moduli core
+- [ ] CI green
+- [ ] PR approvata
+
+---
+
+### Priorità Implementazione
+
+| Priorità | Test | File | Motivazione |
+|----------|------|------|-------------|
+| 🔴 P0 | `embed_batch_task` | `test_celery_tasks.py` | Usato per ingestion massiva |
+| 🔴 P0 | `embed_all_task` | `test_celery_tasks.py` | Usato da Beat scheduler |
+| 🔴 P0 | Retry rate limit | `test_celery_tasks.py` | Resilienza OpenAI |
+| 🟡 P1 | Collection schema | `test_qdrant_collections.py` | Validazione `res_id` index |
+| 🟡 P1 | Integration anonymous | `test_integration_anonymous_cvs.py` | E2E validation |
+| 🟢 P2 | Edge cases parser | `test_cv_parser.py` | Robustezza |
+| 🟢 P2 | Pipeline edge cases | `test_embedding_pipeline.py` | Completezza |
+
+---
+
+### Estimate
+
+**1-2 giorni** (focus su P0 e P1)
+
+---
+
 ## Dipendenze tra User Stories
 
 ```mermaid
@@ -1403,6 +2071,8 @@ graph LR
     US006 --> US007[US-007: Availability]
     US006 --> US008[US-008: Job Match]
     US007 --> US008
+    US005 --> US014[US-014: Test Coverage]
+    US013 --> US014
 ```
 
 > **Note:** US-005 (Core) e US-013 (Celery) sono state separate per gestire volumi di 10.000+ CV con richieste multiple al giorno.
@@ -1417,8 +2087,9 @@ graph LR
 | US-002 | `feature/US-002-qdrant-setup` | 1 | ✅ Done |
 | US-003 | `feature/US-003-cv-parser` | 1 | ✅ Done |
 | US-004 | `feature/US-004-skill-extraction` | 2 | ✅ Done |
-| US-005 | `feature/US-005-embedding-pipeline` | 2 | Core logic |
-| US-006 | `feature/US-006-search-api` | 3 | |
+| US-005 | `feature/US-005-embedding-pipeline` | 2 | ✅ Done |
+| US-006 | `feature/US-006-search-api` | 3 | 🚧 In Progress |
 | US-007 | `feature/US-007-availability-filter` | 3 | |
 | US-008 | `feature/US-008-job-match` | 4 | |
-| US-013 | `feature/US-013-celery-job-queue` | 2/3 | Dipende da US-005 |
+| US-013 | `feature/US-013-celery-job-queue` | 2/3 | ✅ Done |
+| US-014 | `feature/US-014-test-coverage` | 3 | Technical Debt |
