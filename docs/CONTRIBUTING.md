@@ -21,7 +21,7 @@ feature/US-XXX-descrizione-breve
 |--------|-----|---------|
 | `feature/` | Nuove funzionalità (User Stories) | `feature/US-003-cv-parser` |
 | `bugfix/` | Fix di bug | `bugfix/123-fix-embedding-error` |
-| `hotfix/` | Fix urgenti su main | `hotfix/critical-api-fix` |
+| `hotfix/` | Fix urgenti su master | `hotfix/critical-api-fix` |
 | `refactor/` | Refactoring senza nuove feature | `refactor/cleanup-services` |
 | `docs/` | Solo documentazione | `docs/update-api-docs` |
 
@@ -30,13 +30,15 @@ feature/US-XXX-descrizione-breve
 ```mermaid
 gitGraph
     commit id: "initial"
+    branch master
+    checkout master
     branch feature/US-XXX-nome
     checkout feature/US-XXX-nome
     commit id: "feat: initial structure"
     commit id: "feat: implement core logic"
     commit id: "test: add unit tests"
     commit id: "docs: update README"
-    checkout main
+    checkout master
     merge feature/US-XXX-nome tag: "PR merged"
 ```
 
@@ -52,8 +54,8 @@ gitGraph
 
 3. **Crea feature branch**
    ```bash
-   git checkout main
-   git pull origin main
+   git checkout master
+   git pull origin master
    git checkout -b feature/US-XXX-descrizione
    ```
 
@@ -74,7 +76,7 @@ gitGraph
 6. **Code Review e Merge**
    - Richiedi review da almeno 1 team member
    - Assicurati che CI passi
-   - Squash merge su main
+   - Squash merge su master
 
 ---
 
@@ -149,7 +151,7 @@ Una User Story è **DONE** quando:
 - [ ] CI verde
 
 ### Deployment
-- [ ] Merge su main completato
+- [ ] Merge su master completato
 - [ ] Issue chiusa con link al PR
 
 ---

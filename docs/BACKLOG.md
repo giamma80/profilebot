@@ -10,7 +10,7 @@
 
 **Acceptance Criteria:**
 - [ ] Repository GitHub creato
-- [ ] Branch protection su main
+- [ ] Branch protection su master
 - [ ] GitHub Actions per test e lint
 - [ ] Pre-commit hooks configurati
 

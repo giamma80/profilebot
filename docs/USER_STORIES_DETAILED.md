@@ -19,7 +19,7 @@
 
 ### Acceptance Criteria
 - [x] Repository GitHub creato con struttura standard
-- [x] Branch protection su `main` (require PR, require CI pass)
+- [x] Branch protection su `master` (require PR, require CI pass)
 - [x] GitHub Actions workflow per lint e test
 - [x] Pre-commit hooks configurati (ruff, mypy, bandit)
 - [x] Makefile con comandi standard

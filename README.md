@@ -220,7 +220,7 @@ cp .env.example .env
 # Edit .env with your settings
 
 # Start services
-make docker-up    # Qdrant + Redis
+make docker-up    # Start Qdrant + Redis (Docker Compose)
 
 # Run API
 make run
@@ -254,6 +254,8 @@ feature/US-XXX-descrizione-breve
 ```mermaid
 gitGraph
     commit id: "initial"
+    branch master
+    checkout master
     branch feature/US-002-qdrant
     checkout feature/US-002-qdrant
     commit id: "feat: add Qdrant client"
@@ -305,7 +307,7 @@ make test-cov     # Run tests with coverage report
 
 # Run
 make run          # Start API server (uvicorn)
-make docker-up    # Start Qdrant + Redis
+make docker-up    # Start Qdrant + Redis (Docker Compose)
 make docker-down  # Stop Docker services
 
 # Celery (Job Queue)
@@ -337,7 +339,6 @@ GitHub Actions pipeline runs on every push/PR:
 - **Lint & Format** - ruff + mypy
 - **Tests** - pytest with coverage
 - **Security** - bandit security scan
-- **API Lint** - Spectral su `docs/openapi.yaml`
 - **API Lint** - Spectral su `docs/openapi.yaml`
 
 ---
@@ -378,7 +379,7 @@ profilebot/
 │   └── ISSUE_TEMPLATE/
 ├── Makefile              # Project automation
 ├── pyproject.toml        # Dependencies & tool config
-├── docker-compose.yml    # Qdrant + Redis + Celery workers
+├── docker-compose.yml    # Qdrant + Redis (Docker Compose)
 └── .pre-commit-config.yaml
 ```
 
@@ -426,7 +427,6 @@ profilebot/
 - [Guida Formato CV](docs/cv_format_guide.md)
 - [Appendice Tecnica - Indexing](docs/Appendice%20tecnica%20—%20Indexing.md)
 - [Team Structure](docs/TEAM_STRUCTURE.md)
-- [Product Backlog](docs/BACKLOG.md)
 
 ---
 
