@@ -40,7 +40,7 @@ class DummyEmbeddingService:
 
 
 def _make_parsed_cv() -> ParsedCV:
-    metadata = CVMetadata(cv_id="cv-123", file_name="cv.docx")
+    metadata = CVMetadata(cv_id="cv-123", res_id=12345, file_name="cv.docx")
     skills = SkillSection(raw_text="Python, FastAPI", skill_keywords=["Python", "FastAPI"])
     experiences = [
         ExperienceItem(
@@ -168,6 +168,7 @@ def test_process_cv__upsert_payloads__include_expected_fields(monkeypatch):
     assert len(cv_skills_points) == 1
     cv_skills_payload = cv_skills_points[0].payload
     assert cv_skills_payload["cv_id"] == "cv-123"
+    assert cv_skills_payload["res_id"] == 12345
     assert cv_skills_payload["section_type"] == "skills"
     assert cv_skills_payload["dictionary_version"] == "1.0.0"
     assert cv_skills_payload["skill_domain"] == "backend"
@@ -178,6 +179,7 @@ def test_process_cv__upsert_payloads__include_expected_fields(monkeypatch):
     assert len(cv_exp_points) == 2
     for payload in (point.payload for point in cv_exp_points):
         assert payload["cv_id"] == "cv-123"
+        assert payload["res_id"] == 12345
         assert payload["section_type"] == "experience"
         assert isinstance(payload["created_at"], datetime)
 

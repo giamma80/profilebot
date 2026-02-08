@@ -142,6 +142,7 @@ class EmbeddingPipeline:
 
         payload = {
             "cv_id": cv_id,
+            "res_id": parsed_cv.metadata.res_id,
             "section_type": "skills",
             "normalized_skills": normalized_skills,
             "skill_domain": _get_primary_domain(skill_result.normalized_skills),
@@ -187,6 +188,7 @@ class EmbeddingPipeline:
 
                 payload = {
                     "cv_id": cv_id,
+                    "res_id": parsed_cv.metadata.res_id,
                     "section_type": "experience",
                     "related_skills": related_skills,
                     "experience_years": _calc_experience_years(experience),

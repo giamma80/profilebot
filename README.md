@@ -133,9 +133,13 @@ sequenceDiagram
 
 ### Qdrant Collections
 
+> **Nota:** `res_id` (matricola risorsa) è la **chiave di riconciliazione** per tutte le fonti dati.
+> Ogni punto in Qdrant include `res_id` per consentire join cross-source.
+
 ```mermaid
 erDiagram
     CV_SKILLS {
+        int res_id "Matricola risorsa (chiave riconciliazione)"
         string cv_id PK
         vector embedding
         string[] normalized_skills
@@ -146,6 +150,7 @@ erDiagram
     }
 
     CV_EXPERIENCES {
+        int res_id "Matricola risorsa (chiave riconciliazione)"
         string cv_id FK
         string experience_id PK
         vector embedding
@@ -155,15 +160,16 @@ erDiagram
     }
 
     AVAILABILITY_CACHE {
-        string cv_id PK
+        int res_id PK "Matricola risorsa"
+        string cv_id
         string status
         int allocation_pct
         string current_project
         datetime updated_at
     }
 
-    CV_SKILLS ||--o{ CV_EXPERIENCES : "cv_id"
-    CV_SKILLS ||--|| AVAILABILITY_CACHE : "cv_id"
+    CV_SKILLS ||--o{ CV_EXPERIENCES : "res_id + cv_id"
+    CV_SKILLS ||--|| AVAILABILITY_CACHE : "res_id"
 ```
 
 ---

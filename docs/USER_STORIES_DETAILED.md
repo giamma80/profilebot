@@ -984,136 +984,406 @@ Output JSON:
 |-----------|--------|
 | Volume CV | **10.000+** |
 | Frequenza | **Multiple volte/giorno** |
-| Modalità | On-demand + Batch schedulato |
+| Modalità | **On-demand + Batch schedulato** |
 | Throughput target | ~5.000 CV/minuto (con 4 worker) |
+| Ambiente | **Celery + Flower in PRODUZIONE** |
+
+---
+
+### ⚠️ ARCHITETTURA CRITICA: `res_id` come Chiave di Riconciliazione
+
+> **Decisione Business:** Ogni CV e **ogni altra fonte dati futura** fa riferimento a un `res_id`
+> (dato numerico che rappresenta la **matricola** della risorsa). Tutte le fonti dati saranno
+> riconciliate tramite questo identificativo.
+
+**Impatti architetturali:**
+
+1. **`res_id` è REQUIRED** - Ogni CV deve avere un `res_id` associato
+2. **`cv_id` rimane per identificare il documento** - Ma `res_id` è la chiave di join
+3. **Qdrant payload aggiornato** - Tutti i punti devono includere `res_id`
+4. **Future fonti dati** - Certificazioni, corsi, valutazioni useranno lo stesso `res_id`
+
+**Schema Payload Aggiornato (cv_skills):**
+```python
+{
+    "id": "cv_001_skills",
+    "vector": [...],
+    "payload": {
+        "res_id": 12345,              # 🆕 REQUIRED - Matricola risorsa
+        "cv_id": "cv_001",            # ID documento CV
+        "section_type": "skills",
+        "normalized_skills": ["python", "fastapi"],
+        "skill_domain": "backend",
+        "seniority_bucket": "unknown",
+        "dictionary_version": "1.0.0",
+        "created_at": "2025-02-05T10:30:00Z"
+    }
+}
+```
+
+**Schema Payload Aggiornato (cv_experiences):**
+```python
+{
+    "id": "cv_001_exp_0",
+    "vector": [...],
+    "payload": {
+        "res_id": 12345,              # 🆕 REQUIRED - Matricola risorsa
+        "cv_id": "cv_001",
+        "section_type": "experience",
+        "related_skills": ["python", "fastapi"],
+        "experience_years": 2,
+        "created_at": "2025-02-05T10:30:00Z"
+    }
+}
+```
+
+---
 
 ### Acceptance Criteria
 - [ ] Redis broker configurato e funzionante
 - [ ] Celery worker con task per singolo CV e batch
-- [ ] API endpoint `POST /api/v1/embeddings/trigger` per avvio job
-- [ ] API endpoint `POST /api/v1/embeddings/trigger/{cv_id}` per singolo CV
+- [ ] API endpoint `POST /api/v1/embeddings/trigger` per avvio job batch
+- [ ] API endpoint `POST /api/v1/embeddings/trigger/{res_id}` per singola risorsa
 - [ ] API endpoint `GET /api/v1/embeddings/status/{task_id}` per polling stato
+- [ ] Celery Beat per scheduling periodico
 - [ ] Docker compose con worker scalabili (replicas)
-- [ ] Flower dashboard per monitoring (porta 5555)
+- [ ] Flower dashboard per monitoring (porta 5555) - **PRODUZIONE**
 - [ ] Retry automatico con exponential backoff su rate limit
+- [ ] `res_id` incluso in tutti i payload Qdrant
 - [ ] Test coverage ≥ 80%
 - [ ] Documentazione API (OpenAPI)
 
 ### Technical Details
 
 **Stack:**
-- Broker: Redis
+- Broker: Redis (anche per result backend)
 - Job Queue: Celery
-- Monitoring: Flower
+- Scheduler: Celery Beat
+- Monitoring: Flower (**produzione**)
 - API: FastAPI
 
-**Architettura:**
+**Architettura Multi-Source con `res_id`:**
 ```
-┌─────────────────────────────────────────────────────────────────┐
+                    ┌─────────────────────────────────┐
+                    │           Data Sources          │
+                    │  ┌─────┐ ┌─────┐ ┌──────────┐  │
+                    │  │ CV  │ │Cert │ │ Training │  │
+                    │  │DOCX │ │ DB  │ │   API    │  │
+                    │  └──┬──┘ └──┬──┘ └────┬─────┘  │
+                    │     │      │         │        │
+                    │     └──────┼─────────┘        │
+                    │            │                  │
+                    │      ┌─────▼─────┐            │
+                    │      │  res_id   │ ◄── Chiave │
+                    │      │ (matricola)│    Riconciliazione
+                    │      └─────┬─────┘            │
+                    └────────────┼──────────────────┘
+                                 │
+┌────────────────────────────────▼────────────────────────────────┐
 │                         FastAPI                                  │
-│  POST /api/v1/embeddings/trigger                                │
-│  POST /api/v1/embeddings/trigger/{cv_id}                        │
-│  GET  /api/v1/embeddings/status/{task_id}                       │
+│  POST /api/v1/embeddings/trigger           (batch schedulato)   │
+│  POST /api/v1/embeddings/trigger/{res_id}  (on-demand)          │
+│  GET  /api/v1/embeddings/status/{task_id}  (polling)            │
+│  GET  /api/v1/embeddings/stats             (statistiche)        │
 └─────────────────────┬───────────────────────────────────────────┘
                       │
                       ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                         Redis (Celery Broker)                    │
+│                    Redis (Broker + Result Backend)               │
 └─────────────────────┬───────────────────────────────────────────┘
                       │
-        ┌─────────────┼─────────────┐
-        ▼             ▼             ▼
-┌─────────────┐ ┌─────────────┐ ┌─────────────┐
-│  Worker 1   │ │  Worker 2   │ │  Worker N   │
-└──────┬──────┘ └──────┬──────┘ └──────┬──────┘
+        ┌─────────────┼─────────────┬─────────────┐
+        ▼             ▼             ▼             ▼
+┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐
+│  Worker 1   │ │  Worker 2   │ │  Worker N   │ │ Celery Beat │
+│  (-c 4)     │ │  (-c 4)     │ │  (-c 4)     │ │ (scheduler) │
+└──────┬──────┘ └──────┬──────┘ └──────┬──────┘ └─────────────┘
        │               │               │
        └───────────────┼───────────────┘
                        ▼
               ┌─────────────────┐
               │  US-005 Core    │
-              │  (EmbeddingService, CVIndexer)    │
+              │  EmbeddingPipeline.process_cv()  │
               └────────┬────────┘
                        ▼
               ┌─────────────────┐
               │     Qdrant      │
+              │  (res_id + cv_id in payload)    │
               └─────────────────┘
 ```
 
-**File da creare:**
+**File da creare/modificare:**
 ```
 ├── src/services/embedding/
 │   ├── celery_app.py      # Celery app configuration
+│   ├── celery_config.py   # Celery settings (broker, backend, task routes)
 │   ├── tasks.py           # Celery tasks (embed_cv, embed_batch, embed_all)
-│   └── worker.py          # Worker entry point
+│   └── worker.py          # Worker entry point (opzionale, docker usa celery CLI)
 ├── src/api/v1/
 │   └── embeddings.py      # API endpoints trigger/status
-├── src/core/config.py     # Redis/Celery settings
+├── src/core/parser/
+│   └── schemas.py         # 🔄 MODIFICARE: aggiungere res_id a CVMetadata
+├── src/core/embedding/
+│   └── pipeline.py        # 🔄 MODIFICARE: passare res_id al payload Qdrant
+├── src/services/qdrant/
+│   └── collections.py     # 🔄 MODIFICARE: aggiungere res_id a payload index
 └── tests/
-    └── test_celery_tasks.py
+    ├── test_celery_tasks.py
+    └── test_embedding_pipeline.py  # 🔄 MODIFICARE: aggiungere test res_id
+```
+
+**Modifica CVMetadata (src/core/parser/schemas.py):**
+```python
+class CVMetadata(BaseModel):
+    """Metadata extracted from the CV header or file context."""
+
+    res_id: int = Field(..., description="Matricola risorsa (chiave riconciliazione)")
+    cv_id: str = Field(..., description="Unique CV identifier")
+    file_name: str = Field(..., description="Original file name")
+    full_name: str | None = Field(None, description="Candidate full name")
+    current_role: str | None = Field(None, description="Current role or title")
+    parsed_at: datetime = Field(default_factory=datetime.utcnow)
 ```
 
 **Celery Tasks:**
 ```python
-@celery_app.task(bind=True, max_retries=3)
-def embed_cv_task(self, cv_id: str) -> dict:
-    """Embed singolo CV (skills + experiences)."""
+@celery_app.task(bind=True, max_retries=3, default_retry_delay=60)
+def embed_cv_task(self, res_id: int, cv_path: str) -> dict:
+    """
+    Embed singolo CV per res_id.
+
+    Args:
+        res_id: Matricola risorsa (chiave riconciliazione)
+        cv_path: Path al file CV da processare
+
+    Returns:
+        dict con cv_skills, cv_experiences, total counts
+    """
+    try:
+        parsed_cv = parse_cv(cv_path, res_id=res_id)
+        skill_result = extract_skills(parsed_cv)
+        return EmbeddingPipeline().process_cv(parsed_cv, skill_result)
+    except RateLimitError as exc:
+        raise self.retry(exc=exc, countdown=60 * (self.request.retries + 1))
 
 @celery_app.task
-def embed_batch_task(cv_ids: list[str]) -> dict:
-    """Batch di CV - parallelizza su worker."""
+def embed_batch_task(items: list[dict]) -> dict:
+    """
+    Batch di CV - parallelizza tramite group().
+
+    Args:
+        items: Lista di {"res_id": int, "cv_path": str}
+
+    Returns:
+        dict con totali aggregati
+    """
+    from celery import group
+    job = group(embed_cv_task.s(item["res_id"], item["cv_path"]) for item in items)
+    return job.apply_async()
 
 @celery_app.task
 def embed_all_task(force: bool = False) -> dict:
-    """Full re-embed di tutti i CV."""
+    """
+    Full re-embed di tutti i CV (scheduled via Beat).
+
+    Args:
+        force: Se True, re-embed anche se già indicizzato
+    """
+    # Recupera lista CV da directory o database
+    # Lancia embed_batch_task con chunking
 ```
 
 **API Endpoints:**
 ```python
-POST /api/v1/embeddings/trigger       # Avvia full embedding
-POST /api/v1/embeddings/trigger/{id}  # Embedding singolo CV
-GET  /api/v1/embeddings/status/{id}   # Stato task
-GET  /api/v1/embeddings/stats         # Statistiche queue
+POST /api/v1/embeddings/trigger              # Avvia full embedding (batch)
+POST /api/v1/embeddings/trigger/{res_id}     # Embedding singola risorsa
+GET  /api/v1/embeddings/status/{task_id}     # Stato task (polling)
+GET  /api/v1/embeddings/stats                # Statistiche queue
+DELETE /api/v1/embeddings/{res_id}           # Rimuovi embeddings risorsa
 ```
 
-**Docker Compose (aggiunte):**
+**Celery Beat Schedule (src/services/embedding/celery_config.py):**
+```python
+from celery.schedules import crontab
+
+CELERY_BEAT_SCHEDULE = {
+    "daily-full-reindex": {
+        "task": "src.services.embedding.tasks.embed_all_task",
+        "schedule": crontab(hour=2, minute=0),  # Ogni notte alle 02:00
+        "args": (False,),  # force=False
+    },
+}
+```
+
+**Docker Compose (già presente, verificato):**
 ```yaml
 services:
   redis:
     image: redis:7-alpine
-    ports: ["6379:6379"]
+    container_name: profilebot-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
 
   celery-worker:
+    build: .
+    container_name: profilebot-celery-worker
     command: celery -A src.services.embedding.celery_app worker -l info -c 4
-    deploy:
-      replicas: 2
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - QDRANT_URL=http://qdrant:6333
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    depends_on:
+      - redis
+      - qdrant
+    restart: unless-stopped
+
+  celery-beat:
+    build: .
+    container_name: profilebot-celery-beat
+    command: celery -A src.services.embedding.celery_app beat -l info
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - redis
+      - celery-worker
+    restart: unless-stopped
 
   flower:
+    build: .
+    container_name: profilebot-flower
     command: celery -A src.services.embedding.celery_app flower --port=5555
-    ports: ["5555:5555"]
+    ports:
+      - "5555:5555"
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - redis
+      - celery-worker
+    restart: unless-stopped
 ```
 
 ### Process
-1. Configurare Redis come Celery broker
-2. Implementare `celery_app.py` con configurazione production-ready
-3. Creare task per embed singolo, batch, e full
-4. Implementare API endpoints FastAPI
-5. Aggiornare docker-compose con worker e Flower
-6. Aggiungere Makefile targets (worker, flower, beat)
-7. Scrivere test unitari e integration
+1. **Modificare schema CVMetadata** - Aggiungere `res_id: int` come campo required
+2. **Modificare EmbeddingPipeline** - Passare `res_id` ai payload Qdrant
+3. **Aggiornare collections.py** - Aggiungere `res_id` al payload index
+4. Configurare Redis come Celery broker e result backend
+5. Implementare `celery_app.py` con configurazione production-ready
+6. Creare task per embed singolo, batch, e full con retry
+7. Configurare Celery Beat per scheduling notturno
+8. Implementare API endpoints FastAPI
+9. Verificare docker-compose (già presente)
+10. Aggiungere Makefile targets (worker, flower, beat)
+11. Scrivere test unitari e integration
+12. Aggiornare test esistenti con `res_id`
 
 ### Definition of Done
+- [ ] `res_id` aggiunto a `CVMetadata` (BREAKING CHANGE)
+- [ ] `res_id` incluso in tutti i payload Qdrant
 - [ ] `celery_app.py` con configurazione production-ready
+- [ ] `celery_config.py` con Beat schedule
 - [ ] `tasks.py` con task per embed singolo, batch, e full
 - [ ] `embeddings.py` API router con tutti gli endpoint
-- [ ] `docker-compose.yml` aggiornato con Redis, worker, Flower
+- [ ] `docker-compose.yml` verificato (già presente)
 - [ ] Test unitari e integration per tasks
-- [ ] Makefile target: `make worker`, `make flower`
+- [ ] Test aggiornati con `res_id`
+- [ ] Makefile target: `make worker`, `make flower`, `make beat`
 - [ ] README aggiornato con istruzioni worker
 - [ ] Linting passa (`make lint`)
 - [ ] PR approvata e CI green
 
 ### Estimate
-**2 giorni** (dipende da US-005 completata)
+**3 giorni** (include modifiche schema e test)
+
+---
+
+### Decisioni Architetturali - Q&A Team
+
+#### 1. Fonte Dati e Input
+
+**Q: Da dove il sistema recupera i CV? Directory locale, API, database?**
+> **A:** Per MVP, directory locale configurabile (`CV_DIRECTORY` in `.env`).
+> Future iterazioni: API endpoint per upload, integrazione SharePoint.
+
+**Q: Chi fornisce il mapping `res_id` → `cv_path`? File CSV, database, naming convention?**
+> **A:** Per MVP, **naming convention**: il file CV deve contenere `res_id` nel nome.
+> Formato: `{res_id}_{nome}_{cognome}.docx` (es. `12345_mario_rossi.docx`)
+> Il parser estrae `res_id` dal filename.
+
+**Q: Esiste già un database anagrafico risorse da interrogare?**
+> **A:** No per MVP. Il `res_id` viene estratto dal filename.
+> Future iterazioni: integrazione con HR database.
+
+#### 2. Re-embed e Consistenza Dati
+
+**Q: Se un CV viene aggiornato, il task deve rilevare la modifica?**
+> **A:** Per MVP, **force mode** disponibile. Default: skip se `created_at` recente.
+> Logica: confronto timestamp file vs `created_at` in Qdrant.
+
+**Q: Prima di re-embed, vanno eliminati i punti esistenti per quel `res_id`?**
+> **A:** **Sì, delete-then-insert** per garantire consistenza.
+> Il punto ID deterministico garantisce upsert, ma le esperienze potrebbero cambiare numero.
+
+**Q: Come gestiamo la consistenza durante re-index massivo?**
+> **A:** Scheduling notturno (02:00) per evitare conflitti.
+> Lock distribuito via Redis per prevenire job concorrenti sullo stesso `res_id`.
+
+#### 3. Performance e Limiti
+
+**Q: Quale chunk size per batch embedding?**
+> **A:** `EMBEDDING_BATCH_SIZE=100` (già in US-005). Configurabile via env.
+
+**Q: Quanti worker paralleli in produzione?**
+> **A:** `-c 4` per worker (4 thread). Scalabile con `replicas` in docker-compose.
+> Target: 2-4 worker = 8-16 thread paralleli.
+
+**Q: Rate limiting OpenAI come viene gestito?**
+> **A:** Retry con exponential backoff via `tenacity` (già in US-005).
+> Task Celery: `max_retries=3`, `default_retry_delay=60`.
+
+#### 4. API e UX
+
+**Q: L'endpoint `/trigger/{res_id}` accetta solo `res_id` o anche path CV opzionale?**
+> **A:** Accetta `res_id`. Il path viene risolto internamente da naming convention.
+> Optional body: `{"cv_path": "/custom/path.docx"}` per override.
+
+**Q: Il response di `/trigger` è sincrono (task_id) o attende completamento?**
+> **A:** **Asincrono** - ritorna immediatamente `task_id` per polling.
+
+**Q: `/status/{task_id}` mostra progresso parziale o solo PENDING/SUCCESS/FAILURE?**
+> **A:** MVP: solo stati Celery (PENDING, STARTED, SUCCESS, FAILURE).
+> Future: progress percentage via Redis pub/sub.
+
+#### 5. Scheduling e Operazioni
+
+**Q: Celery Beat gira nello stesso container del worker o separato?**
+> **A:** **Container separato** (`celery-beat`). Già configurato in docker-compose.
+
+**Q: Come viene triggerato il job schedulato? Cron interno o Beat schedule?**
+> **A:** **Celery Beat** con schedule in `celery_config.py`.
+
+**Q: Flower è esposto pubblicamente o solo rete interna?**
+> **A:** MVP: esposto su porta 5555 per monitoring.
+> Produzione: behind reverse proxy con auth.
+
+#### 6. Domande Aperte (per Product Owner)
+
+**Q: Se il CV non contiene `res_id` nel filename, il job deve fallire o loggare warning?**
+> **A:** ⚠️ **DA DEFINIRE** - Proposta: fail con error specifico.
+
+**Q: Quale TTL per i risultati task in Redis?**
+> **A:** ⚠️ **DA DEFINIRE** - Proposta: 24 ore (`result_expires=86400`).
+
+**Q: Il full re-index notturno deve notificare completamento (email, webhook)?**
+> **A:** ⚠️ **DA DEFINIRE** - Proposta: log + Flower alert per MVP.
 
 ---
 

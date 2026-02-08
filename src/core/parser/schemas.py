@@ -11,6 +11,7 @@ class CVMetadata(BaseModel):
     """Metadata extracted from the CV header or file context."""
 
     cv_id: str = Field(..., description="Unique CV identifier")
+    res_id: int = Field(..., description="Matricola risorsa (chiave riconciliazione)")
     file_name: str = Field(..., description="Original file name")
     full_name: str | None = Field(None, description="Candidate full name")
     current_role: str | None = Field(None, description="Current role or title")

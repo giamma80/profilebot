@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   qdrant:
@@ -20,6 +20,58 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
+    restart: unless-stopped
+
+  celery-worker:
+    build: .
+    container_name: profilebot-celery-worker
+    working_dir: /app
+    command: celery -A src.services.embedding.celery_app worker -l info -c 4
+    volumes:
+      - ./:/app
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - QDRANT_URL=http://qdrant:6333
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    depends_on:
+      - redis
+      - qdrant
+    restart: unless-stopped
+
+  celery-beat:
+    build: .
+    container_name: profilebot-celery-beat
+    working_dir: /app
+    command: celery -A src.services.embedding.celery_app beat -l info
+    volumes:
+      - ./:/app
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - redis
+      - celery-worker
+    restart: unless-stopped
+
+  flower:
+    build: .
+    container_name: profilebot-flower
+    working_dir: /app
+    command: celery -A src.services.embedding.celery_app flower --port=5555
+    ports:
+      - "5555:5555"
+    volumes:
+      - ./:/app
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - redis
+      - celery-worker
     restart: unless-stopped
 
 volumes:

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import re
 import time
 from collections.abc import Iterable
 from dataclasses import dataclass
@@ -146,6 +147,7 @@ class DocxParser:
             "cv_parsed",
             extra={
                 "cv_id": parsed.metadata.cv_id,
+                "res_id": parsed.metadata.res_id,
                 "file_name": parsed.metadata.file_name,
                 "sections_found": sections_found,
                 "parse_time_ms": parse_time_ms,
@@ -155,13 +157,23 @@ class DocxParser:
     def _build_metadata(self, path: Path, raw_text: str) -> CVMetadata:
         """Extract metadata from the document content."""
         metadata = extract_metadata(raw_text)
+        res_id = self._extract_res_id(path.name)
         return CVMetadata(
             cv_id=metadata.cv_id,
+            res_id=res_id,
             file_name=path.name,
             full_name=metadata.full_name,
             current_role=metadata.current_role,
             parsed_at=metadata.parsed_at,
         )
+
+    def _extract_res_id(self, filename: str) -> int:
+        """Extract res_id from filename using the {res_id}_ prefix pattern."""
+        match = re.match(r"^(\d+)_", filename)
+        if not match:
+            logger.error("res_id mancante nel filename: %s", filename)
+            raise CVParseError(f"res_id mancante nel filename: {filename}")
+        return int(match.group(1))
 
     def _parse_skills(self, lines: list[str]) -> SkillSection | None:
         """Parse the skills section into raw text and keywords."""
