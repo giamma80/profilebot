@@ -13,9 +13,7 @@ from src.services.search.skill_search import (
     ProfileMatch,
     SkillSearchResponse,
 )
-from src.services.search.skill_search import (
-    SearchFilters as ServiceSearchFilters,
-)
+from src.services.search.skill_search import SearchFilters as ServiceSearchFilters
 
 
 @pytest.fixture()
