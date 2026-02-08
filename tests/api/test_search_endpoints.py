@@ -11,9 +11,11 @@ from src.api.main import app
 from src.api.v1.schemas import SearchFilters as ApiSearchFilters
 from src.services.search.skill_search import (
     ProfileMatch,
-    SkillSearchResponse,
 )
 from src.services.search.skill_search import SearchFilters as ServiceSearchFilters
+from src.services.search.skill_search import (
+    SkillSearchResponse,
+)
 
 
 @pytest.fixture()
