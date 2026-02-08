@@ -171,9 +171,9 @@ def _build_filter(filters: SearchFilters | None) -> models.Filter | None:
             )
         )
 
-    if filters.availability:
+    if filters.availability and filters.availability != "any":
         # TODO(US-007): apply availability filter when availability service is available.
-        logger.info(
+        logger.warning(
             "Availability filter requested but not implemented, ignoring value '%s'",
             filters.availability,
         )

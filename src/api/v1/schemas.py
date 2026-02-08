@@ -11,7 +11,7 @@ class SearchFilters(BaseModel):
     res_ids: list[int] | None = None
     skill_domains: list[str] | None = None
     seniority: list[str] | None = None
-    availability: str | None = None
+    availability: str | None = "any"
 
     model_config = {"extra": "forbid"}
 
@@ -36,9 +36,23 @@ class SearchFilters(BaseModel):
     @classmethod
     def normalize_availability(cls, value: object) -> str | None:
         if value is None:
-            return None
+            return "any"
         cleaned = str(value).strip().lower()
-        return cleaned or None
+        if not cleaned:
+            return "any"
+        mapping = {
+            "totale": "only_free",
+            "parziale": "free_or_partial",
+            "nessuna disponibilità": "unavailable",
+            "nessuna disponibilita": "unavailable",
+            "only_free": "only_free",
+            "free_or_partial": "free_or_partial",
+            "any": "any",
+            "unavailable": "unavailable",
+        }
+        if cleaned not in mapping:
+            raise ValueError("Invalid availability value")
+        return mapping[cleaned]
 
 
 class SkillSearchRequest(BaseModel):
