@@ -6,14 +6,14 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 
-from src.api.v1.embeddings import router as embeddings_router
+from src.api.v1.router import router as v1_router
 from src.services.qdrant import check_qdrant_health, get_qdrant_client
 
 load_dotenv()
 
 app = FastAPI(title="ProfileBot API", version="0.1.0")
 
-app.include_router(embeddings_router)
+app.include_router(v1_router)
 
 
 @app.get("/health")
