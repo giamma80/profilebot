@@ -48,12 +48,18 @@ def test_embed_cv_task__invalid_filename__raises_cv_parse_error(
     cv_path = tmp_path / "mario_rossi.docx"
     cv_path.write_bytes(b"dummy")
 
+    tasks.embed_cv_task.request.id = "task-invalid"
+
+    def _update_state(*, state: str, meta: dict[str, Any]) -> None:
+        return None
+
     def _embed_cv(*_: Any, **__: Any) -> tuple[str, int, dict[str, int]]:
         raise CVParseError(f"res_id mancante nel filename: {cv_path.name}")
 
     def _retry(*, exc: Exception, countdown: int) -> Exception:
         raise exc
 
+    monkeypatch.setattr(tasks.embed_cv_task, "update_state", _update_state)
     monkeypatch.setattr(tasks, "_embed_cv", _embed_cv)
     monkeypatch.setattr(tasks.embed_cv_task, "retry", _retry)
 
