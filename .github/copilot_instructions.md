@@ -11,9 +11,15 @@
 ### Componenti Principali
 - **Backend API**: FastAPI con Python 3.11+
 - **Vector Store**: Qdrant per ricerca semantica
-- **RAG Framework**: LlamaIndex
+- **RAG Strategy**: Custom (Qdrant + OpenAI + retrieval + prompt)
 - **Cache**: Redis per stato disponibilità
 - **LLM**: OpenAI / Azure OpenAI
+
+#### RAG Strategy (Technical)
+- **Retrieval**: embedding query → Qdrant vector search (`cv_skills`), con filtri su `res_id`, `skill_domain`, `seniority` e paginazione.
+- **Context building**: aggregazione `matched_skills`, `missing_skills`, metadata e score (cosine + match ratio).
+- **Prompting**: contesto strutturato passato a OpenAI per ranking/spiegazioni quando richiesto.
+- **Why not LlamaIndex**: flusso semplice e controllato, meno dipendenze, tuning di ranking/filtri e performance più diretto; framework dedicati sono superflui finché non servono pipeline complesse (routing, caching avanzato, multi-index orchestration).
 
 ### Architettura
 ```
@@ -91,7 +97,7 @@ feat(parser): add DOCX metadata extraction
 fix(qdrant): handle connection timeout gracefully
 test(skills): add normalization edge cases
 docs(api): update OpenAPI schema
-chore(ci): add pylint to GitHub Actions
+chore(ci): add ruff to GitHub Actions
 ```
 
 ### Pull Request Guidelines
@@ -115,10 +121,20 @@ chore(ci): add pylint to GitHub Actions
 - **Framework**: FastAPI
 - **Validation**: Pydantic v2
 - **Testing**: pytest
-- **Linting**: ruff, flake8, pylint, mypy
-- **Formatting**: black, isort
+- **Linting**: ruff, mypy, bandit
+- **Formatting**: ruff
 
 ### Code Style
+
+#### Preflight Formalisms (make preflight)
+- **Ruff check**: rispettare tutte le regole abilitate in `pyproject.toml` (nessuna eccezione locale non motivata).
+- **Import ordering**: organizzare import in 3 blocchi (standard library, third-party, local) con una riga vuota tra i blocchi.
+- **`__all__`**: se presente, deve essere **ordinato in stile isort** (alfabetico, case-sensitive) e definito come lista/tupla letterale.
+- **Format**: il formato deve essere conforme a `ruff format --check` (niente formattazioni manuali divergenti).
+- **Type hints**: obbligatori sulle funzioni pubbliche (mypy).
+- **Logging**: usare lazy formatting con `%s`, mai f-string nei log (ruff).
+- **Error handling**: usare eccezioni specifiche, no `except: pass` (ruff).
+- **API lint**: `docs/openapi.yaml` deve esistere e passare `spectral lint`.
 
 #### Import Organization
 ```python

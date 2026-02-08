@@ -38,6 +38,10 @@ ROLE_PATTERNS = [
 
 EMAIL_PATTERN = re.compile(r"(?i)\b[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}\b")
 
+MIN_NAME_PARTS = 2
+MIN_PART_LENGTH = 2
+MAX_UPPERCASE_PART_LENGTH = 3
+
 
 def extract_metadata_candidates(lines: Iterable[str]) -> MetadataCandidates:
     """
@@ -88,11 +92,11 @@ def _match_first(patterns: Iterable[re.Pattern[str]], line: str) -> str | None:
 
 def _is_probable_name(candidate: str) -> bool:
     parts = candidate.split()
-    if len(parts) < 2:
+    if len(parts) < MIN_NAME_PARTS:
         return False
-    if any(len(p) <= 1 for p in parts):
+    if any(len(p) < MIN_PART_LENGTH for p in parts):
         return False
-    if any(p.isupper() and len(p) > 3 for p in parts):
+    if any(p.isupper() and len(p) > MAX_UPPERCASE_PART_LENGTH for p in parts):
         return False
     return True
 

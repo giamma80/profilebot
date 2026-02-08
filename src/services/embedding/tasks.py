@@ -100,7 +100,7 @@ def embed_cv_task(
             "dry_run": dry_run,
             "percentage": 100,
         }
-    except Exception as exc:  # noqa: BLE001 - allow task retries
+    except Exception as exc:
         logger.exception("Failed embedding CV: %s", cv_path)
         raise self.retry(exc=exc, countdown=60) from exc
 
@@ -169,7 +169,7 @@ def embed_batch_task(
                 state="PROGRESS",
                 meta={"percentage": percentage, "cv_id": cv_id, "res_id": parsed_res_id},
             )
-        except Exception as exc:  # noqa: BLE001 - keep batch running
+        except Exception as exc:
             failed += 1
             logger.exception("Failed embedding CV in batch: %s", cv_path)
             errors.append({"file": str(cv_path), "error": str(exc)})
@@ -185,7 +185,7 @@ def embed_batch_task(
 
 
 @celery_app.task(bind=True)
-def embed_all_task(
+def embed_all_task(  # noqa: PLR0913 - task signature mirrors API payload
     self,
     items: list[dict[str, Any]],
     *,
@@ -254,7 +254,7 @@ def embed_all_task(
                 totals["cv_experiences"] += result.get("cv_experiences", 0)
                 totals["total"] += result.get("total", 0)
                 processed += 1
-            except Exception as exc:  # noqa: BLE001 - keep batch running
+            except Exception as exc:
                 failed += 1
                 logger.exception("Failed embedding CV in full run: %s", cv_path)
                 errors.append({"file": str(cv_path), "error": str(exc)})

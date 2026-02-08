@@ -56,15 +56,22 @@ class SkillSearchResponse:
     query_time_ms: int
 
 
+@dataclass(frozen=True)
+class SearchDependencies:
+    """Optional dependencies for skill search."""
+
+    qdrant_client: QdrantClient | None = None
+    embedding_service: EmbeddingService | None = None
+    dictionary: SkillDictionary | None = None
+
+
 def search_by_skills(
     skills: list[str],
     *,
     filters: SearchFilters | None = None,
     limit: int = 10,
     offset: int = 0,
-    qdrant_client: QdrantClient | None = None,
-    embedding_service: EmbeddingService | None = None,
-    dictionary: SkillDictionary | None = None,
+    dependencies: SearchDependencies | None = None,
 ) -> SkillSearchResponse:
     """Search profiles by skills using Qdrant vector search.
 
@@ -73,9 +80,7 @@ def search_by_skills(
         filters: Optional filter constraints.
         limit: Maximum number of results to return.
         offset: Result offset for pagination.
-        qdrant_client: Optional Qdrant client instance.
-        embedding_service: Optional embedding service instance.
-        dictionary: Optional skill dictionary override.
+        dependencies: Optional service dependencies overrides.
 
     Returns:
         Search response with ranked profile matches.
@@ -83,15 +88,16 @@ def search_by_skills(
     Raises:
         ValueError: If no skills are provided after normalization.
     """
+    resolved = dependencies or SearchDependencies()
     start_time = time.perf_counter()
-    normalized_skills = _normalize_query_skills(skills, dictionary)
+    normalized_skills = _normalize_query_skills(skills, resolved.dictionary)
     if not normalized_skills:
         raise ValueError("At least one valid skill is required")
 
-    query_vector = (embedding_service or OpenAIEmbeddingService()).embed(
+    query_vector = (resolved.embedding_service or OpenAIEmbeddingService()).embed(
         ", ".join(normalized_skills)
     )
-    client = cast(Any, qdrant_client or get_qdrant_client())
+    client = cast(Any, resolved.qdrant_client or get_qdrant_client())
     query_filter = _build_filter(filters)
 
     fetch_limit = max(0, limit) + max(0, offset)

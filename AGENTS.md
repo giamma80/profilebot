@@ -14,12 +14,12 @@
 - **Framework**: FastAPI
 - **Validation**: Pydantic v2
 - **Vector Store**: Qdrant
-- **RAG**: LlamaIndex
+- **RAG**: Custom (Qdrant + OpenAI + retrieval + prompt)
 - **Cache**: Redis
 - **LLM**: OpenAI / Azure OpenAI
 - **Testing**: pytest
-- **Linting**: ruff, flake8, pylint, mypy
-- **Formatting**: black, isort
+- **Linting**: ruff, mypy, bandit
+- **Formatting**: ruff
 
 ### Architecture (3 Layer)
 
@@ -78,6 +78,16 @@ test(skills): add normalization edge cases
 ---
 
 ## Python Code Standards
+
+### Preflight Formalisms (make preflight)
+- **Ruff check**: rispettare tutte le regole abilitate in `pyproject.toml` (nessuna eccezione locale non motivata).
+- **Import ordering**: organizzare import in 3 blocchi (standard library, third-party, local) con una riga vuota tra i blocchi.
+- **`__all__`**: se presente, deve essere **ordinato in stile isort** (alfabetico, case-sensitive) e definito come lista/tupla letterale.
+- **Format**: il formato deve essere conforme a `ruff format --check` (niente formattazioni manuali divergenti).
+- **Type hints**: obbligatori sulle funzioni pubbliche (mypy).
+- **Logging**: usare lazy formatting con `%s`, mai f-string nei log (ruff).
+- **Error handling**: usare eccezioni specifiche, no `except: pass` (ruff).
+- **API lint**: `docs/openapi.yaml` deve esistere e passare `spectral lint`.
 
 ### Import Organization
 ```python

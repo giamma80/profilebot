@@ -11,12 +11,28 @@ from src.services.qdrant import check_qdrant_health, get_qdrant_client
 
 load_dotenv()
 
-app = FastAPI(title="ProfileBot API", version="0.1.0")
+app = FastAPI(
+    title="ProfileBot API",
+    version="0.1.0",
+    description="API per gestione embedding e servizi di salute applicativa.",
+    contact={"name": "ProfileBot Team", "email": "team@profilebot.local"},
+    servers=[{"url": "/", "description": "Default"}],
+    openapi_tags=[
+        {
+            "name": "embeddings",
+            "description": "Gestione dei job di embedding.",
+        },
+        {
+            "name": "health",
+            "description": "Verifiche di stato e disponibilità.",
+        },
+    ],
+)
 
 app.include_router(v1_router)
 
 
-@app.get("/health")
+@app.get("/health", tags=["health"])
 def health_check() -> JSONResponse:
     """Return application and Qdrant health status."""
     client = get_qdrant_client()

@@ -28,23 +28,17 @@ jobs:
       - name: Install dev dependencies
         run: uv pip install -e ".[dev]"
 
-      - name: Run Ruff (linter)
+      - name: Run Ruff (lint)
         run: uv run ruff check src/ tests/ --output-format=github
 
-      - name: Run Flake8
-        run: uv run flake8 src/ tests/ --max-line-length=100 --ignore=E501,W503,E203
-
-      - name: Run Black (formatter check)
-        run: uv run black --check src/ tests/
-
-      - name: Run isort (import sort check)
-        run: uv run isort --check-only src/ tests/
+      - name: Run Ruff (format check)
+        run: uv run ruff format --check src/ tests/
 
       - name: Run MyPy (type checker)
         run: uv run mypy src/ --ignore-missing-imports
 
-      - name: Run Pylint
-        run: uv run pylint src/ --rcfile=pyproject.toml --exit-zero
+      - name: Run Bandit (security linter)
+        run: uv run bandit -r src/ -ll
 
   test:
     name: Tests
@@ -112,24 +106,3 @@ jobs:
         with:
           file: ./coverage.xml
           fail_ci_if_error: false
-
-  security:
-    name: Security Scan
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v4
-
-      - name: Set up Python
-        run: uv python install ${{ env.PYTHON_VERSION }}
-
-      - name: Create virtual environment
-        run: uv venv
-
-      - name: Install dependencies
-        run: uv pip install -e ".[dev]"
-
-      - name: Run Bandit (security linter)
-        run: uv run bandit -r src/ -ll

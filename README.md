@@ -180,7 +180,7 @@ erDiagram
 |------------|------------|
 | Backend | Python 3.11+ |
 | Package Manager | [uv](https://github.com/astral-sh/uv) |
-| RAG Framework | LlamaIndex |
+| RAG Strategy | Custom (Qdrant + OpenAI + retrieval + prompt) |
 | Vector Store | Qdrant |
 | LLM | OpenAI / Azure OpenAI |
 | Embedding | `text-embedding-3-small` (1536 dim) |
@@ -188,6 +188,13 @@ erDiagram
 | Job Queue | Celery |
 | Monitoring | Flower |
 | API | FastAPI |
+
+---
+
+## RAG Strategy
+
+Il sistema usa una strategia RAG **custom** basata su Qdrant + OpenAI + retrieval + prompt.  
+La scelta è intenzionale: l’integrazione diretta riduce dipendenze, mantiene il controllo sul ranking/filtri e semplifica debugging e performance tuning. Per questo, un framework come LlamaIndex è **superfluo** nel flusso attuale; potrà essere rivalutato se emergono esigenze avanzate di orchestrazione o caching.
 
 ---
 
@@ -283,11 +290,10 @@ make install      # Install production dependencies
 make dev          # Install dev dependencies + pre-commit hooks
 
 # Code Quality
-make lint         # Run fast linters (ruff + flake8 + mypy)
-make lint-all     # Run ALL linters (+ pylint)
-make preflight    # Run all local checks (lint-all + format check)
-make pylint       # Run only pylint
-make format       # Format code (black + isort + ruff --fix)
+make lint         # Run linters (ruff + mypy)
+make lint-all     # Run linters (same as lint)
+make preflight    # Run all local checks (lint + format check)
+make format       # Format code (ruff)
 make check        # Run all checks (lint + format check)
 make api-lint     # Lint OpenAPI spec with Spectral
 
@@ -315,12 +321,8 @@ make clean        # Remove cache and build files
 
 | Tool | Purpose | Command |
 |------|---------|---------|
-| **ruff** | Fast linter (Rust-based) | `make lint` |
-| **flake8** | PEP8 compliance | `make lint` |
-| **pylint** | Deep static analysis | `make pylint` |
+| **ruff** | Linting + formatting | `make lint` / `make format` |
 | **mypy** | Type checking | `make lint` |
-| **black** | Code formatter | `make format` |
-| **isort** | Import sorting | `make format` |
 | **bandit** | Security scanning | CI only |
 | **spectral** | OpenAPI linting | `make api-lint` |
 
@@ -330,7 +332,7 @@ make clean        # Remove cache and build files
 
 GitHub Actions pipeline runs on every push/PR:
 
-- **Lint & Format** - ruff, flake8, black, isort, mypy, pylint
+- **Lint & Format** - ruff + mypy
 - **Tests** - pytest with coverage
 - **Security** - bandit security scan
 
