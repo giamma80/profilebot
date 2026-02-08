@@ -39,7 +39,7 @@ class SearchFilters(BaseModel):
             return "any"
         cleaned = str(value).strip().lower()
         if not cleaned:
-            return "any"
+            raise ValueError("Invalid availability value")
         mapping = {
             "totale": "only_free",
             "parziale": "free_or_partial",
