@@ -6,7 +6,7 @@ import logging
 
 from fastapi import APIRouter, HTTPException, status
 
-from src.api.v1.schemas import SkillSearchRequest, SkillSearchResponse
+from src.api.v1.schemas import ProfileMatch, SkillSearchRequest, SkillSearchResponse
 from src.services.search.skill_search import SearchFilters as ServiceSearchFilters
 from src.services.search.skill_search import search_by_skills
 
@@ -48,13 +48,13 @@ def search_profiles_by_skills(request: SkillSearchRequest) -> SkillSearchRespons
 
     return SkillSearchResponse(
         results=[
-            {
-                "res_id": match.res_id,
-                "cv_id": match.cv_id,
-                "score": match.score,
-                "matched_skills": match.matched_skills,
-                "missing_skills": match.missing_skills,
-            }
+            ProfileMatch(
+                res_id=match.res_id,
+                cv_id=match.cv_id,
+                score=match.score,
+                matched_skills=match.matched_skills,
+                missing_skills=match.missing_skills,
+            )
             for match in response.results
         ],
         total=response.total,

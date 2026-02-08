@@ -7,7 +7,7 @@ import os
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from qdrant_client import QdrantClient, models
 
@@ -91,7 +91,7 @@ def search_by_skills(
     query_vector = (embedding_service or OpenAIEmbeddingService()).embed(
         ", ".join(normalized_skills)
     )
-    client = qdrant_client or get_qdrant_client()
+    client = cast(Any, qdrant_client or get_qdrant_client())
     query_filter = _build_filter(filters)
 
     fetch_limit = max(0, limit) + max(0, offset)
@@ -181,7 +181,7 @@ def _build_filter(filters: SearchFilters | None) -> models.Filter | None:
     if not conditions:
         return None
 
-    return models.Filter(must=conditions)
+    return models.Filter(must=cast(Any, conditions))
 
 
 def _build_matches(
