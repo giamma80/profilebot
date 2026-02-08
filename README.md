@@ -1,5 +1,7 @@
 # ProfileBot
 
+![ProfileBot Logo](docs/logo.png)
+
 Sistema AI per il matching di profili professionali basato su competenze (skill-first approach).
 
 ## Descrizione
@@ -256,7 +258,7 @@ gitGraph
     checkout feature/US-002-qdrant
     commit id: "feat: add Qdrant client"
     commit id: "test: add connection tests"
-    checkout main
+    checkout master
     merge feature/US-002-qdrant tag: "PR #12"
 ```
 
@@ -292,7 +294,7 @@ make dev          # Install dev dependencies + pre-commit hooks
 # Code Quality
 make lint         # Run linters (ruff + mypy)
 make lint-all     # Run linters (same as lint)
-make preflight    # Run all local checks (lint + format check)
+make preflight    # Run all local checks (lint + format check + api lint)
 make format       # Format code (ruff)
 make check        # Run all checks (lint + format check)
 make api-lint     # Lint OpenAPI spec with Spectral
@@ -303,7 +305,7 @@ make test-cov     # Run tests with coverage report
 
 # Run
 make run          # Start API server (uvicorn)
-make docker-up    # Start Qdrant + Redis + Celery workers
+make docker-up    # Start Qdrant + Redis
 make docker-down  # Stop Docker services
 
 # Celery (Job Queue)
@@ -335,6 +337,8 @@ GitHub Actions pipeline runs on every push/PR:
 - **Lint & Format** - ruff + mypy
 - **Tests** - pytest with coverage
 - **Security** - bandit security scan
+- **API Lint** - Spectral su `docs/openapi.yaml`
+- **API Lint** - Spectral su `docs/openapi.yaml`
 
 ---
 
@@ -345,6 +349,9 @@ profilebot/
 ├── src/
 │   ├── api/              # FastAPI endpoints
 │   │   └── v1/           # API version 1
+│   │       ├── router.py      # API router
+│   │       ├── search.py      # Skill search endpoints
+│   │       ├── schemas.py     # Request/response models
 │   │       └── embeddings.py  # Trigger/status endpoints (US-013)
 │   ├── core/             # Core business logic
 │   │   ├── parser/       # CV parsing (US-003)
@@ -355,10 +362,8 @@ profilebot/
 │   │       └── pipeline.py     # CV → embed → upsert
 │   ├── services/         # External services
 │   │   ├── qdrant/       # Vector store (US-002)
-│   │   ├── celery/       # Job queue (US-013)
-│   │   │   ├── app.py          # Celery configuration
-│   │   │   ├── tasks.py        # Async tasks
-│   │   │   └── worker.py       # Worker entry point
+│   │   ├── embedding/    # Job queue + tasks (US-013)
+│   │   ├── search/       # Skill search service (US-006)
 │   │   └── availability/ # Status service (US-007)
 │   └── utils/            # Utilities
 ├── data/
@@ -415,6 +420,8 @@ profilebot/
 
 - [User Stories Dettagliate](docs/USER_STORIES_DETAILED.md)
 - [Contributing Guide](docs/CONTRIBUTING.md)
+- [OpenAPI Spec](docs/openapi.yaml)
+- [Product Backlog](docs/BACKLOG.md)
 - [Analisi Preliminare](docs/analisi_preliminare.md)
 - [Guida Formato CV](docs/cv_format_guide.md)
 - [Appendice Tecnica - Indexing](docs/Appendice%20tecnica%20—%20Indexing.md)
