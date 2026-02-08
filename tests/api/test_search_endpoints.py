@@ -5,9 +5,17 @@ from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
+from pydantic import ValidationError
 
 from src.api.main import app
-from src.services.search.skill_search import ProfileMatch, SearchFilters, SkillSearchResponse
+from src.api.v1.schemas import SearchFilters as ApiSearchFilters
+from src.services.search.skill_search import (
+    ProfileMatch,
+    SkillSearchResponse,
+)
+from src.services.search.skill_search import (
+    SearchFilters as ServiceSearchFilters,
+)
 
 
 @pytest.fixture()
@@ -62,7 +70,7 @@ def test_search_skills__passes_filters_to_service(
 ) -> None:
     captured: dict[str, Any] = {}
 
-    def _search_by_skills(*, filters: SearchFilters | None, **_: Any) -> SkillSearchResponse:
+    def _search_by_skills(*, filters: ServiceSearchFilters | None, **_: Any) -> SkillSearchResponse:
         captured["filters"] = filters
         return SkillSearchResponse(
             results=[],
@@ -138,3 +146,35 @@ def test_search_skills__performance__returns_under_threshold(
     assert response.status_code == 200
     assert elapsed_ms < 500
     assert response.json()["query_time_ms"] < 500
+
+
+@pytest.mark.parametrize(
+    "input_value,expected",
+    [
+        ("totale", "only_free"),
+        ("parziale", "free_or_partial"),
+        ("nessuna disponibilità", "unavailable"),
+        ("any", "any"),
+        ("TOTALE", "only_free"),
+        ("Parziale", "free_or_partial"),
+    ],
+)
+def test_availability_filter__normalizes_italian_values(input_value: str, expected: str) -> None:
+    filters = ApiSearchFilters(availability=input_value)
+    assert filters.availability == expected
+
+
+@pytest.mark.parametrize(
+    "invalid_value",
+    [
+        "invalid",
+        "disponibile",
+        "free",
+        "",
+    ],
+)
+def test_availability_filter__invalid_value__raises_validation_error(
+    invalid_value: str,
+) -> None:
+    with pytest.raises(ValidationError):
+        ApiSearchFilters(availability=invalid_value)
