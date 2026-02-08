@@ -51,11 +51,18 @@ jobs:
     runs-on: ubuntu-latest
     env:
       QDRANT_URL: http://localhost:6333
+      REDIS_URL: redis://localhost:6379/0
+      CELERY_BROKER_URL: redis://localhost:6379/0
+      CELERY_RESULT_BACKEND: redis://localhost:6379/0
     services:
       qdrant:
         image: qdrant/qdrant:latest
         ports:
           - 6333:6333
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
     steps:
       - uses: actions/checkout@v4
 
@@ -82,6 +89,19 @@ jobs:
             sleep 2
           done
           echo "Qdrant did not become ready in time"
+          exit 1
+
+      - name: Wait for Redis
+        run: |
+          for i in $(seq 1 30); do
+            if (printf "" >/dev/tcp/localhost/6379) >/dev/null 2>&1; then
+              echo "Redis is ready"
+              exit 0
+            fi
+            echo "Waiting for Redis..."
+            sleep 2
+          done
+          echo "Redis did not become ready in time"
           exit 1
 
       - name: Run tests
