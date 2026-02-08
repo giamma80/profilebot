@@ -81,6 +81,7 @@ indent-style = "space"
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
 "tests/**/*.py" = ["PLR2004"]
+"tests/api/test_search_endpoints.py" = ["I"]
 
 # ============== MyPy ==============
 [tool.mypy]

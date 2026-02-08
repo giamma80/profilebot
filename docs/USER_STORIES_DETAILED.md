@@ -550,7 +550,7 @@ qdrant_client.upsert(
 **Story Points:** 8
 **Priority:** P1 - High
 **Sprint:** 3
-**Status:** 🚧 In Progress
+**Status:** ✅ Done
 **Feature Branch:** `feature/US-006-search-api`
 **Dipende da:** US-005 (Embedding Pipeline), US-013 (Celery - per infrastruttura Qdrant popolata)
 
@@ -560,13 +560,13 @@ qdrant_client.upsert(
 **Per** trovare candidati con competenze specifiche
 
 ### Acceptance Criteria
-- [ ] Endpoint `POST /api/v1/search/skills`
-- [ ] Input: lista skill, filtri opzionali (seniority, domain, res_ids)
-- [ ] Output: lista profili ranked con score e `res_id`
-- [ ] Paginazione risultati (limit, offset)
-- [ ] Response time < 500ms per query standard
-- [ ] OpenAPI documentation
-- [ ] Filtro per `res_id` opzionale (per ricerche mirate)
+- [x] Endpoint `POST /api/v1/search/skills`
+- [x] Input: lista skill, filtri opzionali (seniority, domain, res_ids)
+- [x] Output: lista profili ranked con score e `res_id`
+- [x] Paginazione risultati (limit, offset)
+- [x] Response time < 500ms per query standard
+- [x] OpenAPI documentation
+- [x] Filtro per `res_id` opzionale (per ricerche mirate)
 
 ### Technical Details
 
@@ -662,19 +662,19 @@ async def search_by_skills(request: SkillSearchRequest) -> SkillSearchResponse:
 7. Documentare API
 
 ### Definition of Done
-- [ ] Endpoint funzionante e documentato
-- [ ] Response < 500ms (testato)
-- [ ] Paginazione corretta
-- [ ] Test coverage ≥ 80%
-- [ ] OpenAPI spec validata
-- [ ] `res_id` incluso in tutti i response
-- [ ] Filtro `res_ids` funzionante
-- [ ] Linting passa (`make lint`)
-- [ ] PR approvata e CI green
+- [x] Endpoint funzionante e documentato
+- [x] Response < 500ms (testato)
+- [x] Paginazione corretta
+- [x] Test coverage ≥ 80%
+- [x] OpenAPI spec validata
+- [x] `res_id` incluso in tutti i response
+- [x] Filtro `res_ids` funzionante
+- [x] Linting passa (`make lint`)
+- [x] PR approvata e CI green
 
 ### Commitment
 - **Data:** 2026-02-08
-- **Issue:** #25
+- **Issue:** #11
 - **Assignee:** Team Development
 
 ---
@@ -2055,6 +2055,251 @@ tests/
 
 ---
 
+## US-015: Dependency Cleanup & Linting Consolidation (Technical Debt)
+
+**Epic:** Infrastructure & DX
+**Story Points:** 3
+**Priority:** P2 - Medium
+**Sprint:** Backlog
+**Feature Branch:** `feature/US-015-dependency-cleanup`
+**Status:** 📋 Backlog
+
+### User Story
+**Come** team di sviluppo
+**Voglio** pulire le dipendenze inutilizzate e consolidare i tool di linting
+**Per** ridurre la complessità del progetto, velocizzare CI/CD e eliminare ridondanze
+
+### Contesto
+
+Durante lo sviluppo delle US precedenti sono emerse le seguenti situazioni:
+
+1. **LlamaIndex non utilizzato** - Le dipendenze `llama-index-*` sono presenti ma l'architettura usa OpenAI e Qdrant direttamente
+2. **Dipendenza `openai` mancante** - Il client OpenAI è usato direttamente ma non è esplicito nelle dipendenze
+3. **Tool di linting ridondanti** - Ruff può sostituire black, isort, flake8, pylint
+4. **CI/CD e pre-commit ridondanti** - Stessi controlli eseguiti due volte
+
+---
+
+### Acceptance Criteria
+
+#### Dipendenze
+- [ ] Rimuovere dipendenze LlamaIndex non utilizzate
+- [ ] Aggiungere `openai>=1.12.0` come dipendenza esplicita
+- [ ] Aggiornare versioni minime delle dipendenze critiche
+- [ ] Verificare che nessun import sia rotto dopo la pulizia
+
+#### Linting Consolidation
+- [ ] Rimuovere `black`, `isort`, `flake8`, `pylint` da dev dependencies
+- [ ] Configurare Ruff per sostituire tutti i tool rimossi
+- [ ] Aggiornare `.pre-commit-config.yaml` per usare solo Ruff
+- [ ] Aggiornare CI workflow per usare solo Ruff
+- [ ] Rimuovere configurazioni obsolete da `pyproject.toml`
+
+#### Validazione
+- [ ] `make lint` passa con solo Ruff
+- [ ] Pre-commit hooks funzionano
+- [ ] CI pipeline verde
+- [ ] Nessuna regressione nei controlli di qualità
+
+---
+
+### Technical Details
+
+#### Dipendenze da Rimuovere
+
+```toml
+# pyproject.toml - DA RIMUOVERE
+"llama-index>=0.10.0",
+"llama-index-vector-stores-qdrant>=0.1.0",
+"llama-index-embeddings-openai>=0.1.0",
+"llama-index-llms-openai>=0.1.0",
+
+# dev dependencies - DA RIMUOVERE
+"black>=24.1.0",
+"isort>=5.13.0",
+"flake8>=7.0.0",
+"pylint>=3.0.0",
+```
+
+#### Dipendenze da Aggiungere/Aggiornare
+
+```toml
+# pyproject.toml - DA AGGIUNGERE
+"openai>=1.12.0",              # Client diretto per embedding
+
+# DA AGGIORNARE (versioni minime)
+"fastapi>=0.115.0",            # Era 0.109.0
+"qdrant-client>=1.12.0",       # Era 1.7.0
+"celery>=5.4.0",               # Era 5.3.0
+"ruff>=0.8.0",                 # Era 0.1.0
+"pytest>=8.0.0",               # Era 7.4.0
+```
+
+#### Configurazione Ruff Consolidata
+
+```toml
+# pyproject.toml - Ruff sostituisce tutto
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = [
+    "E",      # pycodestyle errors (sostituisce flake8)
+    "W",      # pycodestyle warnings
+    "F",      # Pyflakes (sostituisce flake8)
+    "I",      # isort (sostituisce isort standalone)
+    "B",      # flake8-bugbear
+    "C4",     # flake8-comprehensions
+    "UP",     # pyupgrade
+    "PL",     # pylint rules (sostituisce pylint)
+    "RUF",    # Ruff-specific rules
+]
+
+[tool.ruff.format]
+# Sostituisce black
+quote-style = "double"
+indent-style = "space"
+```
+
+#### Pre-commit Semplificato
+
+```yaml
+# .pre-commit-config.yaml - NUOVO
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.0
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.8.0
+    hooks:
+      - id: mypy
+        additional_dependencies: [types-PyYAML]
+
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.0
+    hooks:
+      - id: bandit
+        args: ["-c", "pyproject.toml"]
+```
+
+#### CI Workflow Semplificato
+
+```yaml
+# .github/workflows/ci.yml - Sezione lint semplificata
+lint:
+  runs-on: ubuntu-latest
+  steps:
+    - uses: actions/checkout@v4
+    - uses: astral-sh/setup-uv@v4
+    - run: uv sync --dev
+
+    # UN SOLO tool per linting + formatting
+    - name: Ruff (lint + format check)
+      run: |
+        uv run ruff check .
+        uv run ruff format --check .
+
+    # Type checking
+    - name: MyPy
+      run: uv run mypy src/
+
+    # Security
+    - name: Bandit
+      run: uv run bandit -r src/ -c pyproject.toml
+```
+
+#### Sezioni da Rimuovere da pyproject.toml
+
+```toml
+# DA RIMUOVERE COMPLETAMENTE
+[tool.black]
+...
+
+[tool.isort]
+...
+
+[tool.pylint.main]
+...
+
+[tool.pylint.messages_control]
+...
+
+[tool.pylint.format]
+...
+
+[tool.pylint.design]
+...
+```
+
+---
+
+### Impatto sui Costi
+
+| Aspetto | Prima | Dopo |
+|---------|-------|------|
+| Dipendenze totali | ~25 | ~18 |
+| Tool linting | 5 (ruff, black, isort, flake8, pylint) | 1 (ruff) |
+| Tempo CI lint step | ~45s | ~15s |
+| Pre-commit hooks | 6 | 3 |
+| Complessità pyproject.toml | Alta | Media |
+
+**Risparmio stimato CI:** ~30s per run × ~50 run/giorno = **25 min/giorno**
+
+---
+
+### Rischi e Mitigazioni
+
+| Rischio | Probabilità | Mitigazione |
+|---------|-------------|-------------|
+| Import rotti dopo rimozione LlamaIndex | Bassa | Grep per `llama` nel codice prima della rimozione |
+| Ruff meno strict di pylint | Media | Abilitare `PL` rules in Ruff |
+| Breaking change in dipendenze aggiornate | Bassa | Aggiornare una alla volta, run test |
+
+---
+
+### Definition of Done
+
+- [ ] Dipendenze LlamaIndex rimosse
+- [ ] `openai` aggiunto esplicitamente
+- [ ] Versioni dipendenze aggiornate
+- [ ] Black, isort, flake8, pylint rimossi
+- [ ] Ruff configurato come unico linter/formatter
+- [ ] Pre-commit usa solo Ruff + mypy + bandit
+- [ ] CI workflow semplificato
+- [ ] Configurazioni obsolete rimosse da pyproject.toml
+- [ ] `make lint` passa
+- [ ] `make test` passa
+- [ ] CI green
+- [ ] PR approvata
+
+---
+
+### Checklist Pre-Implementazione
+
+```bash
+# 1. Verifica che LlamaIndex non sia usato
+grep -r "llama_index\|llama-index\|from llama" src/
+
+# 2. Verifica import openai esistenti
+grep -r "from openai\|import openai" src/
+
+# 3. Lista dipendenze attuali
+uv pip list | grep -E "llama|black|isort|flake8|pylint"
+```
+
+---
+
+### Estimate
+
+**0.5-1 giorno** (principalmente configurazione e testing)
+
+---
+
 ## Dipendenze tra User Stories
 
 ```mermaid
@@ -2073,6 +2318,7 @@ graph LR
     US007 --> US008
     US005 --> US014[US-014: Test Coverage]
     US013 --> US014
+    US001 --> US015[US-015: Dep Cleanup]
 ```
 
 > **Note:** US-005 (Core) e US-013 (Celery) sono state separate per gestire volumi di 10.000+ CV con richieste multiple al giorno.
@@ -2088,8 +2334,9 @@ graph LR
 | US-003 | `feature/US-003-cv-parser` | 1 | ✅ Done |
 | US-004 | `feature/US-004-skill-extraction` | 2 | ✅ Done |
 | US-005 | `feature/US-005-embedding-pipeline` | 2 | ✅ Done |
-| US-006 | `feature/US-006-search-api` | 3 | 🚧 In Progress |
+| US-006 | `feature/US-006-search-api` | 3 | ✅ Done |
 | US-007 | `feature/US-007-availability-filter` | 3 | |
 | US-008 | `feature/US-008-job-match` | 4 | |
 | US-013 | `feature/US-013-celery-job-queue` | 2/3 | ✅ Done |
 | US-014 | `feature/US-014-test-coverage` | 3 | Technical Debt |
+| US-015 | `feature/US-015-dependency-cleanup` | Backlog | Technical Debt |
