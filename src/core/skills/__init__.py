@@ -19,9 +19,9 @@ from src.core.skills.normalizer import (
 from src.core.skills.schemas import NormalizedSkill, SkillExtractionResult
 
 __all__ = [
+    "FUZZY_THRESHOLD",
     "AliasMatcher",
     "ExactMatcher",
-    "FUZZY_THRESHOLD",
     "FuzzyMatcher",
     "NormalizedSkill",
     "SkillDictionary",

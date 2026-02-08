@@ -108,10 +108,10 @@ class DocxParser:
             for cell in row.cells:
                 text = cell.text.strip()
                 if text:
-                    for line in text.splitlines():
-                        line = line.strip()
-                        if line:
-                            yield line
+                    for raw_line in text.splitlines():
+                        cleaned_line = raw_line.strip()
+                        if cleaned_line:
+                            yield cleaned_line
 
     def _iter_block_items(self, document: DocxDocument) -> Iterable[Paragraph | Table]:
         """Yield paragraphs and tables in document order."""
@@ -219,7 +219,8 @@ class DocxParser:
 
     def _is_new_experience_line(self, line: str) -> bool:
         """Heuristic to detect a new experience entry."""
-        return line.isupper() or "–" in line or "-" in line
+        normalized = line.replace("\u2013", "-")
+        return normalized.isupper() or "-" in normalized
 
     def _split_keywords(self, text: str) -> list[str]:
         """Split a skills string into keywords."""

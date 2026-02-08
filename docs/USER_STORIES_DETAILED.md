@@ -21,7 +21,7 @@
 - [x] Repository GitHub creato con struttura standard
 - [x] Branch protection su `main` (require PR, require CI pass)
 - [x] GitHub Actions workflow per lint e test
-- [x] Pre-commit hooks configurati (ruff, black, mypy)
+- [x] Pre-commit hooks configurati (ruff, mypy, bandit)
 - [x] Makefile con comandi standard
 - [x] pyproject.toml con dipendenze e configurazioni tool
 
@@ -29,8 +29,8 @@
 
 **Stack:**
 - Package Manager: `uv`
-- Linting: ruff, flake8, pylint, mypy
-- Formatting: black, isort
+- Linting: ruff, mypy, bandit
+- Formatting: ruff
 - Security: bandit
 - Pre-commit: pre-commit framework
 
@@ -48,7 +48,7 @@
 1. Checkout code
 2. Setup Python + uv
 3. Install dependencies
-4. Run linters (ruff, flake8, mypy, pylint)
+4. Run linters (ruff, mypy)
 5. Run tests (pytest)
 6. Security scan (bandit)
 

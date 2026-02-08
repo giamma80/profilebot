@@ -9,10 +9,10 @@ help:
 	@echo "  make dev         Install dev dependencies + pre-commit hooks"
 	@echo ""
 	@echo "Code Quality:"
-	@echo "  make lint        Run fast linters (ruff + flake8 + mypy)"
-	@echo "  make lint-all    Run ALL linters (+ pylint)"
-	@echo "  make preflight   Run all local checks (lint-all + format check)"
-	@echo "  make format      Format code with black + isort"
+	@echo "  make lint        Run linters (ruff + mypy)"
+	@echo "  make lint-all    Run linters (same as lint)"
+	@echo "  make preflight   Run all local checks (lint + format check + api lint)"
+	@echo "  make format      Format code with ruff"
 	@echo "  make check       Run all checks (lint + format check)"
 	@echo "  make api-lint    Lint OpenAPI spec with Spectral"
 	@echo ""
@@ -44,37 +44,33 @@ dev: install
 	@echo "🪝 Setting up pre-commit hooks..."
 	uv run pre-commit install --install-hooks
 	@echo "📡 Installing Spectral (API linting)..."
-	npm install -g @stoplight/spectral-cli 2>/dev/null || echo "⚠️  npm not found, skip Spectral"
+	@command -v npm >/dev/null
+	npm install -g @stoplight/spectral-cli
 	@echo "✅ Dev environment ready!"
 
 # ============== Code Quality ==============
 
 lint: dev
-	@echo "🔍 Running linters (fast)..."
+	@echo "🔍 Running linters..."
 	uv run ruff check src/ tests/
-	uv run flake8 src/ tests/ --max-line-length=100 --ignore=E501,W503,E203
 	uv run mypy src/ --ignore-missing-imports
 
 lint-all: lint
-	@echo "🔍 Running pylint (thorough)..."
-	uv run pylint src/ --rcfile=pyproject.toml || true
+	@echo "🔍 Linting complete."
 
-pylint:
-	@echo "🔍 Running pylint..."
-	uv run pylint src/ --rcfile=pyproject.toml
+pylint: lint
+	@echo "✅ Ruff + mypy completed."
 
 format:
 	@echo "✨ Formatting code..."
-	uv run isort src/ tests/
-	uv run black src/ tests/
+	uv run ruff format src/ tests/
 	uv run ruff check src/ tests/ --fix
 
 format-check:
 	@echo "🔍 Checking format..."
-	uv run isort --check-only src/ tests/
-	uv run black --check src/ tests/
+	uv run ruff format --check src/ tests/
 
-preflight: lint-all format-check
+preflight: lint-all format-check api-lint
 	@echo "✅ Preflight checks passed!"
 
 check: lint format-check
@@ -85,7 +81,8 @@ api-lint:
 	@if [ -f "docs/openapi.yaml" ]; then \
 		spectral lint docs/openapi.yaml; \
 	else \
-		echo "⚠️  No OpenAPI spec found at docs/openapi.yaml"; \
+		echo "❌ Missing OpenAPI spec at docs/openapi.yaml"; \
+		exit 1; \
 	fi
 
 # ============== Testing ==============

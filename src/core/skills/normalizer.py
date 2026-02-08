@@ -142,9 +142,9 @@ class SkillNormalizer:
 
 
 __all__ = [
+    "FUZZY_THRESHOLD",
     "AliasMatcher",
     "ExactMatcher",
     "FuzzyMatcher",
     "SkillNormalizer",
-    "FUZZY_THRESHOLD",
 ]
