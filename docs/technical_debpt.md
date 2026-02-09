@@ -166,5 +166,98 @@
 
 ---
 
+## TD-005 — Pipeline Orchestrator & Unified Monitoring
+
+**Titolo:** Introdurre un orchestratore per pipeline con monitoring unificato  
+**Motivazione:** la crescita delle fonti e dei formati richiede coordinamento, retry e visibilità end‑to‑end  
+**Obiettivo:** centralizzare la gestione delle pipeline (per source type) con UI di osservabilità
+
+### Architettura da usare/modificare
+- Orchestratore (es. Prefect/Dagster) come livello di controllo dei flow
+- Flussi definiti per `source_type` con step modulari (TD-003)
+- Integrazione con Celery per task heavy, mantenendo orchestration esterna
+- UI unica per stato pipeline, tempi, errori e retry
+
+### Schema architetturale (Mermaid)
+```mermaid
+flowchart TB
+    subgraph Sources["Fonti Ingestion"]
+        DOCX[DOCX Files]
+        PDF[PDF Files]
+        API[External APIs]
+    end
+
+    subgraph Orchestrator["Pipeline Orchestrator"]
+        FlowA["Flow: DOCX"]
+        FlowB["Flow: PDF"]
+        FlowC["Flow: API"]
+    end
+
+    subgraph Core["Core Ingestion"]
+        Extract[Extract]
+        Clean[Clean]
+        Normalize[Normalize]
+        Enrich[Enrich]
+    end
+
+    subgraph Workers["Task Execution"]
+        Celery[Celery Workers]
+    end
+
+    subgraph Storage["Storage"]
+        Qdrant[(Qdrant)]
+        Redis[(Redis)]
+    end
+
+    subgraph Monitoring["Unified Monitoring"]
+        UI[Orchestrator UI]
+        Metrics[Metrics & Alerts]
+    end
+
+    DOCX --> FlowA
+    PDF --> FlowB
+    API --> FlowC
+
+    FlowA --> Extract
+    FlowB --> Extract
+    FlowC --> Extract
+
+    Extract --> Clean --> Normalize --> Enrich
+    Enrich --> Celery
+    Celery --> Qdrant
+    Celery --> Redis
+
+    FlowA --> UI
+    FlowB --> UI
+    FlowC --> UI
+    UI --> Metrics
+```
+
+### Componenti da aggiornare/refactorizzare/aggiungere
+- **Aggiungere**
+  - `src/services/orchestrator/__init__.py`
+  - `src/services/orchestrator/flows.py` → definizione dei flow per source type
+  - `src/services/orchestrator/config.py` → mapping source → flow
+- **Refactor**
+  - `src/services/embedding/tasks.py` → invocazione tramite orchestratore
+  - `src/core/ingestion/pipeline.py` → step invocabili dai flow
+- **Aggiornare**
+  - `tests/test_embedding_pipeline.py` → verifica invocazione flow
+  - `tests/test_celery_tasks.py` → integrazione orchestratore ↔ worker
+
+### Anti‑pattern da evitare (o rimuovere)
+- Logica di orchestrazione sparsa tra API e task
+- Flow duplicati con differenze minime non dichiarate
+- Monitoring frammentato in più dashboard non correlate
+- Retry gestiti localmente senza visibilità end‑to‑end
+
+### Acceptance Criteria
+- [ ] Orchestratore definisce flow per almeno 2 source type
+- [ ] UI mostra stato e tempi delle pipeline
+- [ ] Retry centralizzati e tracciabili
+- [ ] Integrazione con Celery operativa
+
+---
+
 ## Notes
 Queste storie sono la base per le future issue GitHub e dovranno evolvere in task più granulari per ciascun connettore e pipeline.
