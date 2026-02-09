@@ -166,77 +166,25 @@
 
 ---
 
-## TD-005 — Pipeline Orchestrator & Unified Monitoring
+## TD-005 — Pipeline Orchestrator, Consumer & Unified Monitoring
 
-**Titolo:** Introdurre un orchestratore per pipeline con monitoring unificato  
-**Motivazione:** la crescita delle fonti e dei formati richiede coordinamento, retry e visibilità end‑to‑end  
-**Obiettivo:** centralizzare la gestione delle pipeline (per source type) con UI di osservabilità
+**Titolo:** Introdurre un orchestratore per pipeline con consumer esterni e monitoring unificato  
+**Motivazione:** crescita delle fonti e formati richiede coordinamento end‑to‑end e visibilità unica  
+**Obiettivo:** centralizzare la gestione delle pipeline per source type, includendo consumer per producer esterni **sotto un’unica UI**
 
 ### Architettura da usare/modificare
-- Orchestratore (es. Prefect/Dagster) come livello di controllo dei flow
-- Flussi definiti per `source_type` con step modulari (TD-003)
-- Integrazione con Celery per task heavy, mantenendo orchestration esterna
-- UI unica per stato pipeline, tempi, errori e retry
-
-### Schema architetturale (Mermaid)
-```mermaid
-flowchart TB
-    subgraph Sources["Fonti Ingestion"]
-        DOCX[DOCX Files]
-        PDF[PDF Files]
-        API[External APIs]
-    end
-
-    subgraph Orchestrator["Pipeline Orchestrator"]
-        FlowA["Flow: DOCX"]
-        FlowB["Flow: PDF"]
-        FlowC["Flow: API"]
-    end
-
-    subgraph Core["Core Ingestion"]
-        Extract[Extract]
-        Clean[Clean]
-        Normalize[Normalize]
-        Enrich[Enrich]
-    end
-
-    subgraph Workers["Task Execution"]
-        Celery[Celery Workers]
-    end
-
-    subgraph Storage["Storage"]
-        Qdrant[(Qdrant)]
-        Redis[(Redis)]
-    end
-
-    subgraph Monitoring["Unified Monitoring"]
-        UI[Orchestrator UI]
-        Metrics[Metrics & Alerts]
-    end
-
-    DOCX --> FlowA
-    PDF --> FlowB
-    API --> FlowC
-
-    FlowA --> Extract
-    FlowB --> Extract
-    FlowC --> Extract
-
-    Extract --> Clean --> Normalize --> Enrich
-    Enrich --> Celery
-    Celery --> Qdrant
-    Celery --> Redis
-
-    FlowA --> UI
-    FlowB --> UI
-    FlowC --> UI
-    UI --> Metrics
-```
+- **Orchestratore unico** (Prefect/Dagster) come livello di controllo dei flow, **UI condivisa**
+- Flow per `source_type` che includono:
+  - **Consumer storage** (CV, CSV, artefatti file)
+  - **Consumer API** (future fonti dinamiche)
+- Integrazione con Celery per task heavy, orchestrazione esterna
+- Un’unica UI per stato pipeline, tempi, errori e retry end‑to‑end
 
 ### Componenti da aggiornare/refactorizzare/aggiungere
 - **Aggiungere**
   - `src/services/orchestrator/__init__.py`
-  - `src/services/orchestrator/flows.py` → definizione dei flow per source type
+  - `src/services/orchestrator/flows.py` → definizione flow per source type
+  - `src/services/orchestrator/consumers.py` → storage/API consumers
   - `src/services/orchestrator/config.py` → mapping source → flow
 - **Refactor**
   - `src/services/embedding/tasks.py` → invocazione tramite orchestratore
@@ -247,15 +195,146 @@ flowchart TB
 
 ### Anti‑pattern da evitare (o rimuovere)
 - Logica di orchestrazione sparsa tra API e task
-- Flow duplicati con differenze minime non dichiarate
+- Consumer “hardcoded” senza config per source type
 - Monitoring frammentato in più dashboard non correlate
 - Retry gestiti localmente senza visibilità end‑to‑end
 
 ### Acceptance Criteria
 - [ ] Orchestratore definisce flow per almeno 2 source type
-- [ ] UI mostra stato e tempi delle pipeline
+- [ ] Consumer storage e API operativi
+- [ ] UI unica mostra stato e tempi delle pipeline
 - [ ] Retry centralizzati e tracciabili
 - [ ] Integrazione con Celery operativa
+
+---
+
+## TD-006 — External Producer Service (ProfileScraper)
+
+**Titolo:** Separare la produzione degli artefatti in un servizio dedicato  
+**Motivazione:** disaccoppiare scraping/ETL dal dominio ProfileBot e proteggere credenziali HR  
+**Obiettivo:** introdurre un servizio producer che genera artefatti e pubblica eventi, **monitorato nello stesso orchestratore**
+
+### Architettura da usare/modificare
+- Nuovo servizio **ProfileScraper**:
+  - Scraper/ETL verso HR interno, SharePoint, API esterne
+  - Output su **storage condiviso**
+  - Eventi su stream (Redis Streams o equivalente)
+- Flow di ProfileScraper **registrati nello stesso orchestratore** usato da ProfileBot
+
+### Componenti da aggiornare/refactorizzare/aggiungere
+- **Aggiungere (nuovo repo/servizio)**
+  - `profilescraper/` con moduli scraper esistenti
+  - `profilescraper/output/` → writer su storage
+  - `profilescraper/events/` → publisher eventi
+  - `profilescraper/config/` → mapping source → output
+  - `profilescraper/flows.py` → flow registrati nel backend orchestratore
+- **Aggiornare (ProfileBot)**
+  - `src/services/orchestrator/consumers.py` → consumer eventi
+  - `src/services/ingestion/contracts.py` → supporto `source_type` esterni
+
+### Anti‑pattern da evitare (o rimuovere)
+- Scraper embedded nel core ProfileBot
+- Condivisione diretta di credenziali HR dentro ProfileBot
+- Output non versionato o senza metadata minimi
+- Eventi senza `artifact_uri` o `schema_version`
+
+### Acceptance Criteria
+- [ ] ProfileScraper produce artefatti su storage condiviso
+- [ ] Eventi pubblicati con metadata minimi (source_type, schema_version, checksum)
+- [ ] Flow ProfileScraper visibili nella **stessa UI** dell’orchestratore
+- [ ] ProfileBot consuma eventi e avvia ingestion
+- [ ] Pipeline decoupled: due container distinti (ProfileBot + ProfileScraper)
+
+---
+
+## TD-007 — Orchestrator Setup & End‑to‑End Observability
+
+**Titolo:** Setup orchestratore unico per monitoraggio end‑to‑end  
+**Motivazione:** serve una fonte unica per verificare producer, consumer e aggiornamento KB  
+**Obiettivo:** configurare Prefect/Dagster come orchestratore centrale con UI unica e health flows
+
+### Architettura da usare/modificare
+- Backend orchestratore unico (DB + UI)
+- Registrazione flow **ProfileScraper** e **ProfileBot** nello stesso backend
+- Health flows schedulati per:
+  - Producer attivi
+  - Event stream operativo
+  - Consumer che processano
+  - KB aggiornata (Qdrant/Redis)
+
+### Schema architetturale end‑to‑end (Mermaid)
+```mermaid
+flowchart TB
+    subgraph Orchestrator[Unified Orchestrator UI]
+        UI[Single Monitoring UI]
+        FlowP[ProfileScraper Flows]
+        FlowB[ProfileBot Flows]
+        Health[Health Flows]
+    end
+
+    subgraph Producer[ProfileScraper]
+        Scrape[Scrape]
+        Publish[Publish Events]
+        Store[Write Artifacts]
+    end
+
+    subgraph Eventing[Event Stream]
+        Stream[Redis Streams]
+    end
+
+    subgraph Storage[Shared Storage]
+        ObjectStore[Object Storage]
+    end
+
+    subgraph Consumer[ProfileBot]
+        Consume[Consume Events]
+        Ingest[Ingestion Pipeline]
+        Embed[Embedding/Upsert]
+    end
+
+    subgraph KB[Knowledge Base]
+        Qdrant[(Qdrant)]
+        Redis[(Redis)]
+    end
+
+    FlowP --> Scrape --> Store --> ObjectStore
+    Scrape --> Publish --> Stream
+    FlowB --> Consume --> Ingest --> Embed --> Qdrant
+    Embed --> Redis
+
+    Stream --> Consume
+    ObjectStore --> Ingest
+
+    Health --> Stream
+    Health --> ObjectStore
+    Health --> Qdrant
+    Health --> Redis
+
+    UI --> FlowP
+    UI --> FlowB
+    UI --> Health
+```
+
+### Componenti da aggiornare/refactorizzare/aggiungere
+- **Aggiungere**
+  - `src/services/orchestrator/backend.py` → config backend UI/DB
+  - `profilescraper/flows.py` → flow registrati
+  - `src/services/orchestrator/health.py` → flow di health
+- **Aggiornare**
+  - `docker-compose.yml` o deployment per orchestratore (se incluso)
+  - `README.md` → come accedere alla UI unificata
+
+### Anti‑pattern da evitare (o rimuovere)
+- Due orchestratori separati senza visione unica
+- Health check manuali senza tracciabilità
+- Metriche non collegate ai flow
+- Flow non registrati nel backend unico
+
+### Acceptance Criteria
+- [ ] UI unica mostra flow ProfileScraper e ProfileBot
+- [ ] Health flows schedulati e visibili
+- [ ] Event stream, storage e KB monitorati end‑to‑end
+- [ ] Accesso UI documentato
 
 ---
 
