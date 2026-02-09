@@ -423,6 +423,7 @@ profilebot/
 - [Contributing Guide](docs/CONTRIBUTING.md)
 - [OpenAPI Spec](docs/openapi.yaml)
 - [Product Backlog](docs/BACKLOG.md)
+- [Technical Debt — Ingestion Readiness](docs/technical_debpt.md)
 - [Analisi Preliminare](docs/analisi_preliminare.md)
 - [Guida Formato CV](docs/cv_format_guide.md)
 - [Appendice Tecnica - Indexing](docs/Appendice%20tecnica%20—%20Indexing.md)
