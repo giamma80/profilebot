@@ -180,6 +180,73 @@
 - Integrazione con Celery per task heavy, orchestrazione esterna
 - Un’unica UI per stato pipeline, tempi, errori e retry end‑to‑end
 
+### Schema architetturale (Mermaid)
+```mermaid
+flowchart TB
+    subgraph Producer["ProfileScraper (Producer)"]
+        Scrapers[Scrapers]
+        Artifacts[Artifacts: DOCX/CSV/JSON]
+        Events[Event Stream]
+    end
+
+    subgraph Storage["Shared Storage"]
+        Bucket[Object Storage]
+    end
+
+    subgraph Orchestrator["Pipeline Orchestrator (Prefect/Dagster)"]
+        FlowDocx["Flow: DOCX"]
+        FlowCsv["Flow: CSV"]
+        FlowApi["Flow: API"]
+        ConsumerS["Storage Consumer"]
+        ConsumerA["API Consumer"]
+    end
+
+    subgraph Core["Core Ingestion"]
+        Extract[Extract]
+        Clean[Clean]
+        Normalize[Normalize]
+        Enrich[Enrich]
+    end
+
+    subgraph Workers["Task Execution"]
+        Celery[Celery Workers]
+    end
+
+    subgraph StorageCore["ProfileBot Storage"]
+        Qdrant[(Qdrant)]
+        Redis[(Redis)]
+    end
+
+    subgraph Monitoring["Unified Monitoring"]
+        UI[Orchestrator UI]
+        Metrics[Metrics & Alerts]
+    end
+
+    Scrapers --> Artifacts --> Bucket
+    Scrapers --> Events
+
+    Events --> Orchestrator
+    Bucket --> ConsumerS
+    ConsumerA --> FlowApi
+
+    Orchestrator --> FlowDocx
+    Orchestrator --> FlowCsv
+    Orchestrator --> FlowApi
+
+    FlowDocx --> ConsumerS
+    FlowCsv --> ConsumerS
+    FlowApi --> ConsumerA
+
+    ConsumerS --> Extract
+    ConsumerA --> Extract
+    Extract --> Clean --> Normalize --> Enrich
+    Enrich --> Celery
+    Celery --> Qdrant
+    Celery --> Redis
+
+    Orchestrator --> UI --> Metrics
+```
+
 ### Componenti da aggiornare/refactorizzare/aggiungere
 - **Aggiungere**
   - `src/services/orchestrator/__init__.py`
@@ -313,6 +380,20 @@ flowchart TB
     UI --> FlowP
     UI --> FlowB
     UI --> Health
+```
+
+### Timeline end‑to‑end (Mermaid)
+```mermaid
+flowchart LR
+    T0[Scraper run] --> T1[Write artifact to storage]
+    T1 --> T2[Publish event to stream]
+    T2 --> T3[Orchestrator receives event]
+    T3 --> T4[Consumer fetches artifact]
+    T4 --> T5[Extract/Clean/Normalize/Enrich]
+    T5 --> T6[Celery tasks execute]
+    T6 --> T7[Upsert to Qdrant]
+    T7 --> T8[Update Redis/cache]
+    T8 --> T9[KB ready for API/LLM queries]
 ```
 
 ### Componenti da aggiornare/refactorizzare/aggiungere
