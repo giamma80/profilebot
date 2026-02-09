@@ -353,7 +353,7 @@ flowchart TB
         ObjectStore[Object Storage]
     end
 
-    subgraph ApiSource[External API Source (optional)]
+    subgraph ApiSource[External API Source - optional]
         Api[API Source]
     end
 
