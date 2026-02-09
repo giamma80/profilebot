@@ -186,7 +186,7 @@ flowchart TB
     subgraph Producer["ProfileScraper (Producer)"]
         Scrapers[Scrapers]
         Artifacts[Artifacts: DOCX/CSV/JSON]
-        Events[Event Stream]
+        Events[Redis Streams]
     end
 
     subgraph Storage["Shared Storage"]
@@ -353,8 +353,13 @@ flowchart TB
         ObjectStore[Object Storage]
     end
 
+    subgraph ApiSource[External API Source (optional)]
+        Api[API Source]
+    end
+
     subgraph Consumer[ProfileBot]
         Consume[Consume Events]
+        ApiConsumer[API Consumer]
         Ingest[Ingestion Pipeline]
         Embed[Embedding/Upsert]
     end
@@ -371,6 +376,7 @@ flowchart TB
 
     Stream --> Consume
     ObjectStore --> Ingest
+    Api --> ApiConsumer --> Ingest
 
     Health --> Stream
     Health --> ObjectStore
