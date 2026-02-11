@@ -18,6 +18,7 @@ dependencies = [
     "qdrant-client>=1.12.0",
     "python-docx>=1.1.0",
     "rapidfuzz>=3.6.1",
+    "email-validator>=2.1.1",
     "pyyaml>=6.0.1",
     "pypdf>=3.17.0",
     "redis>=5.0.0",
@@ -37,6 +38,7 @@ dev = [
     "ruff>=0.8.0",
     "mypy>=1.8.0",
     "types-PyYAML>=6.0.12.20250402",
+    "types-redis>=4.6.0.20240425",
     "pre-commit>=3.6.0",
     "bandit>=1.7.0",
 ]

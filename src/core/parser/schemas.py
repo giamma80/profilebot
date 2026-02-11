@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 
 from pydantic import BaseModel, Field
 
@@ -15,7 +15,7 @@ class CVMetadata(BaseModel):
     file_name: str = Field(..., description="Original file name")
     full_name: str | None = Field(None, description="Candidate full name")
     current_role: str | None = Field(None, description="Current role or title")
-    parsed_at: datetime = Field(default_factory=datetime.utcnow)
+    parsed_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
 
 class SkillSection(BaseModel):

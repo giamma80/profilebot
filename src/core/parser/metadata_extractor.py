@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 from collections.abc import Iterable
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import UTC, datetime
 
 
 @dataclass(frozen=True)
@@ -109,7 +109,7 @@ def extract_metadata(text: str) -> ParsedMetadata:
     """
     lines = [line.strip() for line in text.splitlines()]
     candidates = extract_metadata_candidates(lines)
-    parsed_at = datetime.utcnow()
+    parsed_at = datetime.now(UTC)
     base_name = candidates.full_name or _first_non_empty_line(lines) or "cv"
     cv_id = build_cv_id(base_name, parsed_at)
 
@@ -134,6 +134,6 @@ def build_cv_id(file_name: str, parsed_at: datetime | None = None) -> str:
 
     If parsed_at is omitted, current UTC timestamp is used.
     """
-    timestamp = (parsed_at or datetime.utcnow()).strftime("%Y%m%d%H%M%S")
+    timestamp = (parsed_at or datetime.now(UTC)).strftime("%Y%m%d%H%M%S")
     base = re.sub(r"[^a-zA-Z0-9_-]+", "-", file_name).strip("-").lower()
     return f"{base}-{timestamp}"

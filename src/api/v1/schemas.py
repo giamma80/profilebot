@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from pydantic import BaseModel, Field, field_validator
 
+from src.utils.normalization import normalize_string_list
+
 
 class SearchFilters(BaseModel):
     """Optional filters for skill search."""
@@ -22,14 +24,7 @@ class SearchFilters(BaseModel):
             return None
         if not isinstance(value, list):
             raise ValueError("Expected a list")
-        normalized: list[str] = []
-        seen: set[str] = set()
-        for item in value:
-            cleaned = str(item).strip().lower()
-            if not cleaned or cleaned in seen:
-                continue
-            seen.add(cleaned)
-            normalized.append(cleaned)
+        normalized = normalize_string_list(value)
         return normalized or None
 
     @field_validator("availability", mode="before")
@@ -70,14 +65,7 @@ class SkillSearchRequest(BaseModel):
     def normalize_skills(cls, value: object) -> list[str]:
         if not isinstance(value, list):
             raise ValueError("Expected a list of skills")
-        normalized: list[str] = []
-        seen: set[str] = set()
-        for item in value:
-            cleaned = str(item).strip().lower()
-            if not cleaned or cleaned in seen:
-                continue
-            seen.add(cleaned)
-            normalized.append(cleaned)
+        normalized = normalize_string_list(value)
         if not normalized:
             raise ValueError("At least one skill required")
         return normalized

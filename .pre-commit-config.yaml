@@ -10,7 +10,7 @@ repos:
     rev: v1.8.0
     hooks:
       - id: mypy
-        additional_dependencies: [types-PyYAML]
+        additional_dependencies: [types-PyYAML, types-redis]
         args: [--ignore-missing-imports]
 
   - repo: https://github.com/PyCQA/bandit

@@ -19,6 +19,18 @@ class Settings(BaseSettings):
     )
 
     redis_url: str = Field(default="redis://localhost:6379/0", validation_alias="REDIS_URL")
+    availability_cache_ttl: int = Field(
+        default=3600,
+        validation_alias="AVAILABILITY_CACHE_TTL",
+    )
+    availability_refresh_csv_path: str | None = Field(
+        default=None,
+        validation_alias="AVAILABILITY_REFRESH_CSV_PATH",
+    )
+    availability_refresh_schedule: str = Field(
+        default="0 * * * *",
+        validation_alias="AVAILABILITY_REFRESH_SCHEDULE",
+    )
     celery_broker_url: str = Field(
         default="redis://localhost:6379/0",
         validation_alias="CELERY_BROKER_URL",

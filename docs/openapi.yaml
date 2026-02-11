@@ -4,7 +4,7 @@ info:
   description: API per gestione embedding e servizi di salute applicativa.
   contact:
     name: ProfileBot Team
-    email: team@profilebot.local
+    email: team@profilebot.example.com
   version: 0.1.0
 servers:
 - url: /
@@ -138,6 +138,99 @@ paths:
                 additionalProperties: true
                 type: object
                 title: Response Get Embedding Stats Api V1 Embeddings Stats Get
+  /api/v1/search/skills:
+    post:
+      tags:
+      - search
+      summary: Cerca profili per skill
+      description: Search profiles by skills with optional filters.
+      operationId: search_profiles_by_skills_api_v1_search_skills_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SkillSearchRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SkillSearchResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/availability/load:
+    post:
+      tags:
+      - availability
+      summary: Carica disponibilità da CSV
+      description: Load availability data into Redis cache from CSV path or body.
+      operationId: load_availability_api_v1_availability_load_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AvailabilityLoadRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AvailabilityLoadResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/availability/{res_id}:
+    get:
+      tags:
+      - availability
+      summary: Ottieni disponibilità per res_id
+      description: Return availability record for a given res_id from cache.
+      operationId: get_availability_api_v1_availability__res_id__get
+      parameters:
+      - name: res_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Res Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AvailabilityResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/availability/stats:
+    get:
+      tags:
+      - availability
+      summary: Statistiche disponibilità cache
+      description: Return availability cache statistics.
+      operationId: get_availability_stats_api_v1_availability_stats_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AvailabilityStatsResponse'
   /health:
     get:
       tags:
@@ -153,6 +246,113 @@ paths:
               schema: {}
 components:
   schemas:
+    AvailabilityLoadRequest:
+      properties:
+        csv_path:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Csv Path
+        csv_content:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Csv Content
+      additionalProperties: false
+      type: object
+      title: AvailabilityLoadRequest
+      description: Request payload for loading availability data.
+    AvailabilityLoadResponse:
+      properties:
+        total_rows:
+          type: integer
+          title: Total Rows
+        loaded:
+          type: integer
+          title: Loaded
+        skipped:
+          type: integer
+          title: Skipped
+      type: object
+      required:
+      - total_rows
+      - loaded
+      - skipped
+      title: AvailabilityLoadResponse
+      description: Response payload for a load operation.
+    AvailabilityResponse:
+      properties:
+        res_id:
+          type: integer
+          title: Res Id
+        status:
+          $ref: '#/components/schemas/AvailabilityStatus'
+        allocation_pct:
+          type: integer
+          title: Allocation Pct
+        current_project:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Current Project
+        available_from:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Available From
+        available_to:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Available To
+        manager_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Manager Name
+        updated_at:
+          type: string
+          title: Updated At
+      type: object
+      required:
+      - res_id
+      - status
+      - allocation_pct
+      - updated_at
+      title: AvailabilityResponse
+      description: Response payload for a single availability record.
+    AvailabilityStatsResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+        by_status:
+          additionalProperties:
+            type: integer
+          propertyNames:
+            $ref: '#/components/schemas/AvailabilityStatus'
+          type: object
+          title: By Status
+        last_updated_at:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Last Updated At
+      type: object
+      required:
+      - total
+      - by_status
+      title: AvailabilityStatsResponse
+      description: Response payload with availability cache stats.
+    AvailabilityStatus:
+      type: string
+      enum:
+      - free
+      - partial
+      - busy
+      - unavailable
+      title: AvailabilityStatus
+      description: Supported availability states.
     EmbeddingItem:
       properties:
         cv_path:
@@ -178,6 +378,133 @@ components:
           title: Detail
       type: object
       title: HTTPValidationError
+    ProfileMatch:
+      properties:
+        res_id:
+          type: integer
+          title: Res Id
+        cv_id:
+          type: string
+          title: Cv Id
+        score:
+          type: number
+          maximum: 1.0
+          minimum: 0.0
+          title: Score
+        matched_skills:
+          items:
+            type: string
+          type: array
+          title: Matched Skills
+        missing_skills:
+          items:
+            type: string
+          type: array
+          title: Missing Skills
+      additionalProperties: false
+      type: object
+      required:
+      - res_id
+      - cv_id
+      - score
+      - matched_skills
+      - missing_skills
+      title: ProfileMatch
+      description: Single profile match result.
+    SearchFilters:
+      properties:
+        res_ids:
+          anyOf:
+          - items:
+              type: integer
+            type: array
+          - type: 'null'
+          title: Res Ids
+        skill_domains:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Skill Domains
+        seniority:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Seniority
+        availability:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Availability
+          default: any
+      additionalProperties: false
+      type: object
+      title: SearchFilters
+      description: Optional filters for skill search.
+    SkillSearchRequest:
+      properties:
+        skills:
+          items:
+            type: string
+          type: array
+          minItems: 1
+          title: Skills
+        filters:
+          anyOf:
+          - $ref: '#/components/schemas/SearchFilters'
+          - type: 'null'
+        limit:
+          type: integer
+          minimum: 0.0
+          title: Limit
+          default: 10
+        offset:
+          type: integer
+          minimum: 0.0
+          title: Offset
+          default: 0
+      additionalProperties: false
+      type: object
+      required:
+      - skills
+      title: SkillSearchRequest
+      description: Request payload for skill search.
+    SkillSearchResponse:
+      properties:
+        results:
+          items:
+            $ref: '#/components/schemas/ProfileMatch'
+          type: array
+          title: Results
+        total:
+          type: integer
+          minimum: 0.0
+          title: Total
+        limit:
+          type: integer
+          minimum: 0.0
+          title: Limit
+        offset:
+          type: integer
+          minimum: 0.0
+          title: Offset
+        query_time_ms:
+          type: integer
+          minimum: 0.0
+          title: Query Time Ms
+      additionalProperties: false
+      type: object
+      required:
+      - results
+      - total
+      - limit
+      - offset
+      - query_time_ms
+      title: SkillSearchResponse
+      description: Response payload for skill search.
     TaskStatusResponse:
       properties:
         task_id:
@@ -335,5 +662,9 @@ components:
 tags:
 - name: embeddings
   description: Gestione dei job di embedding.
+- name: search
+  description: Ricerca profili per skill.
+- name: availability
+  description: Gestione disponibilità e cache.
 - name: health
   description: Verifiche di stato e disponibilità.

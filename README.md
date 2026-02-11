@@ -31,6 +31,7 @@ flowchart TB
     subgraph API["⚡ API Layer"]
         FastAPI[FastAPI Backend]
         SearchAPI["/api/v1/search/skills"]
+        AvailabilityAPI["/api/v1/availability/*"]
         MatchAPI["/api/v1/match/job"]
     end
 
@@ -57,11 +58,14 @@ flowchart TB
 
     UI --> FastAPI
     FastAPI --> SearchAPI
+    FastAPI --> AvailabilityAPI
     FastAPI --> MatchAPI
 
     SearchAPI --> Embedder
     SearchAPI --> Qdrant
     SearchAPI --> Redis
+
+    AvailabilityAPI --> Redis
 
     MatchAPI --> OpenAI
     MatchAPI --> Qdrant
@@ -93,8 +97,8 @@ sequenceDiagram
     API->>E: Generate query embedding
     E-->>API: embedding vector
 
-    API->>R: Check availability cache
-    R-->>API: available cv_ids
+    API->>R: Check availability cache (fallback: any if Redis down)
+    R-->>API: available res_ids or any
 
     API->>Q: Vector search<br/>+ metadata filters
     Q-->>API: Top K matches
@@ -226,6 +230,12 @@ make docker-up    # Start Qdrant + Redis (Docker Compose)
 make run
 ```
 
+### Availability refresh job
+
+- Scheduled via Celery Beat (`AVAILABILITY_REFRESH_SCHEDULE`)
+- CSV source path via `AVAILABILITY_REFRESH_CSV_PATH` (override when triggering the task)
+- Monitoring via Flower
+
 ### Docker build exclusions
 
 Le build Docker escludono file e directory locali/temporanei tramite `.dockerignore`.
@@ -352,6 +362,7 @@ profilebot/
 │   │   └── v1/           # API version 1
 │   │       ├── router.py      # API router
 │   │       ├── search.py      # Skill search endpoints
+│   │       ├── availability.py # Availability endpoints (US-007)
 │   │       ├── schemas.py     # Request/response models
 │   │       └── embeddings.py  # Trigger/status endpoints (US-013)
 │   ├── core/             # Core business logic
@@ -367,6 +378,7 @@ profilebot/
 │   │   ├── search/       # Skill search service (US-006)
 │   │   └── availability/ # Status service (US-007)
 │   └── utils/            # Utilities
+│       └── normalization.py   # Shared list normalization
 ├── data/
 │   └── skills_dictionary.yaml
 ├── scripts/              # CLI scripts

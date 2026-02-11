@@ -449,7 +449,7 @@ def normalize_skill(raw_skill: str, dictionary: dict) -> NormalizedSkill:
 **Stack:**
 - Embedding: OpenAI API o `sentence-transformers`
 - Vector Store: Qdrant
-- Queue (optional): Redis per async processing
+- Queue: Celery + Redis broker (US-013)
 
 **Embedding Model (decisione MVP):**
 ```python
@@ -587,7 +587,7 @@ class SearchFilters(BaseModel):
     res_ids: Optional[list[int]]         # 🆕 Filtra per matricole specifiche
     skill_domains: Optional[list[str]]   # ["backend", "data"]
     seniority: Optional[list[str]]       # ["senior", "mid"]
-    availability: Optional[str]          # "only_free" | "any"
+    availability: Optional[str]          # "only_free" | "free_or_partial" | "unavailable" | "any"
 ```
 
 **Response Schema:**
@@ -618,21 +618,26 @@ class SkillSearchResponse(BaseModel):
 │       ├── __init__.py
 │       ├── router.py      # Main router
 │       ├── search.py      # Search endpoints
-│       └── schemas.py     # Request/Response models
+│       └── schemas.py     # Request/response models
 ├── src/services/search/
 │   ├── __init__.py
 │   ├── skill_search.py    # Search logic
 │   └── scoring.py         # Score calculation
+├── src/utils/
+│   ├── __init__.py
+│   └── normalization.py   # Shared list normalization
 └── tests/
-    └── api/
-        └── test_search_endpoints.py
+    ├── api/
+    │   └── test_search_endpoints.py
+    ├── test_search_scoring.py
+    └── test_skill_search.py
 ```
 
 **Search Flow:**
 ```python
 async def search_by_skills(request: SkillSearchRequest) -> SkillSearchResponse:
     # 1. Normalizza skill input
-    normalized = normalize_skills(request.skills)
+    normalized = normalize_string_list(request.skills)
 
     # 2. Genera embedding query
     query_embedding = embed_skills(normalized)
@@ -693,108 +698,99 @@ async def search_by_skills(request: SkillSearchRequest) -> SkillSearchResponse:
 **Per** vedere solo candidati effettivamente assegnabili
 
 ### Acceptance Criteria
-- [ ] Filtri: `only_free`, `free_or_partial`, `any`
-- [ ] Integrazione con source stato operativo (SharePoint/Excel)
-- [ ] Cache stato con TTL configurabile
-- [ ] Risposta esplicita se nessuno disponibile
-- [ ] Aggiornamento stato asincrono
+- [x] Filtri: `only_free`, `free_or_partial`, `any`, `unavailable`
+- [x] Input canonico CSV con colonne `res_id,status,allocation_pct,current_project,available_from,available_to,manager_name,updated_at`
+- [x] Cache Redis con keyspace `profilebot:availability:{res_id}` e TTL configurabile
+- [x] Pre-filtering nel search (se Redis down → fallback `any`)
+- [x] Risposta esplicita se nessuno disponibile
+- [x] Job asincrono di refresh (Celery + Beat)
+- [x] Schedule configurabile via `AVAILABILITY_REFRESH_SCHEDULE`
+- [x] Trigger on-demand della task con `csv_path` opzionale
 
 ### Technical Details
 
 **Stack:**
 - Cache: Redis
-- Data Source: SharePoint List / Excel file (inizialmente)
-- Scheduler: APScheduler (per refresh)
+- Data Source: CSV canonico (connector esterni in US-016)
+- Scheduler: Celery Beat
+- Monitoring: Flower
 
 **Availability States:**
 ```python
-class AvailabilityStatus(str, Enum):
-    FREE = "free"           # Completamente disponibile
-    PARTIAL = "partial"     # Allocato parzialmente
-    BUSY = "busy"           # Allocato su progetto
-    UNAVAILABLE = "unavailable"  # Non disponibile (ferie, malattia)
+from enum import StrEnum
+
+class AvailabilityStatus(StrEnum):
+    FREE = "free"
+    PARTIAL = "partial"
+    BUSY = "busy"
+    UNAVAILABLE = "unavailable"
 ```
 
-**Operational State Schema:**
+**Operational State Schema (canonico):**
 ```python
 class ProfileAvailability(BaseModel):
-    cv_id: str
+    res_id: int
     status: AvailabilityStatus
-    allocation_percentage: int  # 0-100
-    current_project: Optional[str]
-    available_from: Optional[date]
+    allocation_pct: int  # 0-100
+    current_project: str | None
+    available_from: date | None
+    available_to: date | None
+    manager_name: str | None
     updated_at: datetime
 ```
 
-**File da creare:**
+**File creati:**
 ```
 ├── src/services/availability/
 │   ├── __init__.py
-│   ├── service.py         # Main service
-│   ├── cache.py           # Redis cache layer
-│   ├── source_sharepoint.py  # SharePoint adapter
-│   └── source_excel.py    # Excel fallback
-├── src/core/filters/
-│   ├── __init__.py
-│   └── availability_filter.py
+│   ├── schemas.py
+│   ├── cache.py
+│   ├── loader.py
+│   ├── service.py
+│   └── tasks.py
+├── src/api/v1/
+│   └── availability.py
+├── scripts/
+│   └── load_availability.py
+├── docs/
+│   └── availability_format_guide.md
 └── tests/
+    ├── test_availability_cache.py
+    ├── test_availability_loader.py
     └── test_availability_service.py
-```
-
-**Filter Integration:**
-```python
-class AvailabilityFilter:
-    def __init__(self, mode: str):
-        self.mode = mode  # "only_free" | "free_or_partial" | "any"
-
-    def filter_cv_ids(self, cv_ids: list[str]) -> list[str]:
-        """Filter CV IDs based on availability"""
-        if self.mode == "any":
-            return cv_ids
-
-        availability_data = cache.get_availability(cv_ids)
-
-        if self.mode == "only_free":
-            return [cv for cv in cv_ids
-                    if availability_data[cv].status == "free"]
-
-        if self.mode == "free_or_partial":
-            return [cv for cv in cv_ids
-                    if availability_data[cv].status in ("free", "partial")]
 ```
 
 **Cache Strategy:**
 ```python
-# Redis key pattern
-AVAILABILITY_KEY = "availability:{cv_id}"
-AVAILABILITY_TTL = 3600  # 1 hour
+AVAILABILITY_KEY = "profilebot:availability:{res_id}"
+AVAILABILITY_TTL = 3600
 
-async def get_availability(cv_id: str) -> ProfileAvailability:
-    # Try cache first
-    cached = await redis.get(f"availability:{cv_id}")
-    if cached:
-        return ProfileAvailability.parse_raw(cached)
+def get(res_id: int) -> ProfileAvailability | None:
+    return cache.get(res_id)
 
-    # Fallback to source
-    data = await source.fetch_availability(cv_id)
-    await redis.setex(f"availability:{cv_id}", AVAILABILITY_TTL, data.json())
-    return data
+def get_bulk(res_ids: list[int]) -> dict[int, ProfileAvailability]:
+    return cache.get_many(res_ids)
+```
+
+**Refresh Job (Celery):**
+```python
+@celery_app.task(bind=True, max_retries=3)
+def availability_refresh_task(self, csv_path: str | None = None) -> dict:
+    # carica CSV canonico (csv_path override o `AVAILABILITY_REFRESH_CSV_PATH`) e aggiorna Redis
 ```
 
 ### Process
-1. Definire schema stati disponibilità
-2. Implementare adapter per source (Excel inizialmente)
-3. Creare cache layer Redis
-4. Integrare filtro nella search API
-5. Aggiungere scheduler per refresh periodico
-6. Gestire caso "nessuno disponibile"
+1. Loader CSV canonico → Redis (cache-only)
+2. Integrazione search: pre-filter `res_id`
+3. Beat schedula refresh periodico
+4. Monitoring task via Flower
 
 ### Definition of Done
-- [ ] Filtri funzionanti su tutti i modi
-- [ ] Cache Redis operativa
-- [ ] Refresh automatico configurato
-- [ ] Messaggio esplicito se 0 risultati
-- [ ] Test con dati mock
+- [x] Filtri funzionanti su tutti i modi
+- [x] Cache Redis operativa (TTL configurabile)
+- [x] Refresh automatico configurato (Celery Beat)
+- [x] Messaggio esplicito se 0 risultati
+- [x] Test con dati mock e coverage ≥ 80%
 
 ---
 

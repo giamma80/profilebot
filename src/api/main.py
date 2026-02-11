@@ -15,12 +15,20 @@ app = FastAPI(
     title="ProfileBot API",
     version="0.1.0",
     description="API per gestione embedding e servizi di salute applicativa.",
-    contact={"name": "ProfileBot Team", "email": "team@profilebot.local"},
+    contact={"name": "ProfileBot Team", "email": "team@profilebot.example.com"},
     servers=[{"url": "/", "description": "Default"}],
     openapi_tags=[
         {
             "name": "embeddings",
             "description": "Gestione dei job di embedding.",
+        },
+        {
+            "name": "search",
+            "description": "Ricerca profili per skill.",
+        },
+        {
+            "name": "availability",
+            "description": "Gestione disponibilità e cache.",
         },
         {
             "name": "health",
