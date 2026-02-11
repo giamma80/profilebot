@@ -4,16 +4,16 @@ info:
   description: API per gestione embedding e servizi di salute applicativa.
   contact:
     name: ProfileBot Team
-    email: team@profilebot.local
+    email: team@profilebot.example.com
   version: 0.1.0
 servers:
-  - url: /
-    description: Default
+- url: /
+  description: Default
 paths:
   /api/v1/embeddings/trigger:
     post:
       tags:
-        - embeddings
+      - embeddings
       summary: Avvia embedding di tutti i CV
       description: Queue a full embedding job.
       operationId: trigger_full_embed_api_v1_embeddings_trigger_post
@@ -21,25 +21,25 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/TriggerAllRequest"
+              $ref: '#/components/schemas/TriggerAllRequest'
         required: true
       responses:
-        "202":
+        '202':
           description: Successful Response
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/TaskTriggerResponse"
-        "422":
+                $ref: '#/components/schemas/TaskTriggerResponse'
+        '422':
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/HTTPValidationError"
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/v1/embeddings/trigger/batch:
     post:
       tags:
-        - embeddings
+      - embeddings
       summary: Avvia embedding batch di CV
       description: Queue a batch embedding job.
       operationId: trigger_batch_embed_api_v1_embeddings_trigger_batch_post
@@ -47,90 +47,90 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/TriggerBatchRequest"
+              $ref: '#/components/schemas/TriggerBatchRequest'
         required: true
       responses:
-        "202":
+        '202':
           description: Successful Response
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/TaskTriggerResponse"
-        "422":
+                $ref: '#/components/schemas/TaskTriggerResponse'
+        '422':
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/HTTPValidationError"
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/v1/embeddings/trigger/{res_id}:
     post:
       tags:
-        - embeddings
+      - embeddings
       summary: Avvia embedding singolo CV
       description: Queue a single CV embedding job.
       operationId: trigger_single_embed_api_v1_embeddings_trigger__res_id__post
       parameters:
-        - name: res_id
-          in: path
-          required: true
-          schema:
-            type: string
-            title: Res Id
+      - name: res_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Res Id
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/TriggerSingleRequest"
+              $ref: '#/components/schemas/TriggerSingleRequest'
       responses:
-        "202":
+        '202':
           description: Successful Response
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/TaskTriggerResponse"
-        "422":
+                $ref: '#/components/schemas/TaskTriggerResponse'
+        '422':
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/HTTPValidationError"
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/v1/embeddings/status/{task_id}:
     get:
       tags:
-        - embeddings
+      - embeddings
       summary: Stato del task di embedding
       description: Return the status of a queued embedding task.
       operationId: get_task_status_api_v1_embeddings_status__task_id__get
       parameters:
-        - name: task_id
-          in: path
-          required: true
-          schema:
-            type: string
-            title: Task Id
+      - name: task_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Task Id
       responses:
-        "200":
+        '200':
           description: Successful Response
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/TaskStatusResponse"
-        "422":
+                $ref: '#/components/schemas/TaskStatusResponse'
+        '422':
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/HTTPValidationError"
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/v1/embeddings/stats:
     get:
       tags:
-        - embeddings
+      - embeddings
       summary: Statistiche della coda di embedding
       description: Return Celery queue stats.
       operationId: get_embedding_stats_api_v1_embeddings_stats_get
       responses:
-        "200":
+        '200':
           description: Successful Response
           content:
             application/json:
@@ -138,168 +138,246 @@ paths:
                 additionalProperties: true
                 type: object
                 title: Response Get Embedding Stats Api V1 Embeddings Stats Get
-  /health:
-    get:
-      tags:
-        - health
-      summary: Health Check
-      description: Return application and Qdrant health status.
-      operationId: health_check_health_get
-      responses:
-        "200":
-          description: Successful Response
-          content:
-            application/json:
-              schema: {}
   /api/v1/search/skills:
     post:
       tags:
-        - search
+      - search
       summary: Cerca profili per skill
       description: Search profiles by skills with optional filters.
       operationId: search_profiles_by_skills_api_v1_search_skills_post
       requestBody:
-        required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/SkillSearchRequest"
+              $ref: '#/components/schemas/SkillSearchRequest'
+        required: true
       responses:
-        "200":
+        '200':
           description: Successful Response
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SkillSearchResponse"
-        "422":
+                $ref: '#/components/schemas/SkillSearchResponse'
+        '422':
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/HTTPValidationError"
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/v1/availability/load:
     post:
       tags:
-        - availability
+      - availability
       summary: Carica disponibilità da CSV
       description: Load availability data into Redis cache from CSV path or body.
       operationId: load_availability_api_v1_availability_load_post
       requestBody:
-        required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/AvailabilityLoadRequest"
+              $ref: '#/components/schemas/AvailabilityLoadRequest'
+        required: true
       responses:
-        "200":
+        '200':
           description: Successful Response
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AvailabilityLoadResponse"
-        "400":
-          description: Bad Request
-        "404":
-          description: Not Found
-        "503":
-          description: Redis unavailable
+                $ref: '#/components/schemas/AvailabilityLoadResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/v1/availability/{res_id}:
     get:
       tags:
-        - availability
+      - availability
       summary: Ottieni disponibilità per res_id
       description: Return availability record for a given res_id from cache.
       operationId: get_availability_api_v1_availability__res_id__get
       parameters:
-        - name: res_id
-          in: path
-          required: true
-          schema:
-            type: integer
-            title: Res Id
+      - name: res_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Res Id
       responses:
-        "200":
+        '200':
           description: Successful Response
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AvailabilityResponse"
-        "404":
-          description: Not Found
-        "503":
-          description: Redis unavailable
+                $ref: '#/components/schemas/AvailabilityResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/v1/availability/stats:
     get:
       tags:
-        - availability
+      - availability
       summary: Statistiche disponibilità cache
       description: Return availability cache statistics.
       operationId: get_availability_stats_api_v1_availability_stats_get
       responses:
-        "200":
+        '200':
           description: Successful Response
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AvailabilityStatsResponse"
-        "503":
-          description: Redis unavailable
+                $ref: '#/components/schemas/AvailabilityStatsResponse'
+  /health:
+    get:
+      tags:
+      - health
+      summary: Health Check
+      description: Return application and Qdrant health status.
+      operationId: health_check_health_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
 components:
   schemas:
-    SearchFilters:
+    AvailabilityLoadRequest:
       properties:
-        res_ids:
-          items:
-            type: integer
-          type: array
-          title: Res Ids
-        skill_domains:
-          items:
-            type: string
-          type: array
-          title: Skill Domains
-        seniority:
-          items:
-            type: string
-          type: array
-          title: Seniority
-        availability:
-          type: string
-          title: Availability
-          enum:
-            - only_free
-            - free_or_partial
-            - any
-            - unavailable
-      type: object
-      title: SearchFilters
-    SkillSearchRequest:
-      properties:
-        skills:
-          items:
-            type: string
-          type: array
-          minItems: 1
-          title: Skills
-        filters:
+        csv_path:
           anyOf:
-            - $ref: "#/components/schemas/SearchFilters"
-            - type: "null"
-          title: Filters
-        limit:
+          - type: string
+          - type: 'null'
+          title: Csv Path
+        csv_content:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Csv Content
+      additionalProperties: false
+      type: object
+      title: AvailabilityLoadRequest
+      description: Request payload for loading availability data.
+    AvailabilityLoadResponse:
+      properties:
+        total_rows:
           type: integer
-          minimum: 0.0
-          title: Limit
-          default: 10
-        offset:
+          title: Total Rows
+        loaded:
           type: integer
-          minimum: 0.0
-          title: Offset
-          default: 0
+          title: Loaded
+        skipped:
+          type: integer
+          title: Skipped
       type: object
       required:
-        - skills
-      title: SkillSearchRequest
+      - total_rows
+      - loaded
+      - skipped
+      title: AvailabilityLoadResponse
+      description: Response payload for a load operation.
+    AvailabilityResponse:
+      properties:
+        res_id:
+          type: integer
+          title: Res Id
+        status:
+          $ref: '#/components/schemas/AvailabilityStatus'
+        allocation_pct:
+          type: integer
+          title: Allocation Pct
+        current_project:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Current Project
+        available_from:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Available From
+        available_to:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Available To
+        manager_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Manager Name
+        updated_at:
+          type: string
+          title: Updated At
+      type: object
+      required:
+      - res_id
+      - status
+      - allocation_pct
+      - updated_at
+      title: AvailabilityResponse
+      description: Response payload for a single availability record.
+    AvailabilityStatsResponse:
+      properties:
+        total:
+          type: integer
+          title: Total
+        by_status:
+          additionalProperties:
+            type: integer
+          propertyNames:
+            $ref: '#/components/schemas/AvailabilityStatus'
+          type: object
+          title: By Status
+        last_updated_at:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Last Updated At
+      type: object
+      required:
+      - total
+      - by_status
+      title: AvailabilityStatsResponse
+      description: Response payload with availability cache stats.
+    AvailabilityStatus:
+      type: string
+      enum:
+      - free
+      - partial
+      - busy
+      - unavailable
+      title: AvailabilityStatus
+      description: Supported availability states.
+    EmbeddingItem:
+      properties:
+        cv_path:
+          type: string
+          minLength: 1
+          title: Cv Path
+        res_id:
+          type: string
+          minLength: 1
+          title: Res Id
+      type: object
+      required:
+      - cv_path
+      - res_id
+      title: EmbeddingItem
+      description: Input item for embedding jobs.
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
     ProfileMatch:
       properties:
         res_id:
@@ -310,8 +388,8 @@ components:
           title: Cv Id
         score:
           type: number
-          minimum: 0.0
           maximum: 1.0
+          minimum: 0.0
           title: Score
         matched_skills:
           items:
@@ -323,19 +401,82 @@ components:
             type: string
           type: array
           title: Missing Skills
+      additionalProperties: false
       type: object
       required:
-        - res_id
-        - cv_id
-        - score
-        - matched_skills
-        - missing_skills
+      - res_id
+      - cv_id
+      - score
+      - matched_skills
+      - missing_skills
       title: ProfileMatch
+      description: Single profile match result.
+    SearchFilters:
+      properties:
+        res_ids:
+          anyOf:
+          - items:
+              type: integer
+            type: array
+          - type: 'null'
+          title: Res Ids
+        skill_domains:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Skill Domains
+        seniority:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Seniority
+        availability:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Availability
+          default: any
+      additionalProperties: false
+      type: object
+      title: SearchFilters
+      description: Optional filters for skill search.
+    SkillSearchRequest:
+      properties:
+        skills:
+          items:
+            type: string
+          type: array
+          minItems: 1
+          title: Skills
+        filters:
+          anyOf:
+          - $ref: '#/components/schemas/SearchFilters'
+          - type: 'null'
+        limit:
+          type: integer
+          minimum: 0.0
+          title: Limit
+          default: 10
+        offset:
+          type: integer
+          minimum: 0.0
+          title: Offset
+          default: 0
+      additionalProperties: false
+      type: object
+      required:
+      - skills
+      title: SkillSearchRequest
+      description: Request payload for skill search.
     SkillSearchResponse:
       properties:
         results:
           items:
-            $ref: "#/components/schemas/ProfileMatch"
+            $ref: '#/components/schemas/ProfileMatch'
           type: array
           title: Results
         total:
@@ -354,128 +495,16 @@ components:
           type: integer
           minimum: 0.0
           title: Query Time Ms
+      additionalProperties: false
       type: object
       required:
-        - results
-        - total
-        - limit
-        - offset
-        - query_time_ms
+      - results
+      - total
+      - limit
+      - offset
+      - query_time_ms
       title: SkillSearchResponse
-    AvailabilityLoadRequest:
-      properties:
-        csv_path:
-          anyOf:
-            - type: string
-            - type: "null"
-          title: Csv Path
-        csv_content:
-          anyOf:
-            - type: string
-            - type: "null"
-          title: Csv Content
-      type: object
-      title: AvailabilityLoadRequest
-    AvailabilityLoadResponse:
-      properties:
-        total_rows:
-          type: integer
-          title: Total Rows
-        loaded:
-          type: integer
-          title: Loaded
-        skipped:
-          type: integer
-          title: Skipped
-      type: object
-      required:
-        - total_rows
-        - loaded
-        - skipped
-      title: AvailabilityLoadResponse
-    AvailabilityResponse:
-      properties:
-        res_id:
-          type: integer
-          title: Res Id
-        status:
-          type: string
-          enum:
-            - free
-            - partial
-            - busy
-            - unavailable
-          title: Status
-        allocation_pct:
-          type: integer
-          minimum: 0.0
-          maximum: 100.0
-          title: Allocation Pct
-        current_project:
-          anyOf:
-            - type: string
-            - type: "null"
-          title: Current Project
-        available_from:
-          anyOf:
-            - type: string
-            - type: "null"
-          title: Available From
-        updated_at:
-          type: string
-          title: Updated At
-      type: object
-      required:
-        - res_id
-        - status
-        - allocation_pct
-        - updated_at
-      title: AvailabilityResponse
-    AvailabilityStatsResponse:
-      properties:
-        total:
-          type: integer
-          title: Total
-        by_status:
-          type: object
-          additionalProperties:
-            type: integer
-          title: By Status
-        last_updated_at:
-          anyOf:
-            - type: string
-            - type: "null"
-          title: Last Updated At
-      type: object
-      required:
-        - total
-        - by_status
-      title: AvailabilityStatsResponse
-    EmbeddingItem:
-      properties:
-        cv_path:
-          type: string
-          minLength: 1
-          title: Cv Path
-        res_id:
-          type: string
-          minLength: 1
-          title: Res Id
-      type: object
-      required:
-        - cv_path
-        - res_id
-      title: EmbeddingItem
-      description: Input item for embedding jobs.
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: "#/components/schemas/ValidationError"
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
+      description: Response payload for skill search.
     TaskStatusResponse:
       properties:
         task_id:
@@ -492,24 +521,24 @@ components:
           default: 0
         res_id:
           anyOf:
-            - type: string
-            - type: "null"
+          - type: string
+          - type: 'null'
           title: Res Id
         result:
           anyOf:
-            - additionalProperties: true
-              type: object
-            - type: "null"
+          - additionalProperties: true
+            type: object
+          - type: 'null'
           title: Result
         traceback:
           anyOf:
-            - type: string
-            - type: "null"
+          - type: string
+          - type: 'null'
           title: Traceback
       type: object
       required:
-        - task_id
-        - status
+      - task_id
+      - status
       title: TaskStatusResponse
       description: Task status response.
     TaskTriggerResponse:
@@ -522,20 +551,20 @@ components:
           title: Status
         message:
           anyOf:
-            - type: string
-            - type: "null"
+          - type: string
+          - type: 'null'
           title: Message
       type: object
       required:
-        - task_id
-        - status
+      - task_id
+      - status
       title: TaskTriggerResponse
       description: Task trigger response.
     TriggerAllRequest:
       properties:
         items:
           items:
-            $ref: "#/components/schemas/EmbeddingItem"
+            $ref: '#/components/schemas/EmbeddingItem'
           type: array
           minItems: 1
           title: Items
@@ -546,8 +575,8 @@ components:
           default: 500
         dictionary_path:
           anyOf:
-            - type: string
-            - type: "null"
+          - type: string
+          - type: 'null'
           title: Dictionary Path
         dry_run:
           type: boolean
@@ -559,21 +588,21 @@ components:
           default: false
       type: object
       required:
-        - items
+      - items
       title: TriggerAllRequest
       description: Request payload for full embedding run.
     TriggerBatchRequest:
       properties:
         items:
           items:
-            $ref: "#/components/schemas/EmbeddingItem"
+            $ref: '#/components/schemas/EmbeddingItem'
           type: array
           minItems: 1
           title: Items
         dictionary_path:
           anyOf:
-            - type: string
-            - type: "null"
+          - type: string
+          - type: 'null'
           title: Dictionary Path
         dry_run:
           type: boolean
@@ -581,7 +610,7 @@ components:
           default: false
       type: object
       required:
-        - items
+      - items
       title: TriggerBatchRequest
       description: Request payload for batch CV embedding.
     TriggerSingleRequest:
@@ -592,8 +621,8 @@ components:
           title: Cv Path
         dictionary_path:
           anyOf:
-            - type: string
-            - type: "null"
+          - type: string
+          - type: 'null'
           title: Dictionary Path
         dry_run:
           type: boolean
@@ -601,7 +630,7 @@ components:
           default: false
       type: object
       required:
-        - cv_path
+      - cv_path
       title: TriggerSingleRequest
       description: Request payload for single CV embedding.
     ValidationError:
@@ -609,8 +638,8 @@ components:
         loc:
           items:
             anyOf:
-              - type: string
-              - type: integer
+            - type: string
+            - type: integer
           type: array
           title: Location
         msg:
@@ -626,16 +655,16 @@ components:
           title: Context
       type: object
       required:
-        - loc
-        - msg
-        - type
+      - loc
+      - msg
+      - type
       title: ValidationError
 tags:
-  - name: embeddings
-    description: Gestione dei job di embedding.
-  - name: search
-    description: Ricerca profili per skill.
-  - name: availability
-    description: Gestione disponibilità e cache.
-  - name: health
-    description: Verifiche di stato e disponibilità.
+- name: embeddings
+  description: Gestione dei job di embedding.
+- name: search
+  description: Ricerca profili per skill.
+- name: availability
+  description: Gestione disponibilità e cache.
+- name: health
+  description: Verifiche di stato e disponibilità.

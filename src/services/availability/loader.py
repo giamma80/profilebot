@@ -21,6 +21,8 @@ CANONICAL_HEADERS = (
     "allocation_pct",
     "current_project",
     "available_from",
+    "available_to",
+    "manager_name",
     "updated_at",
 )
 
@@ -100,6 +102,8 @@ def _parse_row(row: dict[str, str | None], *, row_number: int) -> ProfileAvailab
 
     current_project = _clean_str(row.get("current_project"))
     available_from = _coerce_date(row.get("available_from"))
+    available_to = _coerce_date(row.get("available_to"))
+    manager_name = _clean_str(row.get("manager_name"))
     updated_at = _coerce_datetime(row.get("updated_at"))
     if updated_at is None:
         logger.warning("Skipping row %d: invalid updated_at=%s", row_number, row.get("updated_at"))
@@ -111,6 +115,8 @@ def _parse_row(row: dict[str, str | None], *, row_number: int) -> ProfileAvailab
         allocation_pct=allocation_pct,
         current_project=current_project,
         available_from=available_from,
+        available_to=available_to,
+        manager_name=manager_name,
         updated_at=updated_at,
     )
 

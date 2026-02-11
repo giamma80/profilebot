@@ -27,6 +27,8 @@ def _record(res_id: int, status: AvailabilityStatus, allocation_pct: int) -> Pro
         allocation_pct=allocation_pct,
         current_project=None,
         available_from=None,
+        available_to=None,
+        manager_name=None,
         updated_at=datetime(2026, 2, 10, 8, 0, 0, tzinfo=UTC),
     )
 

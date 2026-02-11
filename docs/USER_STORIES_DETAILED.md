@@ -699,7 +699,7 @@ async def search_by_skills(request: SkillSearchRequest) -> SkillSearchResponse:
 
 ### Acceptance Criteria
 - [x] Filtri: `only_free`, `free_or_partial`, `any`, `unavailable`
-- [x] Input canonico CSV con colonne `res_id,status,allocation_pct,current_project,available_from,updated_at`
+- [x] Input canonico CSV con colonne `res_id,status,allocation_pct,current_project,available_from,available_to,manager_name,updated_at`
 - [x] Cache Redis con keyspace `profilebot:availability:{res_id}` e TTL configurabile
 - [x] Pre-filtering nel search (se Redis down → fallback `any`)
 - [x] Risposta esplicita se nessuno disponibile
@@ -734,6 +734,8 @@ class ProfileAvailability(BaseModel):
     allocation_pct: int  # 0-100
     current_project: str | None
     available_from: date | None
+    available_to: date | None
+    manager_name: str | None
     updated_at: datetime
 ```
 

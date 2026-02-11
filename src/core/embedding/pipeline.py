@@ -7,7 +7,7 @@ import os
 from collections import Counter
 from collections.abc import Iterable
 from dataclasses import dataclass
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 
 from qdrant_client import QdrantClient, models
 
@@ -62,7 +62,7 @@ class EmbeddingPipeline:
             A dict with counts of upserted points.
         """
         cv_id = parsed_cv.metadata.cv_id
-        created_at = datetime.utcnow()
+        created_at = datetime.now(UTC)
 
         skills_points = self._build_skills_points(
             parsed_cv=parsed_cv,

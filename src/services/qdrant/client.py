@@ -23,5 +23,10 @@ def get_qdrant_client() -> QdrantClient:
     timeout_raw = _get_env("QDRANT_TIMEOUT", "10")
     timeout = int(timeout_raw) if timeout_raw is not None else None
 
+    if url is None:
+        url = "http://localhost:6333"
+
+    api_key_to_use = api_key if url.startswith("https://") else None
+
     # QdrantClient accepts `url` for HTTP and optional `api_key`.
-    return QdrantClient(url=url, api_key=api_key, timeout=timeout)
+    return QdrantClient(url=url, api_key=api_key_to_use, timeout=timeout)

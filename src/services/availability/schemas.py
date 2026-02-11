@@ -25,6 +25,8 @@ class ProfileAvailability(BaseModel):
     allocation_pct: int = Field(..., ge=0, le=100)
     current_project: str | None = None
     available_from: date | None = None
+    available_to: date | None = None
+    manager_name: str | None = None
     updated_at: datetime
 
     model_config = {"extra": "forbid"}

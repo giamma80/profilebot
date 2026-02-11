@@ -27,9 +27,9 @@ class FakeAvailabilityCache:
 
 def test_load_from_stream__valid_csv__loads_records() -> None:
     csv_data = (
-        "res_id,status,allocation_pct,current_project,available_from,updated_at\n"
-        "100000,free,0,,,2026-02-10T08:00:00Z\n"
-        "100001,partial,40,ProjectAlpha,,2026-02-10T08:00:00Z\n"
+        "res_id,status,allocation_pct,current_project,available_from,available_to,manager_name,updated_at\n"
+        "100000,free,0,,,,,2026-02-10T08:00:00Z\n"
+        "100001,partial,40,ProjectAlpha,,,Manager Uno,2026-02-10T08:00:00Z\n"
     )
     cache = FakeAvailabilityCache()
 
@@ -65,12 +65,12 @@ def test_load_from_stream__empty_header__raises_value_error() -> None:
 
 def test_load_from_stream__invalid_rows__skipped_with_counts() -> None:
     csv_data = (
-        "res_id,status,allocation_pct,current_project,available_from,updated_at\n"
-        "bad,free,0,,,2026-02-10T08:00:00Z\n"
-        "100001,invalid,40,ProjectAlpha,,2026-02-10T08:00:00Z\n"
-        "100002,busy,999,ProjectBeta,,2026-02-10T08:00:00Z\n"
-        "100003,free,0,,,not-a-date\n"
-        "100004,free,0,,,2026-02-10T08:00:00Z\n"
+        "res_id,status,allocation_pct,current_project,available_from,available_to,manager_name,updated_at\n"
+        "bad,free,0,,,,,2026-02-10T08:00:00Z\n"
+        "100001,invalid,40,ProjectAlpha,,,Manager Uno,2026-02-10T08:00:00Z\n"
+        "100002,busy,999,ProjectBeta,,2026-04-01,Manager Due,2026-02-10T08:00:00Z\n"
+        "100003,free,0,,,,,not-a-date\n"
+        "100004,free,0,,,,,2026-02-10T08:00:00Z\n"
     )
     cache = FakeAvailabilityCache()
 
@@ -85,8 +85,8 @@ def test_load_from_stream__invalid_rows__skipped_with_counts() -> None:
 
 def test_load_from_stream__optional_fields__parsed_correctly() -> None:
     csv_data = (
-        "res_id,status,allocation_pct,current_project,available_from,updated_at\n"
-        "100010,free,0,,2026-03-01,2026-02-10T08:00:00Z\n"
+        "res_id,status,allocation_pct,current_project,available_from,available_to,manager_name,updated_at\n"
+        "100010,free,0,,2026-03-01,2026-03-15,Manager Uno,2026-02-10T08:00:00Z\n"
     )
     cache = FakeAvailabilityCache()
 
@@ -96,6 +96,8 @@ def test_load_from_stream__optional_fields__parsed_correctly() -> None:
     record = cache.records[0]
     assert record.current_project is None
     assert record.available_from == date(2026, 3, 1)
+    assert record.available_to == date(2026, 3, 15)
+    assert record.manager_name == "Manager Uno"
     assert record.updated_at == datetime.fromisoformat("2026-02-10T08:00:00+00:00")
 
 

@@ -10,7 +10,7 @@ Le sorgenti (connector) devono **produrre questo CSV**, non importare direttamen
 Il file CSV **deve** includere **esattamente** queste colonne (in qualunque ordine):
 
 ```
-res_id,status,allocation_pct,current_project,available_from,updated_at
+res_id,status,allocation_pct,current_project,available_from,available_to,manager_name,updated_at
 ```
 
 ### Significato colonne
@@ -22,6 +22,8 @@ res_id,status,allocation_pct,current_project,available_from,updated_at
 | `allocation_pct` | int | ✅ | Percentuale allocazione (0–100). |
 | `current_project` | string | ⬜ | Nome progetto attuale (vuoto se free). |
 | `available_from` | date | ⬜ | Data disponibilità (ISO 8601: `YYYY-MM-DD`). |
+| `available_to` | date | ⬜ | Data fine disponibilità (ISO 8601: `YYYY-MM-DD`). |
+| `manager_name` | string | ⬜ | Nome del responsabile (opzionale). |
 | `updated_at` | datetime | ✅ | Timestamp aggiornamento (ISO 8601). |
 
 ---
@@ -40,12 +42,12 @@ unavailable  # Non disponibile (ferie, malattia, cessato)
 ## ✅ Esempio valido
 
 ```csv
-res_id,status,allocation_pct,current_project,available_from,updated_at
-100000,free,0,,,2026-02-10T08:00:00Z
-100001,partial,40,ProjectAlpha,,2026-02-10T08:00:00Z
-100002,busy,100,ProjectBeta,,2026-02-10T08:00:00Z
-100003,unavailable,0,,2026-03-01,2026-02-10T08:00:00Z
-100004,free,0,,,2026-02-10T08:00:00Z
+res_id,status,allocation_pct,current_project,available_from,available_to,manager_name,updated_at
+100000,free,0,,,,,2026-02-10T08:00:00Z
+100001,partial,40,ProjectAlpha,,,Manager Uno,2026-02-10T08:00:00Z
+100002,busy,100,ProjectBeta,,,Manager Due,2026-02-10T08:00:00Z
+100003,unavailable,0,,2026-03-01,2026-03-31,,2026-02-10T08:00:00Z
+100004,free,0,,,,,2026-02-10T08:00:00Z
 ```
 
 ---

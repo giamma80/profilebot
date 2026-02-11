@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from typing import Any, cast
+from typing import cast
 
 import redis
 
@@ -51,13 +51,15 @@ def _record(res_id: int, status: AvailabilityStatus, allocation_pct: int) -> Pro
         allocation_pct=allocation_pct,
         current_project=None,
         available_from=None,
+        available_to=None,
+        manager_name=None,
         updated_at=datetime(2026, 2, 10, 8, 0, 0, tzinfo=UTC),
     )
 
 
 def test_cache_set_and_get_roundtrip() -> None:
     client = FakeRedis()
-    cache = AvailabilityCache(client=cast(redis.Redis[Any], client), ttl_seconds=1800)
+    cache = AvailabilityCache(client=cast(redis.Redis, client), ttl_seconds=1800)
 
     record = _record(100, AvailabilityStatus.FREE, 0)
     cache.set(record)
@@ -70,14 +72,14 @@ def test_cache_set_and_get_roundtrip() -> None:
 
 
 def test_cache_get_missing_returns_none() -> None:
-    cache = AvailabilityCache(client=cast(redis.Redis[Any], FakeRedis()), ttl_seconds=1800)
+    cache = AvailabilityCache(client=cast(redis.Redis, FakeRedis()), ttl_seconds=1800)
 
     assert cache.get(999) is None
 
 
 def test_cache_set_many_and_get_many() -> None:
     client = FakeRedis()
-    cache = AvailabilityCache(client=cast(redis.Redis[Any], client), ttl_seconds=1800)
+    cache = AvailabilityCache(client=cast(redis.Redis, client), ttl_seconds=1800)
 
     cache.set_many(
         [
@@ -95,7 +97,7 @@ def test_cache_set_many_and_get_many() -> None:
 
 def test_cache_scan_records_returns_all() -> None:
     client = FakeRedis()
-    cache = AvailabilityCache(client=cast(redis.Redis[Any], client), ttl_seconds=1800)
+    cache = AvailabilityCache(client=cast(redis.Redis, client), ttl_seconds=1800)
 
     cache.set_many(
         [
@@ -111,7 +113,7 @@ def test_cache_scan_records_returns_all() -> None:
 
 def test_cache_invalidate_removes_key() -> None:
     client = FakeRedis()
-    cache = AvailabilityCache(client=cast(redis.Redis[Any], client), ttl_seconds=1800)
+    cache = AvailabilityCache(client=cast(redis.Redis, client), ttl_seconds=1800)
 
     cache.set(_record(100, AvailabilityStatus.FREE, 0))
     cache.invalidate(100)
@@ -121,7 +123,7 @@ def test_cache_invalidate_removes_key() -> None:
 
 def test_cache_touch_updates_expiration() -> None:
     client = FakeRedis()
-    cache = AvailabilityCache(client=cast(redis.Redis[Any], client), ttl_seconds=1800)
+    cache = AvailabilityCache(client=cast(redis.Redis, client), ttl_seconds=1800)
 
     cache.set(_record(100, AvailabilityStatus.FREE, 0))
     cache.touch(100)
@@ -131,6 +133,6 @@ def test_cache_touch_updates_expiration() -> None:
 
 
 def test_cache_ping_returns_true() -> None:
-    cache = AvailabilityCache(client=cast(redis.Redis[Any], FakeRedis()), ttl_seconds=1800)
+    cache = AvailabilityCache(client=cast(redis.Redis, FakeRedis()), ttl_seconds=1800)
 
     assert cache.ping() is True

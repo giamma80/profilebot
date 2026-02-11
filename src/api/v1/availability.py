@@ -51,6 +51,8 @@ class AvailabilityResponse(BaseModel):
     allocation_pct: int
     current_project: str | None = None
     available_from: str | None = None
+    available_to: str | None = None
+    manager_name: str | None = None
     updated_at: str
 
 
@@ -113,6 +115,8 @@ def get_availability(res_id: int) -> AvailabilityResponse:
         allocation_pct=record.allocation_pct,
         current_project=record.current_project,
         available_from=record.available_from.isoformat() if record.available_from else None,
+        available_to=record.available_to.isoformat() if record.available_to else None,
+        manager_name=record.manager_name,
         updated_at=record.updated_at.isoformat(),
     )
 
