@@ -23,6 +23,14 @@ app = FastAPI(
             "description": "Gestione dei job di embedding.",
         },
         {
+            "name": "search",
+            "description": "Ricerca profili per skill.",
+        },
+        {
+            "name": "availability",
+            "description": "Gestione disponibilità e cache.",
+        },
+        {
             "name": "health",
             "description": "Verifiche di stato e disponibilità.",
         },

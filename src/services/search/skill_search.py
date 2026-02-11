@@ -9,13 +9,17 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, cast
 
+import redis
 from qdrant_client import QdrantClient, models
 
 from src.core.embedding.service import EmbeddingService, OpenAIEmbeddingService
 from src.core.skills.dictionary import SkillDictionary, load_skill_dictionary
 from src.core.skills.normalizer import SkillNormalizer
+from src.services.availability.cache import AvailabilityCache
+from src.services.availability.schemas import AvailabilityStatus, ProfileAvailability
 from src.services.qdrant.client import get_qdrant_client
 from src.services.search.scoring import calculate_final_score
+from src.utils.normalization import normalize_string_list
 
 logger = logging.getLogger(__name__)
 
@@ -178,16 +182,62 @@ def _build_filter(filters: SearchFilters | None) -> models.Filter | None:
         )
 
     if filters.availability and filters.availability != "any":
-        # TODO(US-007): apply availability filter when availability service is available.
-        logger.warning(
-            "Availability filter requested but not implemented, ignoring value '%s'",
-            filters.availability,
-        )
+        available_res_ids = _get_available_res_ids(filters.availability, filters.res_ids)
+        if available_res_ids is None:
+            logger.warning("Redis unreachable, falling back to availability='any'.")
+        elif not available_res_ids:
+            return _empty_filter()
+        else:
+            conditions.append(
+                models.FieldCondition(
+                    key="res_id",
+                    match=models.MatchAny(any=available_res_ids),
+                )
+            )
 
     if not conditions:
         return None
 
     return models.Filter(must=cast(Any, conditions))
+
+
+def _empty_filter() -> models.Filter:
+    return models.Filter(
+        must=[
+            models.FieldCondition(
+                key="res_id",
+                match=models.MatchAny(any=[-1]),
+            )
+        ]
+    )
+
+
+def _get_available_res_ids(mode: str, res_ids: list[int] | None) -> list[int] | None:
+    normalized = mode.strip().lower()
+    try:
+        cache = AvailabilityCache()
+        if res_ids:
+            records_by_id = cache.get_many(res_ids)
+            return [
+                res_id for res_id in res_ids if _matches_mode(records_by_id.get(res_id), normalized)
+            ]
+        records_list = cache.scan_records()
+        return [record.res_id for record in records_list if _matches_mode(record, normalized)]
+    except redis.RedisError:
+        logger.warning("Redis unreachable, falling back to availability='any'.")
+        return None
+
+
+def _matches_mode(record: ProfileAvailability | None, mode: str) -> bool:
+    if record is None:
+        return False
+    if mode == "only_free":
+        return record.status == AvailabilityStatus.FREE
+    if mode == "free_or_partial":
+        return record.status in (AvailabilityStatus.FREE, AvailabilityStatus.PARTIAL)
+    if mode == "unavailable":
+        return record.status == AvailabilityStatus.UNAVAILABLE
+    return False
 
 
 def _build_matches(
@@ -267,4 +317,4 @@ def _extract_payload_int(payload: dict[str, Any], key: str) -> int:
 
 
 def _normalize_list(values: list[str]) -> list[str]:
-    return [str(value).strip().lower() for value in values if str(value).strip()]
+    return normalize_string_list(values)

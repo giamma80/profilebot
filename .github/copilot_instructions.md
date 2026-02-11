@@ -1,5 +1,12 @@
 # Copilot Code Review Instructions - ProfileBot
 
+## Github URL
+### Github projectissue tracking per US: `US-XXX` (e.g. `US-001`, `US-002`, `US-003`)
+project: https://github.com/users/giamma80/projects/2
+### Versioning e code review tramite PR su branch `feature/US-XXX-descrizione-breve`
+repo: https://github.com/giamma80/ProfileBot
+
+
 > **Scope:** Queste linee guida si applicano a tutto il codice ProfileBot: backend Python, servizi, API, test e documentazione.
 
 ---

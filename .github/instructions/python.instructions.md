@@ -570,6 +570,17 @@ class SkillSearchRequest(BaseModel):
 - [ ] Il codice appartiene al layer corretto (API/Core/Services)
 - [ ] Nessuna business logic complessa nel layer API
 - [ ] Single Responsibility: un modulo, una responsabilità
+- [ ] Dependency injection per servizi esterni (Qdrant, Redis, OpenAI)
+- [ ] Flusso dati chiaro e coerente
+- [ ] Moduli organizzati per funzionalità (parser, normalizer, search, etc.)
+- [ ] Nessun modulo monolitico con responsabilità multiple
+- [ ] Nessun codice duplicato (DRY)
+- [ ] Nessun import circolare
+- [ ] Nessun modulo con più di 300 righe (se sì, valutare refactoring)
+- [ ] Nessun metodo con più di 50 righe (se sì, valutare refactoring)
+- [ ] Nessun metodo con più di 5 parametri (se sì, valutare refactoring)
+- [ ] Nessun metodo che fa più di una cosa (es. parsing + normalizzazione + logging)
+- [ ] Nessun modulo che importa direttamente un modulo di layer superiore (es. core che importa api)
 
 ### Qualità Codice
 - [ ] Type hints su tutte le funzioni pubbliche
@@ -577,6 +588,10 @@ class SkillSearchRequest(BaseModel):
 - [ ] Nessun magic number/string
 - [ ] Import organizzati (stdlib → third-party → local)
 - [ ] Metodi privati con prefisso `_` se uso interno
+- [ ] Ricordati tutte le regole ruff segnalate in fase di linting https://docs.astral.sh/ruff/rules/#pyupgrade-up
+- [ ] Nessun mutable default argument (es. `def func(items: list = [])`)
+- [ ] Nessun hardcoded value (es. URL, API key, costanti) senza env var o costante definita
+
 
 ### Error Handling
 - [ ] Eccezioni custom specifiche (non generiche)

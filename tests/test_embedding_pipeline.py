@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+from collections.abc import Iterable
 from datetime import date, datetime
 from unittest.mock import MagicMock
 
 import pytest
 
 from src.core.embedding.pipeline import EmbeddingPipeline
+from src.core.embedding.service import EmbeddingService
 from src.core.parser.schemas import CVMetadata, ExperienceItem, ParsedCV, SkillSection
 from src.core.skills.schemas import NormalizedSkill, SkillExtractionResult
 
@@ -15,7 +17,7 @@ def _stub_ensure_collections(monkeypatch):
     monkeypatch.setattr("src.core.embedding.pipeline.ensure_collections", lambda *_: None)
 
 
-class DummyEmbeddingService:
+class DummyEmbeddingService(EmbeddingService):
     def __init__(self) -> None:
         self._model = "text-embedding-3-small"
         self._dimensions = 3
@@ -34,9 +36,10 @@ class DummyEmbeddingService:
         self.embed_calls.append(text)
         return [0.1, 0.2, 0.3]
 
-    def embed_batch(self, texts: list[str]) -> list[list[float]]:
-        self.embed_batch_calls.append(texts)
-        return [[0.1, 0.2, 0.3] for _ in texts]
+    def embed_batch(self, texts: Iterable[str]) -> list[list[float]]:
+        batch = list(texts)
+        self.embed_batch_calls.append(batch)
+        return [[0.1, 0.2, 0.3] for _ in batch]
 
 
 def _make_parsed_cv() -> ParsedCV:
@@ -102,7 +105,7 @@ def _make_skill_result() -> SkillExtractionResult:
     )
 
 
-def test_process_cv__dry_run__returns_counts_and_skips_upsert(monkeypatch):
+def test_process_cv__dry_run__returns_counts_and_skips_upsert() -> None:
     parsed_cv = _make_parsed_cv()
     skill_result = _make_skill_result()
     embedding_service = DummyEmbeddingService()
@@ -121,7 +124,7 @@ def test_process_cv__dry_run__returns_counts_and_skips_upsert(monkeypatch):
     qdrant_client.upsert.assert_not_called()
 
 
-def test_process_cv__no_skills__skips_cv_skills(monkeypatch):
+def test_process_cv__no_skills__skips_cv_skills() -> None:
     parsed_cv = _make_parsed_cv()
     skill_result = SkillExtractionResult(
         cv_id="cv-123",
@@ -145,7 +148,7 @@ def test_process_cv__no_skills__skips_cv_skills(monkeypatch):
     assert embedding_service.embed_calls == []
 
 
-def test_process_cv__upsert_payloads__include_expected_fields(monkeypatch):
+def test_process_cv__upsert_payloads__include_expected_fields() -> None:
     parsed_cv = _make_parsed_cv()
     skill_result = _make_skill_result()
     embedding_service = DummyEmbeddingService()
@@ -188,7 +191,7 @@ def test_process_cv__upsert_payloads__include_expected_fields(monkeypatch):
     assert experience_years[1] >= 0
 
 
-def test_process_cv__dedupes_skills_in_payload(monkeypatch):
+def test_process_cv__dedupes_skills_in_payload() -> None:
     parsed_cv = _make_parsed_cv()
     skills = [
         NormalizedSkill(
@@ -225,3 +228,110 @@ def test_process_cv__dedupes_skills_in_payload(monkeypatch):
     cv_skills_points = qdrant_client.upsert.call_args_list[0].kwargs["points"]
     payload = cv_skills_points[0].payload
     assert payload["normalized_skills"] == ["python"]
+
+
+def test_process_cv__no_experience_texts__skips_experience_points() -> None:
+    metadata = CVMetadata(cv_id="cv-123", res_id=12345, file_name="cv.docx")
+    skills = SkillSection(raw_text="Python", skill_keywords=["Python"])
+    experiences = [
+        ExperienceItem(
+            company="Acme",
+            role="Engineer",
+            start_date=date(2020, 1, 1),
+            end_date=date(2022, 1, 1),
+            description="",
+            is_current=False,
+        )
+    ]
+    parsed_cv = ParsedCV(
+        metadata=metadata,
+        skills=skills,
+        experiences=experiences,
+        education=[],
+        certifications=[],
+        raw_text="",
+    )
+    skill_result = _make_skill_result()
+    embedding_service = DummyEmbeddingService()
+    qdrant_client = MagicMock()
+
+    pipeline = EmbeddingPipeline(
+        embedding_service=embedding_service,
+        qdrant_client=qdrant_client,
+    )
+
+    result = pipeline.process_cv(parsed_cv, skill_result, dry_run=True)
+
+    assert result["cv_skills"] == 1
+    assert result["cv_experiences"] == 0
+    assert result["total"] == 1
+
+
+def test_process_cv__no_skills_and_no_experiences__returns_zero() -> None:
+    metadata = CVMetadata(cv_id="cv-123", res_id=12345, file_name="cv.docx")
+    skills = SkillSection(raw_text="", skill_keywords=[])
+    parsed_cv = ParsedCV(
+        metadata=metadata,
+        skills=skills,
+        experiences=[],
+        education=[],
+        certifications=[],
+        raw_text="",
+    )
+    skill_result = SkillExtractionResult(
+        cv_id="cv-123",
+        normalized_skills=[],
+        unknown_skills=[],
+        dictionary_version="1.0.0",
+    )
+    embedding_service = DummyEmbeddingService()
+    qdrant_client = MagicMock()
+
+    pipeline = EmbeddingPipeline(
+        embedding_service=embedding_service,
+        qdrant_client=qdrant_client,
+    )
+
+    result = pipeline.process_cv(parsed_cv, skill_result, dry_run=True)
+
+    assert result["cv_skills"] == 0
+    assert result["cv_experiences"] == 0
+    assert result["total"] == 0
+
+
+def test_process_cv__experience_years_handles_current_date() -> None:
+    metadata = CVMetadata(cv_id="cv-123", res_id=12345, file_name="cv.docx")
+    skills = SkillSection(raw_text="Python", skill_keywords=["Python"])
+    experiences = [
+        ExperienceItem(
+            company="Acme",
+            role="Engineer",
+            start_date=date(2024, 1, 1),
+            end_date=None,
+            description="Built APIs",
+            is_current=True,
+        )
+    ]
+    parsed_cv = ParsedCV(
+        metadata=metadata,
+        skills=skills,
+        experiences=experiences,
+        education=[],
+        certifications=[],
+        raw_text="",
+    )
+    skill_result = _make_skill_result()
+    embedding_service = DummyEmbeddingService()
+    qdrant_client = MagicMock()
+
+    pipeline = EmbeddingPipeline(
+        embedding_service=embedding_service,
+        qdrant_client=qdrant_client,
+    )
+
+    pipeline.process_cv(parsed_cv, skill_result, dry_run=False)
+
+    cv_exp_points = qdrant_client.upsert.call_args_list[1].kwargs["points"]
+    experience_years = cv_exp_points[0].payload["experience_years"]
+    assert experience_years is not None
+    assert experience_years >= 0
