@@ -1,14 +1,31 @@
 # Technical Debt — User Stories (Ingestion Evolution Readiness)
 
-> **Premessa:** le fonti di ingestion possono crescere nel tempo e cambiare formato (DOCX, PDF, HTML, CSV, API, DB, ecc.). L’architettura deve essere pronta a gestire nuovi connettori, variazioni di schema e trasformazioni senza impatti diffusi sul core.
+> **Premessa:** le fonti di ingestion possono crescere nel tempo e cambiare formato (DOCX, PDF, HTML, CSV, API, DB, ecc.). L'architettura deve essere pronta a gestire nuovi connettori, variazioni di schema e trasformazioni senza impatti diffusi sul core.
+
+> **Ultimo aggiornamento:** 26 febbraio 2026 — post US-016 (DAG dichiarativo) e US-017 (Availability Task Monitoring).
+
+---
+
+## Stato Complessivo
+
+| TD | Titolo | Stato | Note |
+|----|--------|-------|------|
+| TD-001 | Ingestion Abstraction & Connector Contract | 🔴 Non iniziato | Prerequisito per TD-002, TD-003 |
+| TD-002 | Schema Evolution & Metadata Versioning | 🔴 Non iniziato | Dipende da TD-001 |
+| TD-003 | Transformation Pipeline Modularization | 🔴 Non iniziato | Dipende da TD-001 |
+| TD-004 | Resilience & Monitoring for Ingestion Changes | 🟡 Parziale | Pattern retry presenti in scraper tasks e embedding service; mancano metriche strutturate e circuit breaker |
+| TD-005 | Pipeline Orchestrator & Unified Monitoring | 🟡 Parziale | DAG dichiarativo implementato (US-016); manca evoluzione verso orchestratore UI-based |
+| TD-006 | External Producer Service (ProfileScraper) | 🟡 Parziale | ScraperClient REST implementato; manca separazione in servizio autonomo |
+| TD-007 | Orchestrator Setup & End-to-End Observability | 🔴 Non iniziato | Dipende da TD-005 completato |
 
 ---
 
 ## TD-001 — Ingestion Abstraction & Connector Contract
 
-**Titolo:** Definire un contratto unico per le fonti di ingestion  
-**Motivazione:** nuove fonti richiedono standardizzazione di input, metadata e error handling  
-**Obiettivo:** introdurre un’interfaccia comune per connettori e parser con output coerente
+**Titolo:** Definire un contratto unico per le fonti di ingestion
+**Motivazione:** nuove fonti richiedono standardizzazione di input, metadata e error handling
+**Obiettivo:** introdurre un'interfaccia comune per connettori e parser con output coerente
+**Stato:** 🔴 Non iniziato
 
 ### Architettura da usare/modificare
 - Introduzione di un contratto `IngestionSource` (protocol/interface) nel layer `services`:
@@ -49,9 +66,10 @@
 
 ## TD-002 — Schema Evolution & Metadata Versioning
 
-**Titolo:** Versionare schema e metadata di ingestion  
-**Motivazione:** formati e campi cambiano, serve tracciabilità nel tempo  
+**Titolo:** Versionare schema e metadata di ingestion
+**Motivazione:** formati e campi cambiano, serve tracciabilità nel tempo
 **Obiettivo:** introdurre versione schema e mapping per compatibilità
+**Stato:** 🔴 Non iniziato
 
 ### Architettura da usare/modificare
 - `schema_version` obbligatorio in `IngestionMetadata`
@@ -73,9 +91,9 @@
 
 ### Anti‑pattern da evitare (o rimuovere)
 - Sovrascrivere documenti senza conservare `schema_version`
-- Normalizzare “al volo” senza traccia del mapping
+- Normalizzare "al volo" senza traccia del mapping
 - Hardcode di versioni dentro i parser
-- Ingestion che ignora metadata se “non utili”
+- Ingestion che ignora metadata se "non utili"
 
 ### Acceptance Criteria
 - [ ] Ogni documento ingestito include `schema_version`
@@ -87,9 +105,10 @@
 
 ## TD-003 — Transformation Pipeline Modularization
 
-**Titolo:** Modularizzare la pipeline di trasformazione pre‑core  
-**Motivazione:** nuovi formati richiedono step variabili (OCR, parsing, cleaning)  
+**Titolo:** Modularizzare la pipeline di trasformazione pre‑core
+**Motivazione:** nuovi formati richiedono step variabili (OCR, parsing, cleaning)
 **Obiettivo:** pipeline configurabile, step plug‑in, riduzione coupling
+**Stato:** 🔴 Non iniziato
 
 ### Architettura da usare/modificare
 - Pipeline composta da step indipendenti:
@@ -130,76 +149,109 @@
 
 ## TD-004 — Resilience & Monitoring for Ingestion Changes
 
-**Titolo:** Robustezza e osservabilità su ingestion dinamiche  
-**Motivazione:** nuove fonti aumentano rischio di errori silenziosi  
+**Titolo:** Robustezza e osservabilità su ingestion dinamiche
+**Motivazione:** nuove fonti aumentano rischio di errori silenziosi
 **Obiettivo:** circuit‑breaker, metriche e alerting sulle pipeline
+**Stato:** 🟡 Parziale
+
+### Stato attuale (post US-016/US-017)
+Elementi già implementati:
+- ✅ Retry policy con `max_retries=3` e `countdown=60s` nei task Celery scraper (`src/services/scraper/tasks.py`)
+- ✅ Retry con `tenacity` (backoff esponenziale) nel servizio embedding (`src/core/embedding/service.py`)
+- ✅ Classificazione errori parziale: `httpx.RequestError` (transient) vs `httpx.HTTPStatusError` (client/server) vs `redis.RedisError`
+- ✅ Logging strutturato con lazy formatting (`%s`) in tutti i task
+- ✅ `RetryPolicy` configurabile per nodo nel DAG dichiarativo (`src/core/workflows/schemas.py`)
+- ✅ Graceful degradation nel filtro disponibilità (fallback `availability='any'` su Redis unreachable)
+
+Elementi mancanti:
+- ❌ Metriche ingestion strutturate (success/failure/latency per source_type)
+- ❌ Circuit breaker (es. `circuitbreaker` library o custom)
+- ❌ Alerting su spike di errori
+- ❌ Dashboard/endpoint metriche aggregate
 
 ### Architettura da usare/modificare
 - Metriche per `source_type`: success/failure, latency, error class
 - Alert su spike di errori o formati sconosciuti
-- Retry policy controllata (backoff + max attempts)
-- Classificazione errori (input invalid vs transient vs internal)
+- Retry policy controllata (backoff + max attempts) — **parzialmente implementata**
+- Classificazione errori (input invalid vs transient vs internal) — **parzialmente implementata**
 
 ### Componenti da aggiornare/refactorizzare/aggiungere
 - **Aggiungere**
   - `src/utils/metrics.py` → metriche ingestion (success/failure/latency)
-  - `src/utils/retry.py` → policy retry condivisa
-  - `src/services/ingestion/monitoring.py` → logging strutturato
+  - `src/utils/circuit_breaker.py` → circuit breaker per fonti instabili
+  - `src/services/ingestion/monitoring.py` → logging strutturato aggregato
 - **Refactor**
-  - `src/services/embedding/tasks.py` → classificazione errori ingestion
-  - `src/core/embedding/pipeline.py` → cattura errori con classi specifiche
+  - `src/services/embedding/tasks.py` → emissione metriche su processing
+  - `src/services/scraper/tasks.py` → emissione metriche su scraper calls
 - **Aggiornare**
-  - `tests/test_celery_tasks.py` → retry + error class
+  - `tests/test_celery_tasks.py` → test metriche e circuit breaker
   - `tests/test_embedding_pipeline.py` → metriche emission
 
 ### Anti‑pattern da evitare (o rimuovere)
 - Retry infinito senza backoff
 - Errori loggati senza contesto di `source_type`
-- Silenziare errori di parsing per “non interrompere”
+- Silenziare errori di parsing per "non interrompere"
 - Uso di `except Exception` senza classificazione
 
 ### Acceptance Criteria
 - [ ] Metriche ingestion esposte e monitorabili
 - [ ] Alerting configurato su errori per source type
-- [ ] Retry policy definita per almeno 1 fonte instabile
-- [ ] Errori classificati e tracciabili
+- [x] Retry policy definita per almeno 1 fonte instabile — ✅ Implementata in scraper tasks
+- [x] Errori classificati e tracciabili — ✅ Parziale (httpx + redis error classes)
 
 ---
 
 ## TD-005 — Pipeline Orchestrator, Consumer & Unified Monitoring
 
-**Titolo:** Introdurre un orchestratore per pipeline con consumer esterni e monitoring unificato  
-**Motivazione:** crescita delle fonti e formati richiede coordinamento end‑to‑end e visibilità unica  
-**Obiettivo:** centralizzare la gestione delle pipeline per source type, includendo consumer per producer esterni **sotto un’unica UI**  
+**Titolo:** Introdurre un orchestratore per pipeline con consumer esterni e monitoring unificato
+**Motivazione:** crescita delle fonti e formati richiede coordinamento end‑to‑end e visibilità unica
+**Obiettivo:** centralizzare la gestione delle pipeline per source type, includendo consumer per producer esterni **sotto un'unica UI**
+**Stato:** 🟡 Parziale — DAG dichiarativo operativo (Fase 1 completata con US-016)
 
-**Nota interim (US-016):** adozione di un DAG dichiarativo (JSON/YAML) con Celery come executor, in attesa di un orchestratore completo. Il DAG definisce nodi, dipendenze e fan‑out; mapping e policy sono documentati in `docs/res_id-workflow.md`.
+### Stato attuale (post US-016)
 
-### Architettura da usare/modificare
+Con US-016 è stata implementata la **Fase 1 (DAG dichiarativo + Celery executor)**:
+
+| Componente | Stato | File |
+|-----------|-------|------|
+| `WorkflowDefinition` (Pydantic v2) | ✅ | `src/core/workflows/schemas.py` |
+| `WorkflowNode`, `FanoutConfig`, `RetryPolicy` | ✅ | `src/core/workflows/schemas.py` |
+| YAML/JSON loader con validazione | ✅ | `src/core/workflows/loader.py` |
+| `WorkflowRunner` → Celery canvas (chain/group) | ✅ | `src/core/workflows/runner.py` |
+| Topological sort con cycle detection | ✅ | `src/core/workflows/runner.py` |
+| Fan-out task (res_id list → group) | ✅ | `src/services/workflows/tasks.py` |
+| Workflow trigger task | ✅ | `src/services/workflows/tasks.py` |
+| Mapping nodi → task Celery | ✅ | `docs/res_id-workflow.md` |
+
+**Cosa rimane per completare TD-005 (Fase 2 — Orchestratore UI-based):**
+- ❌ Evoluzione verso Prefect/Dagster per UI nativa
+- ❌ Consumer API per fonti dinamiche (attualmente solo storage consumer via ScraperClient REST)
+- ❌ UI unificata per stato pipeline, tempi, errori
+- ❌ Metriche end-to-end (attualmente solo Flower per task Celery individuali)
+
+### Architettura target (Fase 2)
 - **Orchestratore unico** (Prefect/Dagster) come livello di controllo dei flow, **UI condivisa**
 - Flow per `source_type` che includono:
-  - **Consumer storage** (CV, CSV, artefatti file)
-  - **Consumer API** (future fonti dinamiche)
+  - **Consumer storage** (CV, CSV, artefatti file) — ✅ Parziale via ScraperClient
+  - **Consumer API** (future fonti dinamiche) — ❌ Da implementare
 - Integrazione con Celery per task heavy, orchestrazione esterna
-- Un’unica UI per stato pipeline, tempi, errori e retry end‑to‑end
+- Un'unica UI per stato pipeline, tempi, errori e retry end‑to‑end
 
 ### Schema architetturale (Mermaid)
 ```mermaid
 flowchart TB
-    subgraph Producer["ProfileScraper (Producer)"]
-        Scrapers[Scrapers]
-        Artifacts[Artifacts: DOCX/CSV/JSON]
-        Events[Redis Streams]
+    subgraph Current["✅ Fase 1 — Attuale (Celery DAG)"]
+        DAG["DAG YAML/JSON"]
+        Loader["WorkflowLoader"]
+        Runner["WorkflowRunner"]
+        CeleryCanvas["chain / group"]
     end
 
-    subgraph Storage["Shared Storage"]
-        Bucket[Object Storage]
-    end
-
-    subgraph Orchestrator["Pipeline Orchestrator (Prefect/Dagster)"]
+    subgraph Target["❌ Fase 2 — Target (Orchestratore UI)"]
+        Orchestrator["Prefect / Dagster"]
         FlowDocx["Flow: DOCX"]
         FlowCsv["Flow: CSV"]
         FlowApi["Flow: API"]
-        ConsumerS["Storage Consumer"]
         ConsumerA["API Consumer"]
     end
 
@@ -224,64 +276,78 @@ flowchart TB
         Metrics[Metrics & Alerts]
     end
 
-    Scrapers --> Artifacts --> Bucket
-    Scrapers --> Events
-
-    Events --> Orchestrator
-    Bucket --> ConsumerS
-    ConsumerA --> FlowApi
+    DAG --> Loader --> Runner --> CeleryCanvas --> Celery
 
     Orchestrator --> FlowDocx
     Orchestrator --> FlowCsv
     Orchestrator --> FlowApi
-
-    FlowDocx --> ConsumerS
-    FlowCsv --> ConsumerS
     FlowApi --> ConsumerA
 
-    ConsumerS --> Extract
     ConsumerA --> Extract
+    Celery --> Extract
     Extract --> Clean --> Normalize --> Enrich
-    Enrich --> Celery
-    Celery --> Qdrant
-    Celery --> Redis
+    Enrich --> Qdrant
+    Enrich --> Redis
 
     Orchestrator --> UI --> Metrics
 ```
 
-### Componenti da aggiornare/refactorizzare/aggiungere
+### Componenti da aggiungere (Fase 2)
 - **Aggiungere**
   - `src/services/orchestrator/__init__.py`
   - `src/services/orchestrator/flows.py` → definizione flow per source type
   - `src/services/orchestrator/consumers.py` → storage/API consumers
   - `src/services/orchestrator/config.py` → mapping source → flow
 - **Refactor**
-  - `src/services/embedding/tasks.py` → invocazione tramite orchestratore
-  - `src/core/ingestion/pipeline.py` → step invocabili dai flow
+  - `src/services/workflows/tasks.py` → migrazione da Celery DAG a flow orchestratore
+  - `src/core/workflows/runner.py` → adapter per nuovo orchestratore
 - **Aggiornare**
-  - `tests/test_embedding_pipeline.py` → verifica invocazione flow
+  - `tests/test_workflow_runner.py` → verifica invocazione flow
   - `tests/test_celery_tasks.py` → integrazione orchestratore ↔ worker
 
 ### Anti‑pattern da evitare (o rimuovere)
 - Logica di orchestrazione sparsa tra API e task
-- Consumer “hardcoded” senza config per source type
+- Consumer "hardcoded" senza config per source type
 - Monitoring frammentato in più dashboard non correlate
 - Retry gestiti localmente senza visibilità end‑to‑end
 
 ### Acceptance Criteria
-- [ ] Orchestratore definisce flow per almeno 2 source type
-- [ ] Consumer storage e API operativi
+- [x] DAG dichiarativo definisce workflow per almeno 1 source type — ✅ US-016
+- [x] Loader con validazione Pydantic operativo — ✅ US-016
+- [x] Runner → Celery canvas con topological sort — ✅ US-016
+- [ ] Consumer API operativi
 - [ ] UI unica mostra stato e tempi delle pipeline
-- [ ] Retry centralizzati e tracciabili
-- [ ] Integrazione con Celery operativa
+- [ ] Retry centralizzati e tracciabili in UI
 
 ---
 
 ## TD-006 — External Producer Service (ProfileScraper)
 
-**Titolo:** Separare la produzione degli artefatti in un servizio dedicato  
-**Motivazione:** disaccoppiare scraping/ETL dal dominio ProfileBot e proteggere credenziali HR  
+**Titolo:** Separare la produzione degli artefatti in un servizio dedicato
+**Motivazione:** disaccoppiare scraping/ETL dal dominio ProfileBot e proteggere credenziali HR
 **Obiettivo:** introdurre un servizio producer che genera artefatti e pubblica eventi, **monitorato nello stesso orchestratore**
+**Stato:** 🟡 Parziale — Client REST operativo, servizio non ancora separato
+
+### Stato attuale (post US-016)
+
+Il **client REST** verso lo scraper è implementato e operativo:
+
+| Componente | Stato | File |
+|-----------|-------|------|
+| `ScraperClient` (httpx, sync) | ✅ | `src/services/scraper/client.py` |
+| `ScraperClientConfig` | ✅ | `src/services/scraper/client.py` |
+| `ScraperResIdCache` (Redis) | ✅ | `src/services/scraper/cache.py` |
+| Task: Inside CV refresh (bulk + single) | ✅ | `src/services/scraper/tasks.py` |
+| Task: Availability CSV export | ✅ | `src/services/scraper/tasks.py` |
+| Task: Reskilling CSV export | ✅ | `src/services/scraper/tasks.py` |
+| DAG integration (nodi → task) | ✅ | `config/workflows/res_id_workflow.yaml` |
+| Config: `SCRAPER_BASE_URL` | ✅ | `src/core/config.py` |
+
+**Cosa rimane per completare TD-006 (servizio autonomo):**
+- ❌ Repo/servizio dedicato `profilescraper/` con deploy indipendente
+- ❌ Event publishing su Redis Streams (attualmente comunicazione sincrona REST)
+- ❌ Artifact storage condiviso (Object Storage)
+- ❌ Flow ProfileScraper registrati nell'orchestratore unificato
 
 ### Architettura da usare/modificare
 - Nuovo servizio **ProfileScraper**:
@@ -298,29 +364,31 @@ flowchart TB
   - `profilescraper/config/` → mapping source → output
   - `profilescraper/flows.py` → flow registrati nel backend orchestratore
 - **Aggiornare (ProfileBot)**
-  - `src/services/orchestrator/consumers.py` → consumer eventi
+  - `src/services/scraper/client.py` → eventuale migrazione a event-based consumption
   - `src/services/ingestion/contracts.py` → supporto `source_type` esterni
 
 ### Anti‑pattern da evitare (o rimuovere)
-- Scraper embedded nel core ProfileBot
-- Condivisione diretta di credenziali HR dentro ProfileBot
+- Scraper embedded nel core ProfileBot — **mitigato** (scraper è esterno via REST, client in ProfileBot)
+- Condivisione diretta di credenziali HR dentro ProfileBot — **non applicabile** (credenziali nello scraper service)
 - Output non versionato o senza metadata minimi
 - Eventi senza `artifact_uri` o `schema_version`
 
 ### Acceptance Criteria
+- [x] ProfileBot comunica con scraper via REST client — ✅ US-016
+- [x] Cache res_id in Redis per fan-out — ✅ US-016
 - [ ] ProfileScraper produce artefatti su storage condiviso
 - [ ] Eventi pubblicati con metadata minimi (source_type, schema_version, checksum)
-- [ ] Flow ProfileScraper visibili nella **stessa UI** dell’orchestratore
-- [ ] ProfileBot consuma eventi e avvia ingestion
+- [ ] Flow ProfileScraper visibili nella **stessa UI** dell'orchestratore
 - [ ] Pipeline decoupled: due container distinti (ProfileBot + ProfileScraper)
 
 ---
 
 ## TD-007 — Orchestrator Setup & End‑to‑End Observability
 
-**Titolo:** Setup orchestratore unico per monitoraggio end‑to‑end  
-**Motivazione:** serve una fonte unica per verificare producer, consumer e aggiornamento KB  
+**Titolo:** Setup orchestratore unico per monitoraggio end‑to‑end
+**Motivazione:** serve una fonte unica per verificare producer, consumer e aggiornamento KB
 **Obiettivo:** configurare Prefect/Dagster come orchestratore centrale con UI unica e health flows
+**Stato:** 🔴 Non iniziato — dipende da TD-005 Fase 2
 
 ### Architettura da usare/modificare
 - Backend orchestratore unico (DB + UI)
@@ -427,5 +495,29 @@ flowchart LR
 
 ---
 
+## Dipendenze tra TD e User Stories
+
+```mermaid
+graph TD
+    US016["✅ US-016\nDAG Dichiarativo"] --> TD005["🟡 TD-005\nPipeline Orchestrator"]
+    US016 --> TD006["🟡 TD-006\nProfileScraper"]
+    US017["✅ US-017\nAvailability Task Monitoring"] --> TD004["🟡 TD-004\nResilience"]
+
+    TD001["🔴 TD-001\nIngestion Contract"] --> TD002["🔴 TD-002\nSchema Versioning"]
+    TD001 --> TD003["🔴 TD-003\nPipeline Modularization"]
+    TD004 --> TD005
+    TD003 --> TD005
+    TD005 --> TD007["🔴 TD-007\nOrchestrator Setup"]
+    TD006 --> TD007
+
+    US009["⏳ US-009\nLLM Decision Engine"] -.->|pattern retry| TD004
+    US008["⏳ US-008\nMatch con JD"] -.->|context pipeline| TD003
+```
+
+---
+
 ## Notes
 Queste storie sono la base per le future issue GitHub e dovranno evolvere in task più granulari per ciascun connettore e pipeline.
+
+**Changelog:**
+- **2026-02-26:** Aggiunto stato complessivo, aggiornati TD-004/005/006 con stato post US-016/US-017, aggiunto diagramma dipendenze TD↔US, marcati AC soddisfatti.

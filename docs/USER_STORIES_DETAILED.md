@@ -1018,6 +1018,124 @@ Output JSON:
 
 ---
 
+## US-009: LLM Decision Engine
+
+**Epic:** LLM Integration
+**Story Points:** 8
+**Priority:** P1 - High
+**Sprint:** 4
+**Feature Branch:** `feature/US-009-llm-decision-engine`
+**Dipende da:** nessuno (layer fondativo per US-008)
+
+### User Story
+**Come** sistema
+**Voglio** usare un LLM per decisioni di matching spiegate
+**Per** fornire risposte comprensibili e motivate
+
+### Acceptance Criteria
+- [ ] Integrazione OpenAI/Azure OpenAI/Ollama (client wrapper con retry)
+- [ ] System prompt ottimizzato skill-first (da analisi_preliminare.md §10)
+- [ ] Context normalization per CV (max 5-7 profili, skill-first + experiences)
+- [ ] Output strutturato con cv_id + decision_reason (JSON mode)
+- [ ] Temperature bassa (0.0-0.3) configurabile via .env
+- [ ] Settings LLM centralizzati in config.py
+
+### Technical Details
+
+**Stack:**
+- LLM: OpenAI GPT-4 / Azure OpenAI / Ollama (provider-agnostic)
+- Client: Singolo client OpenAI con `base_url` configurabile (approccio leggero)
+- Retry: tenacity (backoff esponenziale, max 3 tentativi)
+- Output: JSON mode, Pydantic v2 response parsing
+- Provider switch: config-driven via `LLM_PROVIDER` + `LLM_BASE_URL`
+
+**File da creare:**
+```
+src/core/llm/
+  __init__.py
+  client.py          # Factory + LLM client wrapper
+  prompts.py         # System prompt, context builder, output templates
+  schemas.py         # LLMRequest, LLMResponse, DecisionOutput
+src/core/config.py   # Aggiungere: llm_provider, llm_model, llm_base_url, llm_api_key, llm_temperature, llm_max_tokens
+tests/
+  test_llm_client.py
+  test_llm_prompts.py
+```
+
+**Provider Abstraction (Approccio Leggero):**
+Singolo client OpenAI con `base_url` configurabile. La libreria `openai` supporta nativamente endpoint compatibili (Ollama, vLLM, LM Studio).
+
+```python
+from openai import OpenAI, AzureOpenAI
+
+def create_llm_client(settings) -> OpenAI:
+    if settings.llm_provider == "azure":
+        return AzureOpenAI(
+            azure_endpoint=settings.llm_base_url,
+            api_key=settings.llm_api_key,
+        )
+    return OpenAI(
+        base_url=settings.llm_base_url,  # None per OpenAI, http://localhost:11434/v1 per Ollama
+        api_key=settings.llm_api_key or "ollama",
+    )
+```
+
+**Config Settings (da aggiungere a config.py):**
+```python
+# Provider-agnostic LLM config
+llm_provider: str = Field(default="openai", validation_alias="LLM_PROVIDER")       # openai | ollama | azure
+llm_model: str = Field(default="gpt-4", validation_alias="LLM_MODEL")              # gpt-4, llama3, mistral, etc.
+llm_base_url: str | None = Field(default=None, validation_alias="LLM_BASE_URL")    # http://localhost:11434/v1 per Ollama
+llm_api_key: str | None = Field(default=None, validation_alias="LLM_API_KEY")
+llm_temperature: float = Field(default=0.1, validation_alias="LLM_TEMPERATURE")
+llm_max_tokens: int = Field(default=2000, validation_alias="LLM_MAX_TOKENS")
+```
+
+**Schemas:**
+```python
+class LLMRequest(BaseModel):
+    system_prompt: str
+    context: str
+    user_prompt: str
+    temperature: float = 0.1
+    max_tokens: int = 2000
+
+class DecisionOutput(BaseModel):
+    selected_cv_id: str
+    decision_reason: str
+    matched_skills: list[str]
+    missing_skills: list[str]
+    confidence: str  # high | medium | low
+```
+
+**Core Logic (src/core/llm/client.py):**
+- Factory function `create_llm_client(settings)` che ritorna `OpenAI` o `AzureOpenAI`
+- Usa `chat.completions.create` con JSON mode
+- Retry con tenacity (stesso pattern di src/core/embedding/service.py)
+- Config da Settings (model, temperature, max_tokens)
+
+**Prompt Templates (src/core/llm/prompts.py):**
+- System prompt skill-first (ref: analisi_preliminare.md 10.1)
+- Context builder: formatta shortlist CV con skill + experiences
+- Output parser: valida JSON response in DecisionOutput
+
+### LLM Parameters
+- Model: configurabile via LLM_MODEL
+- Temperature: 0.1 (deterministic, configurabile)
+- Max tokens: 2000
+- Response format: JSON mode
+
+### Definition of Done
+- [ ] LLM client operativo con test
+- [ ] Prompt skill-first verificato
+- [ ] Output JSON parsabile e validato
+- [ ] Config centralizzata in Settings
+- [ ] OpenAPI aggiornata (se endpoint diretto)
+- [ ] Lint + test passano
+- [ ] PR con checklist compilata
+
+---
+
 ## US-013: Celery Job Queue e API Endpoints
 
 **Epic:** Document Ingestion (scalabilità)
