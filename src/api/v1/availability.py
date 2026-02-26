@@ -5,8 +5,10 @@ from __future__ import annotations
 import io
 import logging
 from datetime import datetime
+from typing import Any
 
 import redis
+from celery.result import AsyncResult
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, model_validator
 
@@ -14,6 +16,8 @@ from src.services.availability.cache import AvailabilityCache
 from src.services.availability.loader import load_from_csv, load_from_stream
 from src.services.availability.schemas import AvailabilityStatus
 from src.services.availability.service import AvailabilityService
+from src.services.availability.tasks import availability_refresh_task
+from src.services.embedding.celery_app import celery_app
 
 logger = logging.getLogger(__name__)
 
@@ -64,6 +68,39 @@ class AvailabilityStatsResponse(BaseModel):
     last_updated_at: str | None = None
 
 
+class AvailabilityTaskTriggerRequest(BaseModel):
+    """Request payload for availability refresh task."""
+
+    csv_path: str | None = None
+
+    model_config = {"extra": "forbid"}
+
+
+class AvailabilityTaskTriggerResponse(BaseModel):
+    """Response payload for availability refresh task trigger."""
+
+    task_id: str
+    status: str
+    message: str | None = None
+
+
+class AvailabilityTaskStatusResponse(BaseModel):
+    """Response payload for availability refresh task status."""
+
+    task_id: str
+    status: str
+    result: dict[str, Any] | None = None
+    traceback: str | None = None
+
+
+class AvailabilityTasksResponse(BaseModel):
+    """Response payload for Celery availability task inspection."""
+
+    active: Any
+    reserved: Any
+    scheduled: Any
+
+
 @router.post(
     "/load",
     response_model=AvailabilityLoadResponse,
@@ -93,31 +130,6 @@ def load_availability(request: AvailabilityLoadRequest) -> AvailabilityLoadRespo
         total_rows=result.total_rows,
         loaded=result.loaded,
         skipped=result.skipped,
-    )
-
-
-@router.get(
-    "/{res_id}",
-    response_model=AvailabilityResponse,
-    status_code=status.HTTP_200_OK,
-    summary="Ottieni disponibilità per res_id",
-)
-def get_availability(res_id: int) -> AvailabilityResponse:
-    """Return availability record for a given res_id from cache."""
-    service = AvailabilityService()
-    record = service.get_availability(res_id)
-    if record is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="res_id not found")
-
-    return AvailabilityResponse(
-        res_id=record.res_id,
-        status=record.status,
-        allocation_pct=record.allocation_pct,
-        current_project=record.current_project,
-        available_from=record.available_from.isoformat() if record.available_from else None,
-        available_to=record.available_to.isoformat() if record.available_to else None,
-        manager_name=record.manager_name,
-        updated_at=record.updated_at.isoformat(),
     )
 
 
@@ -155,4 +167,82 @@ def get_availability_stats() -> AvailabilityStatsResponse:
         total=len(records),
         by_status=by_status,
         last_updated_at=last_updated.isoformat() if last_updated else None,
+    )
+
+
+@router.post(
+    "/refresh",
+    response_model=AvailabilityTaskTriggerResponse,
+    status_code=status.HTTP_202_ACCEPTED,
+    summary="Avvia refresh disponibilità",
+)
+def trigger_availability_refresh(
+    request: AvailabilityTaskTriggerRequest | None = None,
+) -> AvailabilityTaskTriggerResponse:
+    """Queue the availability refresh task."""
+    csv_path = request.csv_path if request else None
+    task = availability_refresh_task.delay(csv_path=csv_path)
+    logger.info("Queued availability refresh task: %s", task.id)
+    return AvailabilityTaskTriggerResponse(
+        task_id=task.id,
+        status="queued",
+        message="Availability refresh task started",
+    )
+
+
+@router.get(
+    "/refresh/{task_id}",
+    response_model=AvailabilityTaskStatusResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Stato del refresh disponibilità",
+)
+def get_availability_refresh_status(task_id: str) -> AvailabilityTaskStatusResponse:
+    """Return the status of a queued availability refresh task."""
+    result = AsyncResult(task_id, app=celery_app)
+    return AvailabilityTaskStatusResponse(
+        task_id=task_id,
+        status=result.status,
+        result=result.result if result.ready() else None,
+        traceback=result.traceback if result.failed() else None,
+    )
+
+
+@router.get(
+    "/tasks",
+    response_model=AvailabilityTasksResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Stato aggregato dei task di disponibilità",
+)
+def get_availability_tasks() -> AvailabilityTasksResponse:
+    """Return Celery queue inspection data for availability tasks."""
+    inspect = celery_app.control.inspect()
+    return AvailabilityTasksResponse(
+        active=inspect.active() or {},
+        reserved=inspect.reserved() or {},
+        scheduled=inspect.scheduled() or {},
+    )
+
+
+@router.get(
+    "/{res_id}",
+    response_model=AvailabilityResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Ottieni disponibilità per res_id",
+)
+def get_availability(res_id: int) -> AvailabilityResponse:
+    """Return availability record for a given res_id from cache."""
+    service = AvailabilityService()
+    record = service.get_availability(res_id)
+    if record is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="res_id not found")
+
+    return AvailabilityResponse(
+        res_id=record.res_id,
+        status=record.status,
+        allocation_pct=record.allocation_pct,
+        current_project=record.current_project,
+        available_from=record.available_from.isoformat() if record.available_from else None,
+        available_to=record.available_to.isoformat() if record.available_to else None,
+        manager_name=record.manager_name,
+        updated_at=record.updated_at.isoformat(),
     )
