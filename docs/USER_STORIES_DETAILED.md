@@ -794,6 +794,50 @@ def availability_refresh_task(self, csv_path: str | None = None) -> dict:
 
 ---
 
+## US-017: Availability Task Monitoring API
+
+**Epic:** Search & Matching
+**Story Points:** 3
+**Priority:** P1 - High
+**Sprint:** 3/4
+**Feature Branch:** `feature/US-017-availability-task-monitoring`
+**Dipende da:** US-007 (Availability Service), US-013 (Celery Job Queue)
+
+### User Story
+**Come** utente
+**Voglio** triggerare e monitorare i task di refresh availability
+**Per** avere coerenza con le API embedding e visibilità sullo stato dei job
+
+### Acceptance Criteria
+- [ ] Endpoint `POST /api/v1/availability/refresh` per avviare `availability_refresh_task`
+- [ ] Endpoint `GET /api/v1/availability/refresh/{task_id}` per stato task
+- [ ] Endpoint `GET /api/v1/availability/tasks` per stato aggregato dei task
+- [ ] Response coerente con embeddings (`task_id`, `status`, `result`, `traceback`)
+- [ ] Supporto `csv_path` opzionale nel trigger
+- [ ] Logging e error handling allineati agli embeddings
+
+### Technical Details
+
+**Stack:**
+- Queue: Celery + Redis
+- API: FastAPI
+- Monitoring: Flower
+
+### Process
+1. Trigger task con `csv_path` opzionale
+2. Salvare `task_id` e restituire response immediata
+3. Esporre status via `AsyncResult`
+4. Esporre stato aggregato via Celery inspect
+
+### Definition of Done
+- [ ] Endpoint trigger e status implementati
+- [ ] Endpoint status aggregato implementato
+- [ ] OpenAPI aggiornata
+- [ ] Test unitari aggiunti
+- [ ] Lint e test passano
+
+---
+
 ## US-008: Match con Job Description
 
 **Epic:** Search & Matching
@@ -2310,8 +2354,9 @@ graph LR
     US013 --> US006
     US002 --> US006
     US006 --> US007[US-007: Availability]
+    US007 --> US017[US-017: Availability Task Monitoring]
+    US017 --> US008[US-008: Job Match]
     US006 --> US008[US-008: Job Match]
-    US007 --> US008
     US005 --> US014[US-014: Test Coverage]
     US013 --> US014
     US001 --> US015[US-015: Dep Cleanup]
@@ -2332,6 +2377,7 @@ graph LR
 | US-005 | `feature/US-005-embedding-pipeline` | 2 | ✅ Done |
 | US-006 | `feature/US-006-search-api` | 3 | ✅ Done |
 | US-007 | `feature/US-007-availability-filter` | 3 | |
+| US-017 | `feature/US-017-availability-task-monitoring` | 3/4 | |
 | US-008 | `feature/US-008-job-match` | 4 | |
 | US-013 | `feature/US-013-celery-job-queue` | 2/3 | ✅ Done |
 | US-014 | `feature/US-014-test-coverage` | 3 | Technical Debt |
