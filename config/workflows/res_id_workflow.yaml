@@ -1,0 +1,21 @@
+version: 1
+workflow_id: res_id_ingestion
+schedule: "0 */4 * * *"
+
+nodes:
+  - id: fetch_res_ids
+    task: src.services.scraper.tasks.scraper_inside_refresh_task
+
+  - id: inside_fanout
+    task: src.services.workflows.tasks.run_workflow_fanout_task
+    depends_on: [fetch_res_ids]
+    fanout:
+      source: redis:profilebot:scraper:inside:res_ids
+      task: src.services.scraper.tasks.scraper_inside_refresh_item_task
+      parameter_name: res_id
+
+  - id: export_availability
+    task: src.services.scraper.tasks.scraper_availability_csv_refresh_task
+
+  - id: export_reskilling
+    task: src.services.scraper.tasks.scraper_reskilling_csv_refresh_task

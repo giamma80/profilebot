@@ -156,6 +156,19 @@ Una User Story è **DONE** quando:
 
 ---
 
+## Workflow Configuration Updates
+
+Quando modifichi o introduci nuovi workflow (JSON/YAML):
+
+- documenta il nodo e il relativo task Celery nel documento di architettura;
+- aggiorna il mapping dei nodi se cambia la relazione con i task esistenti;
+- specifica eventuali dipendenze o fan‑out nel PR description;
+- indica l’impatto su scheduling e su eventuali ambienti (dev/prod).
+
+Riferimento: `docs/res_id-workflow.md`.
+
+---
+
 ## Pull Request Template
 
 ```markdown

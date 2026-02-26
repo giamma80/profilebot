@@ -196,6 +196,10 @@ Esempio concettuale:
 
 ---
 
+## Collegamento con workflow `res_id`
+Per l’orchestrazione delle fonti e l’allineamento con il flusso di ingestione basato su `res_id`, fare riferimento a:
+- `docs/res_id-workflow.md`
+
 ## Principio finale di chiusura
 
 > **La qualità del sistema non dipende dal modello,

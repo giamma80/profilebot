@@ -113,7 +113,7 @@ async def health():
 
 ### Import Organization
 
-**Regola**: Importare moduli, non nomi. Eccezioni: `typing` e tipi comuni.
+**Regola**: Importare moduli, non nomi. Eccezioni: `typing` e tipi comuni; sono ammessi import diretti da FastAPI/Pydantic (es. `APIRouter`, `HTTPException`, `BaseModel`) quando migliorano la leggibilità.
 
 ```python
 # ✅ Good: Import organizzati correttamente
@@ -304,6 +304,7 @@ def search_profiles(query_embedding, filters=None, limit=10):
 ```
 
 ### Docstring (Google Style)
+Docstring richieste solo per funzioni pubbliche.
 
 ```python
 def normalize_skill(
@@ -584,7 +585,7 @@ class SkillSearchRequest(BaseModel):
 
 ### Qualità Codice
 - [ ] Type hints su tutte le funzioni pubbliche
-- [ ] Docstring su classi e funzioni pubbliche (Google style)
+- [ ] Docstring su funzioni pubbliche (Google style)
 - [ ] Nessun magic number/string
 - [ ] Import organizzati (stdlib → third-party → local)
 - [ ] Metodi privati con prefisso `_` se uso interno

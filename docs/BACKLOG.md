@@ -87,6 +87,23 @@
 
 ---
 
+### US-016: Orchestrazione Ingestion Scraper (DAG config)
+**Come** sistema
+**Voglio** definire un workflow dichiarativo per le sorgenti scraper
+**Per** aggiungere nuove fonti senza modificare l’orchestrazione
+
+**Acceptance Criteria:**
+- [ ] Workflow definito in JSON/YAML con nodi e dipendenze
+- [ ] Loader con validazione schema (Pydantic)
+- [ ] Runner che converte il DAG in primitive Celery
+- [ ] Schedule ogni 4h collegata al workflow
+- [ ] Mapping nodi → task Celery esistenti
+
+**Story Points:** 5
+**Priority:** P1 - High
+
+---
+
 ## Epic 3: Search & Matching
 > Funzionalità di ricerca e matching profili
 
