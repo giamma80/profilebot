@@ -134,31 +134,6 @@ def load_availability(request: AvailabilityLoadRequest) -> AvailabilityLoadRespo
 
 
 @router.get(
-    "/{res_id}",
-    response_model=AvailabilityResponse,
-    status_code=status.HTTP_200_OK,
-    summary="Ottieni disponibilità per res_id",
-)
-def get_availability(res_id: int) -> AvailabilityResponse:
-    """Return availability record for a given res_id from cache."""
-    service = AvailabilityService()
-    record = service.get_availability(res_id)
-    if record is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="res_id not found")
-
-    return AvailabilityResponse(
-        res_id=record.res_id,
-        status=record.status,
-        allocation_pct=record.allocation_pct,
-        current_project=record.current_project,
-        available_from=record.available_from.isoformat() if record.available_from else None,
-        available_to=record.available_to.isoformat() if record.available_to else None,
-        manager_name=record.manager_name,
-        updated_at=record.updated_at.isoformat(),
-    )
-
-
-@router.get(
     "/stats",
     response_model=AvailabilityStatsResponse,
     status_code=status.HTTP_200_OK,
@@ -245,4 +220,29 @@ def get_availability_tasks() -> AvailabilityTasksResponse:
         active=inspect.active() or {},
         reserved=inspect.reserved() or {},
         scheduled=inspect.scheduled() or {},
+    )
+
+
+@router.get(
+    "/{res_id}",
+    response_model=AvailabilityResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Ottieni disponibilità per res_id",
+)
+def get_availability(res_id: int) -> AvailabilityResponse:
+    """Return availability record for a given res_id from cache."""
+    service = AvailabilityService()
+    record = service.get_availability(res_id)
+    if record is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="res_id not found")
+
+    return AvailabilityResponse(
+        res_id=record.res_id,
+        status=record.status,
+        allocation_pct=record.allocation_pct,
+        current_project=record.current_project,
+        available_from=record.available_from.isoformat() if record.available_from else None,
+        available_to=record.available_to.isoformat() if record.available_to else None,
+        manager_name=record.manager_name,
+        updated_at=record.updated_at.isoformat(),
     )
