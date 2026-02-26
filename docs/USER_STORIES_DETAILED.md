@@ -2340,6 +2340,42 @@ uv pip list | grep -E "llama|black|isort|flake8|pylint"
 
 ---
 
+## US-016: Orchestrazione Ingestion Scraper (DAG config)
+
+**Epic:** Document Ingestion  
+**Story Points:** 5  
+**Priority:** P1 - High  
+**Sprint:** 4  
+**Feature Branch:** `feature/US-016-ingestion-scraper`  
+**Status:** ✅ Done
+
+### User Story
+**Come** sistema  
+**Voglio** definire un workflow dichiarativo per le sorgenti scraper  
+**Per** aggiungere nuove fonti senza modificare l’orchestrazione
+
+### Acceptance Criteria
+- [x] Workflow definito in JSON/YAML con nodi e dipendenze
+- [x] Loader con validazione schema (Pydantic)
+- [x] Runner che converte il DAG in primitive Celery
+- [x] Schedule ogni 4h collegata al workflow
+- [x] Mapping nodi → task Celery esistenti
+
+### Technical Details
+- Workflow config: `config/workflows/res_id_workflow.yaml`
+- Schema/loader/runner: `src/core/workflows/`
+- Task orchestrazione: `src/services/workflows/tasks.py`
+- Integrazione Celery Beat: `src/services/embedding/celery_app.py`
+- Documentazione tecnica: `docs/res_id-workflow.md`
+
+### Definition of Done
+- [x] Loader e runner validati con test
+- [x] Fan-out supportato per res_id
+- [x] Task scraper allineate alle chiamate del servizio
+- [x] `make lint` e `make test` passano
+
+---
+
 ## Dipendenze tra User Stories
 
 ```mermaid
@@ -2363,6 +2399,7 @@ graph LR
 ```
 
 > **Note:** US-005 (Core) e US-013 (Celery) sono state separate per gestire volumi di 10.000+ CV con richieste multiple al giorno.
+> **Note:** US-016 introduce l’orchestrazione ibrida (Celery + DAG config); riferimento architetturale in `docs/res_id-workflow.md`.
 
 ---
 

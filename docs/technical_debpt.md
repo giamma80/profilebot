@@ -170,7 +170,9 @@
 
 **Titolo:** Introdurre un orchestratore per pipeline con consumer esterni e monitoring unificato  
 **Motivazione:** crescita delle fonti e formati richiede coordinamento end‑to‑end e visibilità unica  
-**Obiettivo:** centralizzare la gestione delle pipeline per source type, includendo consumer per producer esterni **sotto un’unica UI**
+**Obiettivo:** centralizzare la gestione delle pipeline per source type, includendo consumer per producer esterni **sotto un’unica UI**  
+
+**Nota interim (US-016):** adozione di un DAG dichiarativo (JSON/YAML) con Celery come executor, in attesa di un orchestratore completo. Il DAG definisce nodi, dipendenze e fan‑out; mapping e policy sono documentati in `docs/res_id-workflow.md`.
 
 ### Architettura da usare/modificare
 - **Orchestratore unico** (Prefect/Dagster) come livello di controllo dei flow, **UI condivisa**

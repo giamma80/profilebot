@@ -438,7 +438,10 @@ profilebot/
 - [Technical Debt — Ingestion Readiness](docs/technical_debpt.md)
 - [Analisi Preliminare](docs/analisi_preliminare.md)
 - [Guida Formato CV](docs/cv_format_guide.md)
-- [Appendice Tecnica - Indexing](docs/Appendice%20tecnica%20—%20Indexing.md)
+- [Guida Formato Availability](docs/availability_format_guide.md)
+- [Workflow res_id](docs/res_id-workflow.md)
+- [Checklist User Stories](docs/US_CHECKLIST_TEMPLATE.md)
+- [Appendice Tecnica - Indexing](docs/appendice_tecnica_indexing.md)
 - [Team Structure](docs/TEAM_STRUCTURE.md)
 
 ---

@@ -190,6 +190,7 @@ class CVMetadata(BaseModel):
 ```
 
 #### Docstrings (Google Style)
+Docstring richieste solo per funzioni pubbliche.
 ```python
 def extract_skills(text: str, dictionary: SkillDictionary) -> list[NormalizedSkill]:
     """Estrae e normalizza le skill da un testo.
@@ -504,7 +505,7 @@ class TestCVParser:
 - [ ] `make lint` - Verifica linting
 - [ ] `make test` - Esegui test
 - [ ] Type hints su tutte le funzioni pubbliche
-- [ ] Docstring su classi e funzioni pubbliche
+- [ ] Docstring su funzioni pubbliche
 
 ### Before PR
 - [ ] `make preflight` - Tutti i check passano
@@ -615,7 +616,7 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     openai_api_key: str
-    qdrant_url: str = "http://localhost:6333"
+    qdrant_url: str
 
     model_config = {"env_file": ".env"}
 ```
@@ -623,12 +624,13 @@ class Settings(BaseSettings):
 ### Input Validation
 ```python
 # ✅ Valida sempre gli input
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, field_validator
 
 class CVUploadRequest(BaseModel):
     file_name: str
 
-    @validator("file_name")
+    @field_validator("file_name")
+    @classmethod
     def validate_extension(cls, v):
         if not v.endswith(".docx"):
             raise ValueError("Only .docx files are supported")
@@ -651,7 +653,7 @@ logger.info("Processing request for user_id: '%s'", user_id)
 
 ### Code Quality
 - [ ] Type hints presenti e corretti
-- [ ] Docstring su funzioni/classi pubbliche
+- [ ] Docstring su funzioni pubbliche
 - [ ] Nessun magic number
 - [ ] Error handling appropriato
 - [ ] Logging strutturato

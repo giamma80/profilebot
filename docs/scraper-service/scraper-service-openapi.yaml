@@ -1,0 +1,338 @@
+openapi: 3.0.3
+info:
+  title: Scraper Service
+  version: 0.1.0
+  description: |
+    Raw-only scraping service for Inside CVs, SharePoint Availability, and Reskilling lists.
+    The API returns raw files and rows without normalization.
+servers:
+  - url: http://localhost:8001
+tags:
+  - name: health
+    description: Service health check.
+  - name: inside
+    description: Inside CV scraping endpoints.
+  - name: availability
+    description: SharePoint Availability list endpoints.
+  - name: reskilling
+    description: Reskilling list endpoints.
+
+paths:
+  /health:
+    get:
+      tags: [health]
+      summary: Health check
+      description: Returns service status.
+      operationId: getHealth
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+              examples:
+                ok:
+                  value: { status: ok }
+
+  /inside/res-ids:
+    get:
+      tags: [inside]
+      summary: List Inside res_id values
+      description: Returns the list of available res_id values from Inside.
+      operationId: listInsideResIds
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResIdsResponse"
+              examples:
+                example:
+                  value:
+                    res_ids: ["210513", "210514"]
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /inside/cv/{res_id}:
+    get:
+      tags: [inside]
+      summary: Download CV by res_id
+      description: Returns the CV document for the given res_id.
+      operationId: getInsideCv
+      parameters:
+        - $ref: "#/components/parameters/ResIdPath"
+      responses:
+        "200":
+          description: CV file
+          content:
+            application/vnd.openxmlformats-officedocument.wordprocessingml.document:
+              schema:
+                type: string
+                format: binary
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+        "500":
+          $ref: "#/components/responses/InternalError"
+    post:
+      tags: [inside]
+      summary: Download CV and return path
+      description: Downloads the CV and returns the local path on disk.
+      operationId: downloadInsideCv
+      parameters:
+        - $ref: "#/components/parameters/ResIdPath"
+      responses:
+        "200":
+          description: CV saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DownloadResponse"
+              examples:
+                example:
+                  value:
+                    path: /data/output/inside/curriculum_210513.docx
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /availability/csv:
+    get:
+      tags: [availability]
+      summary: Download latest Availability CSV
+      description: Returns the most recent Availability CSV file.
+      operationId: getAvailabilityCsv
+      responses:
+        "200":
+          description: CSV file
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+    post:
+      tags: [availability]
+      summary: Export Availability CSV
+      description: Scrapes the Availability list and returns the saved CSV path and row count.
+      operationId: exportAvailabilityCsv
+      responses:
+        "200":
+          description: CSV exported
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CsvExportResponse"
+              examples:
+                example:
+                  value:
+                    path: /data/output/availability/availability_list.csv
+                    rows: 1234
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /availability/csv/{res_id}:
+    get:
+      tags: [availability]
+      summary: Get Availability row by res_id
+      description: Returns the CSV row for the given ResID.
+      operationId: getAvailabilityRow
+      parameters:
+        - $ref: "#/components/parameters/ResIdPath"
+      responses:
+        "200":
+          description: Row found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RowResponse"
+              examples:
+                example:
+                  value:
+                    res_id: "210513"
+                    row:
+                      ResID: "210513"
+                      Risorsa: "Donnemma, Debora"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /reskilling/csv:
+    get:
+      tags: [reskilling]
+      summary: Download latest Reskilling CSV
+      description: Returns the most recent Reskilling CSV file.
+      operationId: getReskillingCsv
+      responses:
+        "200":
+          description: CSV file
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+    post:
+      tags: [reskilling]
+      summary: Export Reskilling CSV
+      description: Scrapes the Reskilling list and returns the saved CSV path and row count.
+      operationId: exportReskillingCsv
+      responses:
+        "200":
+          description: CSV exported
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CsvExportResponse"
+              examples:
+                example:
+                  value:
+                    path: /data/output/reskilling/reskilling_list.csv
+                    rows: 456
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /reskilling/csv/{res_id}:
+    get:
+      tags: [reskilling]
+      summary: Get Reskilling row by res_id
+      description: Returns the CSV row for the given Consultant ID.
+      operationId: getReskillingRow
+      parameters:
+        - $ref: "#/components/parameters/ResIdPath"
+      responses:
+        "200":
+          description: Row found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RowResponse"
+              examples:
+                example:
+                  value:
+                    res_id: "210513"
+                    row:
+                      "Risorsa:Consultant ID": "210513"
+                      "Risorsa": "Donnemma, Debora"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+components:
+  parameters:
+    ResIdPath:
+      name: res_id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Resource identifier (ResID / Consultant ID).
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    ServiceUnavailable:
+      description: Service unavailable
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+
+  schemas:
+    HealthResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        status:
+          type: string
+      required: [status]
+
+    ResIdsResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        res_ids:
+          type: array
+          items:
+            type: string
+      required: [res_ids]
+
+    DownloadResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        path:
+          type: string
+      required: [path]
+
+    CsvExportResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        path:
+          type: string
+        rows:
+          type: integer
+          minimum: 0
+      required: [path, rows]
+
+    RowResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        res_id:
+          type: string
+        row:
+          type: object
+          additionalProperties: true
+      required: [res_id, row]
+
+    ErrorResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        detail:
+          type: string
+      required: [detail]
