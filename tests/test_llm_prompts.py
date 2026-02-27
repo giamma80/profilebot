@@ -56,6 +56,30 @@ def test_build_context__formats_candidate_block() -> None:
     assert "* API Engineer (3y)" in context
 
 
+def test_build_context__orders_candidates_as_provided() -> None:
+    first = _make_candidate("cv-1")
+    second = _make_candidate("cv-2")
+
+    context = build_context([first, second])
+
+    assert context.index("CV_ID: cv-1") < context.index("CV_ID: cv-2")
+
+
+def test_build_context__uses_na_for_empty_skills() -> None:
+    candidate = DecisionCandidate(
+        cv_id="cv-3",
+        skills=[],
+        seniority="junior",
+        years_experience=2,
+        availability_status="free",
+        experience_summaries=["Junior Engineer (2y)"],
+    )
+
+    context = build_context([candidate])
+
+    assert "SKILLS: N/A" in context
+
+
 def test_build_context__uses_na_for_missing_experience() -> None:
     candidate = DecisionCandidate(
         cv_id="cv-2",
