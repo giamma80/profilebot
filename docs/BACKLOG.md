@@ -181,7 +181,7 @@
 
 **Story Points:** 13
 **Priority:** P1 - High
-**Status:** ⏳ Sprint 4 — dipende da US-009
+**Status:** ✅ Completata (Sprint 4)
 
 ---
 
@@ -220,7 +220,7 @@
 
 **Story Points:** 2
 **Priority:** P1 - High
-**Status:** 🔜 Sprint 5
+**Status:** 🔜 Sprint 6 — [#44](https://github.com/giamma80/profilebot/issues/44)
 **Ref:** LLM-study.md §3.4, §12.1 gap #2
 
 ---
@@ -240,7 +240,7 @@
 
 **Story Points:** 5
 **Priority:** P1 - High
-**Status:** 🔜 Sprint 5
+**Status:** 🔜 Sprint 6 — [#45](https://github.com/giamma80/profilebot/issues/45)
 **Ref:** LLM-study.md §8
 
 ---
@@ -259,7 +259,7 @@
 
 **Story Points:** 5
 **Priority:** P1 - High
-**Status:** 🔜 Sprint 5
+**Status:** 🔜 Sprint 6 — [#46](https://github.com/giamma80/profilebot/issues/46)
 **Ref:** LLM-study.md §3, §7, §9
 
 ---
@@ -276,7 +276,7 @@
 
 **Story Points:** 5
 **Priority:** P2 - Medium
-**Status:** 🔜 Sprint 5
+**Status:** 🔜 Sprint 5 - UI — [#15](https://github.com/giamma80/profilebot/issues/15)
 
 ---
 
@@ -296,7 +296,7 @@
 
 **Story Points:** 8
 **Priority:** P2 - Medium
-**Status:** 🔜 Sprint 5
+**Status:** 🔜 Sprint 5 - UI — [#16](https://github.com/giamma80/profilebot/issues/16)
 
 ---
 
@@ -313,7 +313,7 @@
 
 **Story Points:** 5
 **Priority:** P2 - Medium
-**Status:** 🔜 Sprint 5
+**Status:** 🔜 Sprint 5 - UI — [#17](https://github.com/giamma80/profilebot/issues/17)
 
 ---
 
@@ -385,21 +385,23 @@
 - US-007: Filtro Disponibilità ✅
 - US-015: Dependency Cleanup ✅
 
-### Sprint 4 (2 settimane) — IN CORSO
+### Sprint 4 — Matching (2 settimane) ✅
 - US-009: LLM Decision Engine ✅
-- US-008: Match Job Description ⬅️ **prossimo step** (dipende da US-009 ✅)
+- US-008: Match Job Description ✅
 - US-016: Orchestrazione Scraper ✅
 - US-017: Availability Task Monitoring ✅
 
-### Sprint 5 (2 settimane)
-- US-009.1: Seniority Calculator (2 SP)
-- US-009.2: Reskilling Infrastructure (5 SP)
-- US-009.3: KP Schema e Builder Base (5 SP)
-- US-010: Source Attribution (5 SP)
+### Sprint 5 — UI (2 settimane)
+- US-010: Source Attribution (5 SP) — [#15](https://github.com/giamma80/profilebot/issues/15)
+- US-011: Chat Interface (8 SP) — [#16](https://github.com/giamma80/profilebot/issues/16)
+- US-012: Visualizzazione Profili (5 SP) — [#17](https://github.com/giamma80/profilebot/issues/17)
 
-### Sprint 6 (2 settimane)
-- US-011: Chat Interface
-- US-012: Visualizzazione Profili
+### Sprint 6 — KP Foundation (2 settimane) ⬅️ IN CORSO
+- US-009.1: Seniority Calculator (2 SP) — [#44](https://github.com/giamma80/profilebot/issues/44)
+- US-009.2: Reskilling Infrastructure (5 SP) — [#45](https://github.com/giamma80/profilebot/issues/45)
+- US-009.3: KP Schema e Builder Base (5 SP) — [#46](https://github.com/giamma80/profilebot/issues/46)
+- TD-001: Connector Contract (3 SP) — [#47](https://github.com/giamma80/profilebot/issues/47)
+- TD-004: Resilience Base (3 SP) — [#48](https://github.com/giamma80/profilebot/issues/48)
 
 ---
 
@@ -408,12 +410,12 @@
 | Priority | Stories | Total Points | Completati |
 |----------|---------|--------------|-----------|
 | P0 - Critical | 6 | 50 | 50 ✅ |
-| P1 - High | 7 | 46 | 21 ✅ |
+| P1 - High | 7 | 46 | 34 ✅ |
 | P2 - Medium | 6 | 29 | 11 ✅ |
 | P3 - Low | 0 | 0 | 0 |
-| **Total** | **19** | **125** | **82 (66%)** |
+| **Total** | **19** | **125** | **95 (76%)** |
 
-**Velocity effettiva:** ~22 SP/sprint (Sprint 1-3 media)
-**Sprint 4 rimanente:** US-008 (13 SP) — in corso
-**Sprint 5 pianificato:** US-009.1 (2) + US-009.2 (5) + US-009.3 (5) + US-010 (5) = 17 SP
-**MVP completabile in:** ~2 sprint rimanenti
+**Velocity effettiva:** ~22 SP/sprint (Sprint 1-4 media)
+**Sprint 4 completato:** US-008 (13 SP) + US-009 (8 SP) + US-016 (5 SP) + US-017 (3 SP)
+**Sprint 6 in corso:** US-009.1 (2) + US-009.2 (5) + US-009.3 (5) + TD-001 (3) + TD-004 (3) = 18 SP
+**MVP completabile in:** ~1-2 sprint rimanenti

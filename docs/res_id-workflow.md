@@ -247,7 +247,7 @@ Se introduciamo il DAG dichiarativo, alcuni documenti potrebbero richiedere aggi
 - `docs/CONTRIBUTING.md`: se servono istruzioni su come aggiungere nuovi nodi al DAG.
 - `docs/analisi_preliminare.md`: per riflettere l’evoluzione dell’architettura di ingestione.
 - `docs/appendice_tecnica_indexing.md`: se il processo di ingestione influisce sul flusso di indicizzazione.
-- `docs/technical_debpt.md`: se l’orchestrazione custom introduce debito tecnico o decisioni da tracciare.
+- `docs/technical_debt.md`: se l’orchestrazione custom introduce debito tecnico o decisioni da tracciare.
 
 ---
 

@@ -435,7 +435,7 @@ profilebot/
 - [Contributing Guide](docs/CONTRIBUTING.md)
 - [OpenAPI Spec](docs/openapi.yaml)
 - [Product Backlog](docs/BACKLOG.md)
-- [Technical Debt — Ingestion Readiness](docs/technical_debpt.md)
+- [Technical Debt — Ingestion Readiness](docs/technical_debt.md)
 - [Analisi Preliminare](docs/analisi_preliminare.md)
 - [Guida Formato CV](docs/cv_format_guide.md)
 - [Guida Formato Availability](docs/availability_format_guide.md)

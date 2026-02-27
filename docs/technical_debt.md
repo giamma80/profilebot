@@ -2,7 +2,7 @@
 
 > **Premessa:** le fonti di ingestion possono crescere nel tempo e cambiare formato (DOCX, PDF, HTML, CSV, API, DB, ecc.). L'architettura deve essere pronta a gestire nuovi connettori, variazioni di schema e trasformazioni senza impatti diffusi sul core.
 
-> **Ultimo aggiornamento:** 26 febbraio 2026 — post US-016 (DAG dichiarativo) e US-017 (Availability Task Monitoring).
+> **Ultimo aggiornamento:** 27 febbraio 2026 — Sprint 6 KP Foundation avviato, issue TD-001 ([#47](https://github.com/giamma80/profilebot/issues/47)) e TD-004 ([#48](https://github.com/giamma80/profilebot/issues/48)) create.
 
 ---
 
@@ -10,10 +10,10 @@
 
 | TD | Titolo | Stato | Note |
 |----|--------|-------|------|
-| TD-001 | Ingestion Abstraction & Connector Contract | 🔴 Non iniziato | Prerequisito per TD-002, TD-003 |
+| TD-001 | Ingestion Abstraction & Connector Contract | 🔵 Sprint 6 [#47](https://github.com/giamma80/profilebot/issues/47) | Prerequisito per TD-002, TD-003 |
 | TD-002 | Schema Evolution & Metadata Versioning | 🔴 Non iniziato | Dipende da TD-001 |
 | TD-003 | Transformation Pipeline Modularization | 🔴 Non iniziato | Dipende da TD-001 |
-| TD-004 | Resilience & Monitoring for Ingestion Changes | 🟡 Parziale | Pattern retry presenti in scraper tasks e embedding service; mancano metriche strutturate e circuit breaker |
+| TD-004 | Resilience & Monitoring for Ingestion Changes | 🔵 Sprint 6 [#48](https://github.com/giamma80/profilebot/issues/48) | Retry presenti; metriche + circuit breaker in Sprint 6 |
 | TD-005 | Pipeline Orchestrator & Unified Monitoring | 🟡 Parziale | DAG dichiarativo implementato (US-016); manca evoluzione verso orchestratore UI-based |
 | TD-006 | External Producer Service (ProfileScraper) | 🟡 Parziale | ScraperClient REST implementato; manca separazione in servizio autonomo |
 | TD-007 | Orchestrator Setup & End-to-End Observability | 🔴 Non iniziato | Dipende da TD-005 completato |
@@ -25,7 +25,7 @@
 **Titolo:** Definire un contratto unico per le fonti di ingestion
 **Motivazione:** nuove fonti richiedono standardizzazione di input, metadata e error handling
 **Obiettivo:** introdurre un'interfaccia comune per connettori e parser con output coerente
-**Stato:** 🔴 Non iniziato
+**Stato:** 🔵 Pianificato Sprint 6 — [#47](https://github.com/giamma80/profilebot/issues/47)
 
 ### Architettura da usare/modificare
 - Introduzione di un contratto `IngestionSource` (protocol/interface) nel layer `services`:
