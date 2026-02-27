@@ -116,8 +116,7 @@ def parse_decision_output(
     # AP-5 guardrail: verify selected_cv_id is in the shortlist
     if valid_cv_ids is not None and output.selected_cv_id not in valid_cv_ids:
         raise ValueError(
-            f"LLM selected cv_id '{output.selected_cv_id}' "
-            f"not in shortlist: {sorted(valid_cv_ids)}"
+            f"LLM selected cv_id '{output.selected_cv_id}' not in shortlist: {sorted(valid_cv_ids)}"
         )
 
     return cast(DecisionOutput, output)
