@@ -80,11 +80,17 @@ class LLMDecisionClient:
         stop=stop_after_attempt(3),
         wait=wait_exponential(min=1, max=10),
     )
-    def complete(self, request: LLMRequest) -> DecisionOutput:
+    def complete(
+        self,
+        request: LLMRequest,
+        *,
+        valid_cv_ids: set[str] | None = None,
+    ) -> DecisionOutput:
         """Execute a completion request and parse the decision output.
 
         Args:
             request: LLM request with prompts and parameters.
+            valid_cv_ids: Optional set of valid cv_ids for output guardrail.
 
         Returns:
             Parsed DecisionOutput.
@@ -98,7 +104,10 @@ class LLMDecisionClient:
             temperature=request.temperature,
             max_tokens=request.max_tokens,
         )
-        return cast(DecisionOutput, parse_decision_output(content))
+        return cast(
+            DecisionOutput,
+            parse_decision_output(content, valid_cv_ids=valid_cv_ids),
+        )
 
     def decide(self, candidates: list[DecisionCandidate]) -> DecisionOutput:
         """Build prompts for candidates and return LLM decision output.
@@ -109,6 +118,7 @@ class LLMDecisionClient:
         Returns:
             DecisionOutput with selected candidate and reasoning.
         """
+        valid_cv_ids = {c.cv_id for c in candidates}
         request = LLMRequest(
             system_prompt=build_system_prompt(),
             context=build_context(candidates),
@@ -116,7 +126,7 @@ class LLMDecisionClient:
             temperature=self._settings.llm_temperature,
             max_tokens=self._settings.llm_max_tokens,
         )
-        return cast(DecisionOutput, self.complete(request))
+        return cast(DecisionOutput, self.complete(request, valid_cv_ids=valid_cv_ids))
 
     def _chat_completion(
         self,

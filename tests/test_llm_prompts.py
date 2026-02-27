@@ -143,3 +143,47 @@ def test_parse_decision_output__schema_mismatch_raises() -> None:
 
     with pytest.raises(ValueError, match="DecisionOutput schema"):
         parse_decision_output(raw)
+
+
+def test_parse_decision_output__valid_cv_id_in_shortlist() -> None:
+    payload = {
+        "selected_cv_id": "cv-1",
+        "decision_reason": "Good match.",
+        "matched_skills": ["python"],
+        "missing_skills": [],
+        "confidence": "high",
+    }
+    raw = json.dumps(payload)
+
+    result = parse_decision_output(raw, valid_cv_ids={"cv-1", "cv-2"})
+
+    assert result.selected_cv_id == "cv-1"
+
+
+def test_parse_decision_output__invalid_cv_id_raises() -> None:
+    payload = {
+        "selected_cv_id": "cv-hallucinated",
+        "decision_reason": "Seems good.",
+        "matched_skills": ["python"],
+        "missing_skills": [],
+        "confidence": "high",
+    }
+    raw = json.dumps(payload)
+
+    with pytest.raises(ValueError, match="not in shortlist"):
+        parse_decision_output(raw, valid_cv_ids={"cv-1", "cv-2"})
+
+
+def test_parse_decision_output__no_cv_ids_skips_check() -> None:
+    payload = {
+        "selected_cv_id": "cv-any",
+        "decision_reason": "OK.",
+        "matched_skills": [],
+        "missing_skills": [],
+        "confidence": "low",
+    }
+    raw = json.dumps(payload)
+
+    result = parse_decision_output(raw, valid_cv_ids=None)
+
+    assert result.selected_cv_id == "cv-any"

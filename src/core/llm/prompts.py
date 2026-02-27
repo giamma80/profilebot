@@ -84,14 +84,40 @@ def _validate_candidates(candidates: list[DecisionCandidate]) -> None:
         seen.add(cv_id)
 
 
-def parse_decision_output(raw_content: str) -> DecisionOutput:
-    """Parse and validate the LLM JSON response."""
+def parse_decision_output(
+    raw_content: str,
+    *,
+    valid_cv_ids: set[str] | None = None,
+) -> DecisionOutput:
+    """Parse and validate the LLM JSON response.
+
+    Args:
+        raw_content: Raw JSON string from LLM.
+        valid_cv_ids: Optional set of cv_ids from the shortlist.
+            If provided, validates that selected_cv_id is in the set.
+
+    Returns:
+        Validated DecisionOutput.
+
+    Raises:
+        ValueError: If JSON is invalid, schema doesn't match,
+            or selected_cv_id is not in the shortlist.
+    """
     try:
         payload = json.loads(raw_content)
     except json.JSONDecodeError as exc:
         raise ValueError("LLM response is not valid JSON") from exc
 
     try:
-        return cast(DecisionOutput, DecisionOutput.model_validate(payload))
+        output = DecisionOutput.model_validate(payload)
     except ValidationError as exc:
         raise ValueError("LLM response does not match DecisionOutput schema") from exc
+
+    # AP-5 guardrail: verify selected_cv_id is in the shortlist
+    if valid_cv_ids is not None and output.selected_cv_id not in valid_cv_ids:
+        raise ValueError(
+            f"LLM selected cv_id '{output.selected_cv_id}' "
+            f"not in shortlist: {sorted(valid_cv_ids)}"
+        )
+
+    return cast(DecisionOutput, output)
