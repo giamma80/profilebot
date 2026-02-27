@@ -3,16 +3,19 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
+from types import SimpleNamespace
+from typing import cast
 
 import pytest
 from pydantic import ValidationError
 
-from src.services.matching.job_analyzer import _parse_jd_analysis
-from src.services.matching.matcher import (
-    _build_candidates_context,
-    _parse_ranking_output,
-    _search_only_rank,
+from src.services.matching.candidate_ranker import (
+    build_candidates_context,
+    search_only_rank,
 )
+from src.services.matching.explainer import parse_ranking_output
+from src.services.matching.job_analyzer import _parse_jd_analysis, analyze_job_description
 from src.services.matching.schemas import (
     JDAnalysis,
     JobMatchRequest,
@@ -70,6 +73,97 @@ class TestJobMatchRequest:
 # ──────────────────────────────────────────
 # JD Analysis parsing tests
 # ──────────────────────────────────────────
+
+FIXTURES_DIR = Path(__file__).parent / "fixtures" / "sample_jds"
+
+
+def _load_jd_text(file_name: str) -> str:
+    return (FIXTURES_DIR / file_name).read_text(encoding="utf-8")
+
+
+class _FakeChatCompletions:
+    def __init__(self, content: str) -> None:
+        self._content = content
+
+    def create(self, **_kwargs):
+        message = SimpleNamespace(content=self._content)
+        choice = SimpleNamespace(message=message)
+        return SimpleNamespace(choices=[choice])
+
+
+class _FakeChat:
+    def __init__(self, content: str) -> None:
+        self.completions = _FakeChatCompletions(content)
+
+
+class _FakeOpenAI:
+    def __init__(self, content: str) -> None:
+        self.chat = _FakeChat(content)
+
+
+class TestAnalyzeJDWithFixtures:
+    @pytest.mark.parametrize(
+        "case",
+        [
+            {
+                "file_name": "backend_python.md",
+                "must_have": ["python", "fastapi"],
+                "nice_to_have": ["postgresql"],
+                "seniority": "senior",
+                "domain": "backend",
+                "expected_skill": "python",
+            },
+            {
+                "file_name": "data_engineer.md",
+                "must_have": ["python", "sql"],
+                "nice_to_have": ["airflow"],
+                "seniority": "mid",
+                "domain": "data",
+                "expected_skill": "sql",
+            },
+            {
+                "file_name": "devops.md",
+                "must_have": ["docker", "terraform"],
+                "nice_to_have": ["kubernetes"],
+                "seniority": "senior",
+                "domain": "devops",
+                "expected_skill": "docker",
+            },
+            {
+                "file_name": "frontend_react.md",
+                "must_have": ["react", "typescript"],
+                "nice_to_have": ["next.js"],
+                "seniority": "mid",
+                "domain": "frontend",
+                "expected_skill": "react",
+            },
+            {
+                "file_name": "fullstack.md",
+                "must_have": ["react", "python"],
+                "nice_to_have": ["docker"],
+                "seniority": "mid",
+                "domain": "fullstack",
+                "expected_skill": "react",
+            },
+        ],
+    )
+    def test_analyze_job_description__fixtures__returns_skills(
+        self,
+        case: dict[str, object],
+    ) -> None:
+        jd_text = _load_jd_text(cast(str, case["file_name"]))
+        payload = {
+            "must_have": cast(list[str], case["must_have"]),
+            "nice_to_have": cast(list[str], case["nice_to_have"]),
+            "seniority": cast(str, case["seniority"]),
+            "domain": cast(str, case["domain"]),
+        }
+        client = _FakeOpenAI(json.dumps(payload))
+
+        result = analyze_job_description(jd_text, client=client)
+
+        assert cast(str, case["expected_skill"]) in result.must_have
+        assert result.domain == cast(str, case["domain"])
 
 
 class TestParseJDAnalysis:
@@ -154,7 +248,7 @@ def _make_profile_match(
 
 class TestBuildCandidatesContext:
     def test_formats_single_candidate(self) -> None:
-        ctx = _build_candidates_context([_make_profile_match()])
+        ctx = build_candidates_context([_make_profile_match()])
         assert "CV_ID: cv-1" in ctx
         assert "RES_ID: 100001" in ctx
         assert "SCORE: 0.85" in ctx
@@ -166,7 +260,7 @@ class TestBuildCandidatesContext:
             _make_profile_match("cv-1", 100001, 0.90),
             _make_profile_match("cv-2", 100002, 0.75),
         ]
-        ctx = _build_candidates_context(results)
+        ctx = build_candidates_context(results)
         assert "Candidato 1" in ctx
         assert "Candidato 2" in ctx
         assert ctx.index("cv-1") < ctx.index("cv-2")
@@ -195,7 +289,7 @@ class TestParseRankingOutput:
             }
         )
         results = [_make_profile_match("cv-1")]
-        candidates = _parse_ranking_output(raw, results, max_candidates=5)
+        candidates = parse_ranking_output(raw, results, max_candidates=5)
         assert len(candidates) == 1
         assert candidates[0].cv_id == "cv-1"
         assert candidates[0].overall_score == 0.92
@@ -204,7 +298,7 @@ class TestParseRankingOutput:
     def test_normalizes_score_100_to_01(self) -> None:
         raw = json.dumps({"rankings": [{"cv_id": "cv-1", "score": 85, "explanation": "Good."}]})
         results = [_make_profile_match("cv-1")]
-        candidates = _parse_ranking_output(raw, results, max_candidates=5)
+        candidates = parse_ranking_output(raw, results, max_candidates=5)
         assert candidates[0].overall_score == 0.85
 
     def test_skips_unknown_cv_id(self) -> None:
@@ -217,7 +311,7 @@ class TestParseRankingOutput:
             }
         )
         results = [_make_profile_match("cv-1")]
-        candidates = _parse_ranking_output(raw, results, max_candidates=5)
+        candidates = parse_ranking_output(raw, results, max_candidates=5)
         assert len(candidates) == 1
         assert candidates[0].cv_id == "cv-1"
 
@@ -236,7 +330,7 @@ class TestParseRankingOutput:
             _make_profile_match("cv-2", 2),
             _make_profile_match("cv-3", 3),
         ]
-        candidates = _parse_ranking_output(raw, results, max_candidates=2)
+        candidates = parse_ranking_output(raw, results, max_candidates=2)
         assert len(candidates) == 2
 
     def test_handles_matched_alias(self) -> None:
@@ -255,7 +349,7 @@ class TestParseRankingOutput:
             }
         )
         results = [_make_profile_match("cv-1")]
-        candidates = _parse_ranking_output(raw, results, max_candidates=5)
+        candidates = parse_ranking_output(raw, results, max_candidates=5)
         assert candidates[0].matched_skills == ["python"]
         assert candidates[0].missing_skills == ["docker"]
 
@@ -271,12 +365,12 @@ class TestSearchOnlyRank:
             _make_profile_match("cv-1", 100001, 0.90),
             _make_profile_match("cv-2", 100002, 0.75),
         ]
-        candidates = _search_only_rank(results, max_candidates=5)
+        candidates = search_only_rank(results, max_candidates=5)
         assert len(candidates) == 2
         assert candidates[0].cv_id == "cv-1"
         assert candidates[0].explanation == ""
 
     def test_respects_max(self) -> None:
         results = [_make_profile_match(f"cv-{i}", i, 0.5) for i in range(10)]
-        candidates = _search_only_rank(results, max_candidates=3)
+        candidates = search_only_rank(results, max_candidates=3)
         assert len(candidates) == 3
