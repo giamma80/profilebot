@@ -59,6 +59,13 @@ class Settings(BaseSettings):
         default="config/workflows/res_id_workflow.yaml",
         validation_alias="SCRAPER_WORKFLOW_PATH",
     )
+    llm_provider: str = Field(default="openai", validation_alias="LLM_PROVIDER")
+    llm_model: str = Field(default="gpt-4", validation_alias="LLM_MODEL")
+    llm_base_url: str | None = Field(default=None, validation_alias="LLM_BASE_URL")
+    llm_api_key: str | None = Field(default=None, validation_alias="LLM_API_KEY")
+    llm_api_version: str | None = Field(default=None, validation_alias="LLM_API_VERSION")
+    llm_temperature: float = Field(default=0.1, validation_alias="LLM_TEMPERATURE")
+    llm_max_tokens: int = Field(default=2000, validation_alias="LLM_MAX_TOKENS")
 
 
 @lru_cache(maxsize=1)

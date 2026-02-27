@@ -1,0 +1,114 @@
+"""Job matching orchestrator — connects JD analysis, search, and LLM ranking."""
+
+from __future__ import annotations
+
+import logging
+import time
+from typing import Any
+
+from src.core.config import Settings, get_settings
+from src.services.matching.candidate_ranker import rank_candidates, search_only_rank
+from src.services.matching.job_analyzer import analyze_job_description
+from src.services.matching.schemas import JobMatchRequest, JobMatchResponse
+from src.services.search.skill_search import (
+    SearchDependencies,
+    SearchFilters,
+    search_by_skills,
+)
+
+logger = logging.getLogger(__name__)
+
+# Maximum candidates sent to the LLM for ranking
+_LLM_SHORTLIST_SIZE = 7
+
+
+def match_job(
+    request: JobMatchRequest,
+    *,
+    settings: Settings | None = None,
+    llm_client_instance: Any | None = None,
+    search_deps: SearchDependencies | None = None,
+) -> JobMatchResponse:
+    """Execute the full job matching pipeline.
+
+    Flow:
+        1. LLM extracts skills from JD
+        2. Vector search finds candidate profiles
+        3. LLM ranks and explains top candidates
+
+    Args:
+        request: Job match request with JD text and params.
+        settings: Optional application settings.
+        llm_client_instance: Optional preconfigured OpenAI client.
+        search_deps: Optional search dependencies for testing.
+
+    Returns:
+        JobMatchResponse with extracted requirements and ranked candidates.
+    """
+    resolved_settings = settings or get_settings()
+    start = time.perf_counter()
+
+    # Step 1: Extract skills from JD
+    logger.info("Step 1/3: Analyzing job description (%d chars)", len(request.job_description))
+    jd_analysis = analyze_job_description(
+        request.job_description,
+        settings=resolved_settings,
+        client=llm_client_instance,
+    )
+    logger.info(
+        "JD analysis: %d must-have, %d nice-to-have skills",
+        len(jd_analysis.must_have),
+        len(jd_analysis.nice_to_have),
+    )
+
+    if not jd_analysis.all_skills:
+        elapsed = int((time.perf_counter() - start) * 1000)
+        return JobMatchResponse(
+            extracted_requirements=jd_analysis.to_requirements(),
+            candidates=[],
+            no_match_reason="Nessuna skill riconosciuta nella job description.",
+            query_time_ms=elapsed,
+        )
+
+    # Step 2: Vector search for candidates
+    logger.info("Step 2/3: Searching candidates for skills: %s", jd_analysis.all_skills)
+    search_filters = SearchFilters(availability=request.availability_filter)
+    search_response = search_by_skills(
+        skills=jd_analysis.all_skills,
+        filters=search_filters,
+        limit=_LLM_SHORTLIST_SIZE,
+        dependencies=search_deps,
+    )
+
+    if not search_response.results:
+        elapsed = int((time.perf_counter() - start) * 1000)
+        return JobMatchResponse(
+            extracted_requirements=jd_analysis.to_requirements(),
+            candidates=[],
+            no_match_reason="Nessun profilo trovato con le skill richieste e la disponibilità selezionata.",
+            query_time_ms=elapsed,
+        )
+
+    # Step 3: LLM ranking (optional)
+    if request.include_explanation:
+        logger.info("Step 3/3: LLM ranking %d candidates", len(search_response.results))
+        candidates = rank_candidates(
+            jd_analysis=jd_analysis,
+            search_results=search_response.results,
+            settings=resolved_settings,
+            client=llm_client_instance,
+            max_candidates=request.max_candidates,
+        )
+    else:
+        logger.info("Step 3/3: Skipping LLM ranking (include_explanation=False)")
+        candidates = search_only_rank(search_response.results, request.max_candidates)
+
+    elapsed = int((time.perf_counter() - start) * 1000)
+    return JobMatchResponse(
+        extracted_requirements=jd_analysis.to_requirements(),
+        candidates=candidates,
+        query_time_ms=elapsed,
+    )
+
+
+__all__ = ["match_job"]

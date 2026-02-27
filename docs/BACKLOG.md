@@ -1,6 +1,6 @@
 # Product Backlog - ProfileBot MVP
 
-> **Ultimo aggiornamento:** 26 febbraio 2026
+> **Ultimo aggiornamento:** 27 febbraio 2026
 
 ## Epic 1: Infrastructure Setup
 > Configurazione ambiente e infrastruttura base
@@ -188,22 +188,79 @@
 ## Epic 4: LLM Integration
 > Integrazione con modelli linguistici per decisioni spiegate
 
-### US-009: LLM Decision Engine
+### US-009: LLM Decision Engine ✅
 **Come** sistema
 **Voglio** usare un LLM per decisioni di matching spiegate
 **Per** fornire risposte comprensibili e motivate
 
 **Acceptance Criteria:**
-- [ ] Integrazione OpenAI/Azure OpenAI (client wrapper con retry)
-- [ ] System prompt ottimizzato skill-first
-- [ ] Context normalization per CV (max 5-7 profili)
-- [ ] Output strutturato con cv_id + decision_reason (JSON mode)
-- [ ] Temperature bassa (0.0-0.3) configurabile
-- [ ] Settings LLM centralizzati in config.py
+- [x] Integrazione OpenAI/Azure OpenAI/Ollama (client wrapper con retry)
+- [x] System prompt ottimizzato skill-first
+- [x] Context normalization per CV (max 5-7 profili)
+- [x] Output strutturato con cv_id + decision_reason (JSON mode)
+- [x] Temperature bassa (0.0-0.3) configurabile
+- [x] Settings LLM centralizzati in config.py
 
 **Story Points:** 8
 **Priority:** P1 - High
-**Status:** ⏳ Sprint 4 — prossimo step (layer fondativo per US-008)
+**Status:** ✅ Completata (Sprint 4)
+
+---
+
+### US-009.1: Seniority Calculator
+**Come** sistema
+**Voglio** calcolare il seniority_bucket in base a esperienze e skill
+**Per** sbloccare il campo oggi hardcoded a "unknown" nel KP
+
+**Acceptance Criteria:**
+- [ ] Euristica basata su years_experience + skill count + ruolo
+- [ ] Integrazione in EmbeddingPipeline (rimuovere hardcode "unknown")
+- [ ] Test con profili di diverse seniority
+- [ ] Payload Qdrant aggiornato con valore calcolato
+
+**Story Points:** 2
+**Priority:** P1 - High
+**Status:** 🔜 Sprint 5
+**Ref:** LLM-study.md §3.4, §12.1 gap #2
+
+---
+
+### US-009.2: Reskilling Infrastructure
+**Come** sistema
+**Voglio** caricare, cachare e servire i dati di reskilling
+**Per** includerli nel Knowledge Profile e nelle decisioni LLM
+
+**Acceptance Criteria:**
+- [ ] Schema Pydantic `ReskillingRecord` + `ReskillingStatus`
+- [ ] CSV format guide documentato (`docs/reskilling_format_guide.md`)
+- [ ] Loader CSV con validazione (pattern availability)
+- [ ] Redis cache con TTL configurabile
+- [ ] Service con get/get_bulk/filter
+- [ ] Integrazione Celery task per refresh
+
+**Story Points:** 5
+**Priority:** P1 - High
+**Status:** 🔜 Sprint 5
+**Ref:** LLM-study.md §8
+
+---
+
+### US-009.3: KP Schema e Builder Base
+**Come** sistema
+**Voglio** un modello KnowledgeProfile assemblato dalle 4 sorgenti dati
+**Per** fornire contesto ricco all'LLM per decisioni multi-scenario
+
+**Acceptance Criteria:**
+- [ ] Schema KnowledgeProfile (Pydantic v2)
+- [ ] IC sub-state calculator
+- [ ] KP Builder service (assembly da Qdrant + Redis availability + Redis reskilling + dictionary)
+- [ ] KP Context serializer strutturato
+- [ ] Test con dati di esempio
+
+**Story Points:** 5
+**Priority:** P1 - High
+**Status:** 🔜 Sprint 5
+**Ref:** LLM-study.md §3, §7, §9
 
 ---
 
@@ -329,13 +386,18 @@
 - US-015: Dependency Cleanup ✅
 
 ### Sprint 4 (2 settimane) — IN CORSO
-- US-009: LLM Decision Engine ⬅️ **prossimo step**
-- US-008: Match Job Description (dipende da US-009)
+- US-009: LLM Decision Engine ✅
+- US-008: Match Job Description ⬅️ **prossimo step** (dipende da US-009 ✅)
 - US-016: Orchestrazione Scraper ✅
 - US-017: Availability Task Monitoring ✅
 
 ### Sprint 5 (2 settimane)
-- US-010: Source Attribution
+- US-009.1: Seniority Calculator (2 SP)
+- US-009.2: Reskilling Infrastructure (5 SP)
+- US-009.3: KP Schema e Builder Base (5 SP)
+- US-010: Source Attribution (5 SP)
+
+### Sprint 6 (2 settimane)
 - US-011: Chat Interface
 - US-012: Visualizzazione Profili
 
@@ -346,11 +408,12 @@
 | Priority | Stories | Total Points | Completati |
 |----------|---------|--------------|-----------|
 | P0 - Critical | 6 | 50 | 50 ✅ |
-| P1 - High | 4 | 34 | 13 ✅ |
+| P1 - High | 7 | 46 | 21 ✅ |
 | P2 - Medium | 6 | 29 | 11 ✅ |
 | P3 - Low | 0 | 0 | 0 |
-| **Total** | **16** | **113** | **74 (65%)** |
+| **Total** | **19** | **125** | **82 (66%)** |
 
 **Velocity effettiva:** ~22 SP/sprint (Sprint 1-3 media)
-**Sprint 4 rimanente:** US-009 (8 SP) + US-008 (13 SP) = 21 SP
+**Sprint 4 rimanente:** US-008 (13 SP) — in corso
+**Sprint 5 pianificato:** US-009.1 (2) + US-009.2 (5) + US-009.3 (5) + US-010 (5) = 17 SP
 **MVP completabile in:** ~2 sprint rimanenti

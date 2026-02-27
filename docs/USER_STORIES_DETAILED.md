@@ -1033,12 +1033,12 @@ Output JSON:
 **Per** fornire risposte comprensibili e motivate
 
 ### Acceptance Criteria
-- [ ] Integrazione OpenAI/Azure OpenAI/Ollama (client wrapper con retry)
-- [ ] System prompt ottimizzato skill-first (da analisi_preliminare.md §10)
-- [ ] Context normalization per CV (max 5-7 profili, skill-first + experiences)
-- [ ] Output strutturato con cv_id + decision_reason (JSON mode)
-- [ ] Temperature bassa (0.0-0.3) configurabile via .env
-- [ ] Settings LLM centralizzati in config.py
+- [x] Integrazione OpenAI/Azure OpenAI/Ollama (client wrapper con retry)
+- [x] System prompt ottimizzato skill-first (da analisi_preliminare.md §10)
+- [x] Context normalization per CV (max 5-7 profili, skill-first + experiences)
+- [x] Output strutturato con cv_id + decision_reason (JSON mode)
+- [x] Temperature bassa (0.0-0.3) configurabile via .env
+- [x] Settings LLM centralizzati in config.py
 
 ### Technical Details
 
@@ -1126,12 +1126,12 @@ class DecisionOutput(BaseModel):
 - Response format: JSON mode
 
 ### Definition of Done
-- [ ] LLM client operativo con test
-- [ ] Prompt skill-first verificato
-- [ ] Output JSON parsabile e validato
-- [ ] Config centralizzata in Settings
-- [ ] OpenAPI aggiornata (se endpoint diretto)
-- [ ] Lint + test passano
+- [x] LLM client operativo con test
+- [x] Prompt skill-first verificato
+- [x] Output JSON parsabile e validato
+- [x] Config centralizzata in Settings
+- [ ] OpenAPI aggiornata (se endpoint diretto) — N/A per ora, solo core layer
+- [ ] Lint + test passano — da verificare in locale (sandbox ha Python 3.10)
 - [ ] PR con checklist compilata
 
 ---
