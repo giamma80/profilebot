@@ -1,6 +1,6 @@
 # Product Backlog - ProfileBot MVP
 
-> **Ultimo aggiornamento:** 27 febbraio 2026
+> **Ultimo aggiornamento:** 28 febbraio 2026
 
 ## Epic 1: Infrastructure Setup
 > Configurazione ambiente e infrastruttura base
@@ -207,20 +207,20 @@
 
 ---
 
-### US-009.1: Seniority Calculator
+### US-009.1: Seniority Calculator ✅
 **Come** sistema
 **Voglio** calcolare il seniority_bucket in base a esperienze e skill
 **Per** sbloccare il campo oggi hardcoded a "unknown" nel KP
 
 **Acceptance Criteria:**
-- [ ] Euristica basata su years_experience + skill count + ruolo
-- [ ] Integrazione in EmbeddingPipeline (rimuovere hardcode "unknown")
-- [ ] Test con profili di diverse seniority
-- [ ] Payload Qdrant aggiornato con valore calcolato
+- [x] Euristica basata su years_experience + skill count + ruolo
+- [x] Integrazione in EmbeddingPipeline (rimuovere hardcode "unknown")
+- [x] Test con profili di diverse seniority
+- [x] Payload Qdrant aggiornato con valore calcolato
 
 **Story Points:** 2
 **Priority:** P1 - High
-**Status:** 🔜 Sprint 6 — [#44](https://github.com/giamma80/profilebot/issues/44)
+**Status:** ✅ Completata (Sprint 6) — [#44](https://github.com/giamma80/profilebot/issues/44)
 **Ref:** LLM-study.md §3.4, §12.1 gap #2
 
 ---
@@ -232,11 +232,11 @@
 
 **Acceptance Criteria:**
 - [ ] Schema Pydantic `ReskillingRecord` + `ReskillingStatus`
-- [ ] CSV format guide documentato (`docs/reskilling_format_guide.md`)
-- [ ] Loader CSV con validazione (pattern availability)
+- [ ] JSON row normalizer (mapping campi SharePoint raw → Pydantic)
+- [ ] `ScraperClient.fetch_reskilling_row(res_id)` integrato
 - [ ] Redis cache con TTL configurabile
 - [ ] Service con get/get_bulk/filter
-- [ ] Integrazione Celery task per refresh
+- [ ] Integrazione Celery task per refresh (REST → normalize → cache)
 
 **Story Points:** 5
 **Priority:** P1 - High
@@ -397,7 +397,7 @@
 - US-012: Visualizzazione Profili (5 SP) — [#17](https://github.com/giamma80/profilebot/issues/17)
 
 ### Sprint 6 — KP Foundation (2 settimane) ⬅️ IN CORSO
-- US-009.1: Seniority Calculator (2 SP) — [#44](https://github.com/giamma80/profilebot/issues/44)
+- US-009.1: Seniority Calculator (2 SP) ✅ — [#44](https://github.com/giamma80/profilebot/issues/44)
 - US-009.2: Reskilling Infrastructure (5 SP) — [#45](https://github.com/giamma80/profilebot/issues/45)
 - US-009.3: KP Schema e Builder Base (5 SP) — [#46](https://github.com/giamma80/profilebot/issues/46)
 - TD-001: Connector Contract (3 SP) — [#47](https://github.com/giamma80/profilebot/issues/47)
@@ -410,12 +410,12 @@
 | Priority | Stories | Total Points | Completati |
 |----------|---------|--------------|-----------|
 | P0 - Critical | 6 | 50 | 50 ✅ |
-| P1 - High | 7 | 46 | 34 ✅ |
+| P1 - High | 7 | 46 | 36 ✅ |
 | P2 - Medium | 6 | 29 | 11 ✅ |
 | P3 - Low | 0 | 0 | 0 |
-| **Total** | **19** | **125** | **95 (76%)** |
+| **Total** | **19** | **125** | **97 (78%)** |
 
 **Velocity effettiva:** ~22 SP/sprint (Sprint 1-4 media)
 **Sprint 4 completato:** US-008 (13 SP) + US-009 (8 SP) + US-016 (5 SP) + US-017 (3 SP)
-**Sprint 6 in corso:** US-009.1 (2) + US-009.2 (5) + US-009.3 (5) + TD-001 (3) + TD-004 (3) = 18 SP
+**Sprint 6 in corso:** US-009.1 ✅ (2) + US-009.2 (5) + US-009.3 (5) + TD-001 (3) + TD-004 (3) = 18 SP (2 completati)
 **MVP completabile in:** ~1-2 sprint rimanenti

@@ -339,7 +339,7 @@ Il **client REST** verso lo scraper è implementato e operativo:
 | `ScraperResIdCache` (Redis) | ✅ | `src/services/scraper/cache.py` |
 | Task: Inside CV refresh (bulk + single) | ✅ | `src/services/scraper/tasks.py` |
 | Task: Availability CSV export | ✅ | `src/services/scraper/tasks.py` |
-| Task: Reskilling CSV export | ✅ | `src/services/scraper/tasks.py` |
+| Task: Reskilling export trigger | ✅ | `src/services/scraper/tasks.py` |
 | DAG integration (nodi → task) | ✅ | `config/workflows/res_id_workflow.yaml` |
 | Config: `SCRAPER_BASE_URL` | ✅ | `src/core/config.py` |
 

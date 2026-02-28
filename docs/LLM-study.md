@@ -129,11 +129,13 @@ La disponibilità ha un'infrastruttura matura:
 
 ### 2.4 Reskilling: il buco architetturale
 
+> **⚠️ AGGIORNAMENTO (Sprint 6):** Il pattern è stato cambiato da CSV a REST API. Lo scraper service espone endpoint REST che restituiscono JSON per singolo res_id. Vedi §8 per il design aggiornato.
+
 ```
-Scraper → export_reskilling_csv() → ???
+Scraper REST API (GET /reskilling/csv/{res_id}) → JSON → ???
 ```
 
-Lo scraper ha gli endpoint per esportare dati di reskilling (OpenAPI: GET/POST `/reskilling/csv`, GET `/reskilling/csv/{res_id}`), e il Celery task `scraper_reskilling_csv_refresh_task` esiste. **Ma ProfileBot non ha nessuna infrastruttura per consumare questi dati**: nessuno schema, nessun loader, nessun cache, nessun service. È il gap più critico per il KP model.
+Lo scraper ha gli endpoint REST per i dati di reskilling (OpenAPI: GET/POST `/reskilling/csv`, GET `/reskilling/csv/{res_id}` che restituisce JSON `{res_id, row}`), e il Celery task `scraper_reskilling_csv_refresh_task` esiste per il trigger export. **Ma ProfileBot non ha nessuna infrastruttura per consumare questi dati**: nessuno schema, nessun normalizer, nessun cache, nessun service. È il gap più critico per il KP model.
 
 ### 2.5 LLM Layer attuale (US-009 parziale)
 
@@ -362,12 +364,14 @@ Il KP si nutre di 4 sorgenti distinte, ognuna con caratteristiche diverse di lat
 
 ### 4.4 Redis Reskilling Cache (DA COSTRUIRE)
 
-Questa sorgente **non esiste ancora**. Il design proposto segue il pattern dell'availability:
+> **⚠️ AGGIORNAMENTO (Sprint 6):** Il pattern è stato cambiato da CSV loader a consumo via REST API. Vedi §8 per il design aggiornato.
+
+Questa sorgente **non esiste ancora**. Il design proposto consuma dati via REST API dallo scraper service:
 
 - Chiave: `reskilling:{res_id}` → lista di percorsi
 - Valore: `list[ReskillingRecord]` serializzato
 - TTL: allineato all'availability
-- Loader: CSV canonico come availability
+- **Sorgente**: REST API `GET /reskilling/csv/{res_id}` → JSON normalizzato
 - Service: query per res_id, filtri per skill target, stato attivo/completato
 
 Dettagli nel capitolo 8.
@@ -661,37 +665,46 @@ L'infrastruttura reskilling in ProfileBot è a quota zero:
 | Componente | Availability | Reskilling |
 |-----------|-------------|-----------|
 | Schema Pydantic | `ProfileAvailability` | **MANCANTE** |
-| CSV format guide | `availability_format_guide.md` | **MANCANTE** |
-| Loader | `availability/loader.py` | **MANCANTE** |
+| Format guide / Contratto | `availability_format_guide.md` | `scraper-service-openapi.yaml` (REST) |
+| Loader / Normalizer | `availability/loader.py` (CSV) | **normalizer.py (JSON row → Pydantic)** |
 | Cache (Redis) | `availability/cache.py` | **MANCANTE** |
 | Service | `availability/service.py` | **MANCANTE** |
 | Celery task | `scraper_availability_csv_refresh_task` | `scraper_reskilling_csv_refresh_task` (solo trigger) |
 | Scraper endpoint | `/availability/csv` | `/reskilling/csv` (esiste) |
 
-### 8.2 CSV Canonico Reskilling (proposta)
+### 8.2 REST API Reskilling (pattern aggiornato)
 
-Analogamente all'availability, il reskilling CSV deve avere un formato canonico:
+> **⚠️ AGGIORNAMENTO (Sprint 6):** Il pattern è stato cambiato da CSV canonico a consumo via REST API. Il contratto tecnico è definito in `docs/scraper-service/scraper-service-openapi.yaml`.
 
-```csv
-res_id,course_name,target_skills,completion_pct,provider,start_date,end_date,status,updated_at
-100001,Kubernetes Fundamentals,"kubernetes,docker,helm",75,CloudAcademy,2026-01-15,2026-03-15,active,2026-02-10T08:00:00Z
-100001,AWS Solutions Architect,"aws,terraform,ec2",100,AWS Training,2025-09-01,2025-12-01,completed,2026-01-05T08:00:00Z
-100003,React Advanced,"react,typescript,nextjs",30,Udemy,2026-02-01,2026-04-30,active,2026-02-10T08:00:00Z
+Lo scraper service espone l'endpoint `GET /reskilling/csv/{res_id}` che restituisce un `RowResponse` JSON:
+
+```json
+{
+  "res_id": "210513",
+  "row": {
+    "Risorsa:Consultant ID": "210513",
+    "Risorsa": "Donnemma, Debora",
+    // ... altri campi dinamici dal SharePoint
+  }
+}
 ```
 
-**Colonne:**
+Il campo `row` ha `additionalProperties: true` — i nomi dei campi vengono dal tracciato SharePoint e vanno **mappati/normalizzati** nel nostro schema Pydantic tramite un `normalizer.py`.
 
-| Colonna | Tipo | Obbligatoria | Descrizione |
-|---------|------|:---:|-------------|
-| `res_id` | int | Si | Matricola risorsa |
-| `course_name` | string | Si | Nome del corso |
-| `target_skills` | string | Si | Skill target, separate da virgola (nomi canonici) |
-| `completion_pct` | int | Si | Percentuale completamento (0-100) |
-| `provider` | string | No | Ente formativo |
-| `start_date` | date | No | Data inizio (ISO 8601) |
-| `end_date` | date | No | Data fine prevista (ISO 8601) |
-| `status` | enum | Si | `active`, `completed`, `dropped` |
-| `updated_at` | datetime | Si | Timestamp aggiornamento (ISO 8601) |
+**Mapping campi SharePoint → ReskillingRecord:**
+
+| Campo SharePoint (raw) | Campo Pydantic | Tipo | Obbligatorio |
+|------------------------|---------------|------|:---:|
+| `Risorsa:Consultant ID` | `res_id` | int | Si |
+| (da definire in fase di implementazione) | `course_name` | string | Si |
+| (da definire) | `target_skills` | list[str] | Si |
+| (da definire) | `completion_pct` | int | Si |
+| (da definire) | `start_date` | date | No |
+| (da definire) | `end_date` | date | No |
+| (da definire) | `status` | ReskillingStatus | Si |
+| (da definire) | `updated_at` | datetime | Si |
+
+> **Nota:** Il mapping esatto dei nomi di campo SharePoint verrà definito in fase di implementazione US-009.2, analizzando le risposte reali dell'endpoint.
 
 ### 8.3 Schema Pydantic
 
@@ -713,16 +726,16 @@ class ReskillingRecord(BaseModel):
     updated_at: datetime
 ```
 
-### 8.4 Implementazione proposta
+### 8.4 Implementazione proposta (aggiornata Sprint 6)
 
-Seguire esattamente il pattern dell'availability:
+Seguire il pattern REST API (diverso dall'availability che usa CSV loader):
 
 1. **`src/services/reskilling/schemas.py`** → `ReskillingRecord`, `ReskillingStatus`
-2. **`src/services/reskilling/cache.py`** → `ReskillingCache` (Redis, chiave `reskilling:{res_id}`, valore `list[ReskillingRecord]` serializzato JSON)
-3. **`src/services/reskilling/loader.py`** → `load_from_csv`, `load_from_stream` con validazione canonico CSV
+2. **`src/services/reskilling/normalizer.py`** → mapping JSON row SharePoint → `ReskillingRecord` Pydantic
+3. **`src/services/reskilling/cache.py`** → `ReskillingCache` (Redis, chiave `reskilling:{res_id}`, valore `list[ReskillingRecord]` serializzato JSON)
 4. **`src/services/reskilling/service.py`** → `ReskillingService` (get_by_res_id, get_active_by_res_id, get_bulk, filter_by_target_skill)
-5. **`docs/reskilling_format_guide.md`** → formato canonico CSV documentato
-6. **`src/services/scraper/tasks.py`** → modificare `scraper_reskilling_csv_refresh_task` per invocare il loader dopo l'export
+5. **`src/services/scraper/client.py`** → aggiungere `fetch_reskilling_row(res_id)` per consumo `GET /reskilling/csv/{res_id}`
+6. **`src/services/reskilling/tasks.py`** → Celery task `reskilling_refresh_task` che itera sui res_id, chiama REST API, normalizza e cacha
 
 ### 8.5 Integrazione nel KP
 
@@ -1115,9 +1128,9 @@ S = Small (1-2 giorni), M = Medium (3-5 giorni), L = Large (5-10 giorni)
 |------|:--:|:----------:|:------:|
 | Config.py: aggiungere campi LLM | US-009 | — | S |
 | Seniority calculator | — | — | S |
-| Reskilling schemas + format guide | — | — | S |
-| Reskilling loader + cache + service | — | schemas | M |
-| Reskilling Celery task integration | — | loader | S |
+| Reskilling schemas + normalizer | — | — | S |
+| Reskilling cache + service (REST) | — | schemas | M |
+| Reskilling Celery task integration | — | service | S |
 | KnowledgeProfile schema | — | reskilling schemas | S |
 | IC sub-state calculator | — | reskilling service | S |
 
