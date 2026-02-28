@@ -164,3 +164,45 @@ def test_scraper_reskilling_csv_refresh_task__returns_failed_on_status_error(
 
     assert result["status"] == "failed"
     assert "400" in result["reason"]
+
+
+def test_reskilling_refresh_task__no_res_ids_returns_skipped(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _set_base_url(monkeypatch, "https://scraper")
+
+    class EmptyCache:
+        def get_res_ids(self) -> list[int]:
+            return []
+
+    monkeypatch.setattr(scraper_tasks, "ScraperResIdCache", EmptyCache, raising=True)
+
+    result = scraper_tasks.reskilling_refresh_task.run()
+
+    assert result["status"] == "skipped"
+    assert result["loaded"] == 0
+    assert result["skipped"] == 0
+
+
+def test_reskilling_refresh_task__refreshes_with_service(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _set_base_url(monkeypatch, "https://scraper")
+
+    class FakeCache:
+        def get_res_ids(self) -> list[int]:
+            return [10, 20]
+
+    class FakeService:
+        def refresh(self, res_ids: list[int]) -> dict[str, int]:
+            return {"total": len(res_ids), "loaded": len(res_ids), "skipped": 0}
+
+    monkeypatch.setattr(scraper_tasks, "ScraperResIdCache", FakeCache, raising=True)
+    monkeypatch.setattr(scraper_tasks, "ReskillingService", FakeService, raising=True)
+
+    result = scraper_tasks.reskilling_refresh_task.run()
+
+    assert result["status"] == "success"
+    assert result["total_rows"] == 2
+    assert result["loaded"] == 2
+    assert result["skipped"] == 0
