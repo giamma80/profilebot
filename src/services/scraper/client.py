@@ -95,6 +95,13 @@ class ScraperClient:
         """Trigger the reskilling CSV export."""
         self.post("/reskilling/csv")
 
+    def fetch_reskilling_row(self, res_id: int) -> dict[str, Any]:
+        """Return the reskilling row payload for the given res_id."""
+        payload = self.get(f"/reskilling/csv/{res_id}")
+        if not isinstance(payload, dict) or "row" not in payload:
+            raise ValueError("Invalid response for /reskilling/csv/{res_id}")
+        return payload
+
     def _request(self, method: str, path: str, *, json: dict[str, Any] | None = None) -> Any:
         response = self._client.request(method, path, json=json)
         response.raise_for_status()

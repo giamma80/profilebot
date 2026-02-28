@@ -122,6 +122,46 @@ def test_export_reskilling_csv__posts_to_expected_path() -> None:
     assert captured["path"] == "/reskilling/csv"
 
 
+def test_fetch_reskilling_row__returns_payload() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        assert request.method == "GET"
+        assert request.url.path == "/reskilling/csv/123"
+        return httpx.Response(
+            200,
+            json={
+                "res_id": "123",
+                "row": {"Risorsa:Consultant ID": "123"},
+            },
+        )
+
+    transport = httpx.MockTransport(handler)
+    client = ScraperClient(
+        config=ScraperClientConfig(base_url="https://scraper"),
+        transport=transport,
+    )
+
+    with client:
+        payload = client.fetch_reskilling_row(123)
+
+    assert payload["res_id"] == "123"
+    assert payload["row"]["Risorsa:Consultant ID"] == "123"
+
+
+def test_fetch_reskilling_row__invalid_payload__raises_value_error() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, json={"res_id": "123"})
+
+    transport = httpx.MockTransport(handler)
+    client = ScraperClient(
+        config=ScraperClientConfig(base_url="https://scraper"),
+        transport=transport,
+    )
+
+    with pytest.raises(ValueError, match=r"Invalid response for /reskilling/csv/{res_id}"):
+        with client:
+            client.fetch_reskilling_row(123)
+
+
 def test_request_error__propagates_httpx_request_error() -> None:
     def handler(request: httpx.Request) -> httpx.Response:
         raise httpx.ConnectError("boom", request=request)

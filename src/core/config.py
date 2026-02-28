@@ -31,6 +31,14 @@ class Settings(BaseSettings):
         default="0 * * * *",
         validation_alias="AVAILABILITY_REFRESH_SCHEDULE",
     )
+    reskilling_cache_ttl: int = Field(
+        default=3600,
+        validation_alias="RESKILLING_CACHE_TTL",
+    )
+    reskilling_refresh_schedule: str = Field(
+        default="*/30 * * * *",
+        validation_alias="RESKILLING_REFRESH_SCHEDULE",
+    )
     celery_broker_url: str = Field(
         default="redis://localhost:6379/0",
         validation_alias="CELERY_BROKER_URL",

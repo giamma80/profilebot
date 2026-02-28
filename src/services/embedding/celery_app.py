@@ -28,6 +28,7 @@ celery_app = Celery(
 
 CRON_FIELDS = 5
 DEFAULT_AVAILABILITY_SCHEDULE = crontab(minute=0)
+DEFAULT_RESKILLING_SCHEDULE = crontab(minute="*/30")
 DEFAULT_SCRAPER_SCHEDULE = crontab(minute=0, hour="*/4")
 SCRAPER_WORKFLOW_TASK = "src.services.workflows.tasks.run_scraper_workflow_task"
 
@@ -72,6 +73,13 @@ celery_app.conf.update(
             "schedule": _parse_cron_schedule(
                 settings.availability_refresh_schedule,
                 default=DEFAULT_AVAILABILITY_SCHEDULE,
+            ),
+        },
+        "reskilling-refresh": {
+            "task": "src.services.scraper.tasks.reskilling_refresh_task",
+            "schedule": _parse_cron_schedule(
+                settings.reskilling_refresh_schedule,
+                default=DEFAULT_RESKILLING_SCHEDULE,
             ),
         },
         "scraper-workflow": {

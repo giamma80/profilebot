@@ -10,6 +10,7 @@ import redis
 
 from src.core.config import get_settings
 from src.services.embedding.celery_app import celery_app
+from src.services.reskilling.service import ReskillingService
 from src.services.scraper.cache import DEFAULT_RES_IDS_KEY, ScraperResIdCache
 from src.services.scraper.client import ScraperClient
 
@@ -127,3 +128,72 @@ def scraper_reskilling_csv_refresh_task(self) -> dict[str, Any]:
     except httpx.HTTPStatusError as exc:
         logger.warning("Scraper reskilling export failed: %s", exc)
         return {"status": "failed", "reason": str(exc)}
+
+
+@celery_app.task(bind=True, max_retries=3)
+def reskilling_refresh_task(self) -> dict[str, Any]:
+    """Refresh reskilling cache from the scraper service."""
+    if not _ensure_scraper_base_url():
+        return {
+            "status": "skipped",
+            "reason": "SCRAPER_BASE_URL not configured",
+            "total_rows": 0,
+            "loaded": 0,
+            "skipped": 0,
+        }
+
+    cache = ScraperResIdCache()
+    try:
+        res_ids = cache.get_res_ids()
+    except (TypeError, ValueError) as exc:
+        logger.warning("Reskilling refresh failed: %s", exc)
+        return {
+            "status": "failed",
+            "reason": str(exc),
+            "total_rows": 0,
+            "loaded": 0,
+            "skipped": 0,
+        }
+
+    if not res_ids:
+        return {
+            "status": "skipped",
+            "reason": "no res_ids in cache",
+            "total_rows": 0,
+            "loaded": 0,
+            "skipped": 0,
+        }
+
+    service = ReskillingService()
+    try:
+        result = service.refresh(res_ids)
+        return {
+            "status": "success",
+            "total_rows": result["total"],
+            "loaded": result["loaded"],
+            "skipped": result["skipped"],
+        }
+    except httpx.RequestError as exc:
+        logger.warning("Reskilling refresh failed: %s", exc)
+        raise self.retry(exc=exc, countdown=RETRY_COUNTDOWN) from exc
+    except httpx.HTTPStatusError as exc:
+        logger.warning("Reskilling refresh failed: %s", exc)
+        return {
+            "status": "failed",
+            "reason": str(exc),
+            "total_rows": 0,
+            "loaded": 0,
+            "skipped": 0,
+        }
+    except redis.RedisError as exc:
+        logger.warning("Redis error during reskilling refresh: %s", exc)
+        raise self.retry(exc=exc, countdown=RETRY_COUNTDOWN) from exc
+    except (TypeError, ValueError) as exc:
+        logger.warning("Reskilling refresh failed: %s", exc)
+        return {
+            "status": "failed",
+            "reason": str(exc),
+            "total_rows": 0,
+            "loaded": 0,
+            "skipped": 0,
+        }
