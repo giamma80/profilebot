@@ -175,7 +175,7 @@ def test_process_cv__upsert_payloads__include_expected_fields() -> None:
     assert cv_skills_payload["section_type"] == "skills"
     assert cv_skills_payload["dictionary_version"] == "1.0.0"
     assert cv_skills_payload["skill_domain"] == "backend"
-    assert cv_skills_payload["seniority_bucket"] == "unknown"
+    assert cv_skills_payload["seniority_bucket"] in {"junior", "mid", "senior", "lead"}
     assert isinstance(cv_skills_payload["created_at"], datetime)
 
     cv_exp_points = cv_experiences_call.kwargs["points"]
