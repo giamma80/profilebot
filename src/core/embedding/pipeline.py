@@ -13,6 +13,10 @@ from qdrant_client import QdrantClient, models
 
 from src.core.embedding.service import EmbeddingService, OpenAIEmbeddingService
 from src.core.parser.schemas import ExperienceItem, ParsedCV
+from src.core.seniority.calculator import (
+    calculate_seniority_bucket,
+    calculate_total_experience_years,
+)
 from src.core.skills.schemas import NormalizedSkill, SkillExtractionResult
 from src.services.qdrant.client import get_qdrant_client
 from src.services.qdrant.collections import ensure_collections
@@ -140,13 +144,23 @@ class EmbeddingPipeline:
 
         vector = self._embedding_service.embed(skills_text)
 
+        role_titles = [experience.role for experience in parsed_cv.experiences if experience.role]
+        if parsed_cv.metadata.current_role:
+            role_titles.append(parsed_cv.metadata.current_role)
+
+        seniority_bucket = calculate_seniority_bucket(
+            calculate_total_experience_years(parsed_cv.experiences),
+            skill_result.skill_count,
+            role_titles,
+        )
+
         payload = {
             "cv_id": cv_id,
             "res_id": parsed_cv.metadata.res_id,
             "section_type": "skills",
             "normalized_skills": normalized_skills,
             "skill_domain": _get_primary_domain(skill_result.normalized_skills),
-            "seniority_bucket": "unknown",
+            "seniority_bucket": seniority_bucket,
             "dictionary_version": skill_result.dictionary_version,
             "created_at": created_at,
         }
