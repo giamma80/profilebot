@@ -264,6 +264,36 @@
 
 ---
 
+### US-009.4: Integrazione KP Context nella Pipeline di Matching
+**Come** sistema
+**Voglio** che la pipeline di matching utilizzi KPBuilder + KPContextSerializer al posto del contesto flat attuale
+**Per** fornire all'LLM un contesto ricco (availability, reskilling, IC sub-state, skill per domain) e ottenere ranking più accurati e motivazioni più complete
+
+**Acceptance Criteria:**
+- [ ] `matcher.py` Step 2→3: dopo la ricerca Qdrant, costruire `KnowledgeProfile` per ogni candidato top-K via `KPBuilder.build()`
+- [ ] Sostituire `build_candidates_context()` in `candidate_ranker.py` con `KPContextSerializer.serialize_batch()` (scenario "matching")
+- [ ] Aggiornare `RANKING_SYSTEM_PROMPT` e `RANKING_USER_PROMPT` per riflettere il contesto strutturato (availability, reskilling, IC, skill per domain)
+- [ ] L'output LLM (`CandidateMatch`) include i nuovi campi già presenti nello schema: `strengths`, `gaps`, `explanation`
+- [ ] Fallback `search_only_rank()` invariato (non dipende dal KP)
+- [ ] Token budget: il contesto serializzato per 7 candidati non supera `llm_max_tokens * 0.6`
+- [ ] Test unitari: mock KPBuilder + mock LLM, verificare che il contesto inviato all'LLM contenga sezioni availability/reskilling
+- [ ] Integration test: pipeline end-to-end con dati di test (JD → search → KP → LLM → CandidateMatch)
+- [ ] Backward compatible: se KPBuilder fallisce per un candidato, fallback al formato flat per quel candidato
+
+**Story Points:** 5
+**Priority:** P1 - High
+**Status:** 🔜 Sprint 7 — [#54](https://github.com/giamma80/profilebot/issues/54)
+**Ref:** LLM-study.md §6.2 (Scenario Matching), §9 (Context Builder), §13 Fase 3
+**Dipendenze:** US-009.2 ✅, US-009.3 ✅
+
+**Note tecniche:**
+- Punto di wiring: `matcher.py` linea 95-101 (step 3: LLM ranking)
+- `build_candidates_context()` in `candidate_ranker.py` → da sostituire con `KPContextSerializer.serialize_batch(profiles, "matching")`
+- `KPBuilder.build()` necessita di `cv_id`, `res_id`, `parsed_cv`, `skill_result` — il `parsed_cv` e `skill_result` vanno recuperati dal payload Qdrant o ricostruiti dai metadata
+- Prompt attuale è in italiano (RANKING_SYSTEM_PROMPT/RANKING_USER_PROMPT) — il nuovo prompt deve mantenere lo stesso stile ma referenziare le sezioni KP (disponibilità, reskilling, IC)
+
+---
+
 ### US-010: Source Attribution
 **Come** utente
 **Voglio** sapere da dove viene ogni affermazione del sistema
@@ -403,6 +433,9 @@
 - TD-001: Connector Contract (3 SP) — [#47](https://github.com/giamma80/profilebot/issues/47)
 - TD-004: Resilience Base (3 SP) — [#48](https://github.com/giamma80/profilebot/issues/48)
 
+### Sprint 7 — Scenario Matching (2 settimane)
+- US-009.4: Integrazione KP Context nella Pipeline di Matching (5 SP) — [#54](https://github.com/giamma80/profilebot/issues/54)
+
 ---
 
 ## Story Points Summary
@@ -410,12 +443,13 @@
 | Priority | Stories | Total Points | Completati |
 |----------|---------|--------------|-----------|
 | P0 - Critical | 6 | 50 | 50 ✅ |
-| P1 - High | 7 | 46 | 36 ✅ |
+| P1 - High | 8 | 51 | 36 ✅ |
 | P2 - Medium | 6 | 29 | 11 ✅ |
 | P3 - Low | 0 | 0 | 0 |
-| **Total** | **19** | **125** | **97 (78%)** |
+| **Total** | **20** | **130** | **97 (75%)** |
 
 **Velocity effettiva:** ~22 SP/sprint (Sprint 1-4 media)
 **Sprint 4 completato:** US-008 (13 SP) + US-009 (8 SP) + US-016 (5 SP) + US-017 (3 SP)
 **Sprint 6 in corso:** US-009.1 ✅ (2) + US-009.2 (5) + US-009.3 (5) + TD-001 (3) + TD-004 (3) = 18 SP (2 completati)
-**MVP completabile in:** ~1-2 sprint rimanenti
+**Sprint 7 pianificato:** US-009.4 (5 SP)
+**MVP completabile in:** ~2 sprint rimanenti

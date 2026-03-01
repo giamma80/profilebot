@@ -68,14 +68,6 @@ class AvailabilityStatsResponse(BaseModel):
     last_updated_at: str | None = None
 
 
-class AvailabilityTaskTriggerRequest(BaseModel):
-    """Request payload for availability refresh task."""
-
-    csv_path: str | None = None
-
-    model_config = {"extra": "forbid"}
-
-
 class AvailabilityTaskTriggerResponse(BaseModel):
     """Response payload for availability refresh task trigger."""
 
@@ -176,12 +168,9 @@ def get_availability_stats() -> AvailabilityStatsResponse:
     status_code=status.HTTP_202_ACCEPTED,
     summary="Avvia refresh disponibilità",
 )
-def trigger_availability_refresh(
-    request: AvailabilityTaskTriggerRequest | None = None,
-) -> AvailabilityTaskTriggerResponse:
-    """Queue the availability refresh task."""
-    csv_path = request.csv_path if request else None
-    task = availability_refresh_task.delay(csv_path=csv_path)
+def trigger_availability_refresh() -> AvailabilityTaskTriggerResponse:
+    """Queue the availability refresh task (via scraper service)."""
+    task = availability_refresh_task.delay()
     logger.info("Queued availability refresh task: %s", task.id)
     return AvailabilityTaskTriggerResponse(
         task_id=task.id,

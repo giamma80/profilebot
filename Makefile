@@ -1,4 +1,4 @@
-.PHONY: help install dev lint lint-all format format-check preflight test clean run worker beat flower docker-up docker-down docker-logs system system-down api-lint
+.PHONY: help install dev lint lint-all format format-check preflight test clean run worker beat flower docker-build docker-up docker-down docker-logs system system-down api-lint system-test
 
 # Default target
 help:
@@ -19,6 +19,7 @@ help:
 	@echo "Testing:"
 	@echo "  make test        Run tests with pytest"
 	@echo "  make test-cov    Run tests with coverage"
+	@echo "  make system-test Run system test scenario (e.g., SCENARIO=smoke)"
 	@echo ""
 	@echo "Run:"
 	@echo "  make run         Start the API server"
@@ -28,7 +29,8 @@ help:
 	@echo "  make docker-up   Start Qdrant + Redis"
 	@echo "  make docker-down Stop Docker services"
 	@echo "  make docker-logs Tail Docker logs"
-	@echo "  make system      Start full stack (docker + api + worker + beat + flower)"
+	@echo "  make docker-build Build Docker images"
+	@echo "  make system      Start full stack in background (docker + api + worker + beat + flower)"
 	@echo "  make system-down Stop full stack (docker + api + worker + beat + flower)"
 	@echo ""
 	@echo "Cleanup:"
@@ -99,6 +101,14 @@ test-cov:
 	uv run pytest tests/ -v --cov=src --cov-report=html --cov-report=term
 	@echo "📊 Coverage report: htmlcov/index.html"
 
+system-test:
+	@if [ -z "$(SCENARIO)" ]; then \
+		echo "❌ Missing SCENARIO. Usage: make system-test SCENARIO=smoke"; \
+		exit 1; \
+	fi
+	@echo "🧪 Running system test scenario: $(SCENARIO)"
+	uv run pytest tests/system/test_$(SCENARIO)_system.py -v
+
 # ============== Run ==============
 
 run:
@@ -117,6 +127,10 @@ flower:
 	@echo "🌸 Starting Flower dashboard..."
 	uv run celery -A src.services.embedding.celery_app flower --port=5555
 
+docker-build:
+	@echo "🐳 Building Docker images..."
+	docker-compose build
+
 docker-up:
 	@echo "🐳 Starting Qdrant + Redis..."
 	docker-compose up -d
@@ -133,19 +147,20 @@ docker-logs:
 	docker-compose logs -f --tail=200
 
 system: docker-up
-	@echo "🚀 Starting full ProfileBot stack (Ctrl+C to stop)..."
-	@uv run uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000 & \
-	uv run celery -A src.services.embedding.celery_app worker -l info -c 4 & \
-	uv run celery -A src.services.embedding.celery_app beat -l info & \
-	uv run celery -A src.services.embedding.celery_app flower --port=5555 & \
-	wait
+	@echo "🚀 Starting full ProfileBot stack in background..."
+	@mkdir -p .logs
+	@sh -c 'nohup uv run uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000 > .logs/api.log 2>&1 & echo $$! > .logs/api.pid'
+	@sh -c 'nohup uv run celery -A src.services.embedding.celery_app worker -l info -c 4 > .logs/worker.log 2>&1 & echo $$! > .logs/worker.pid'
+	@sh -c 'nohup uv run celery -A src.services.embedding.celery_app beat -l info > .logs/beat.log 2>&1 & echo $$! > .logs/beat.pid'
+	@sh -c 'nohup uv run celery -A src.services.embedding.celery_app flower --port=5555 > .logs/flower.log 2>&1 & echo $$! > .logs/flower.pid'
+	@echo "✅ Started. Logs in .logs/*.log, PIDs in .logs/*.pid"
 
 system-down: docker-down
 	@echo "🛑 Stopping local ProfileBot processes..."
-	@pkill -f "uvicorn src.api.main:app" || true
-	@pkill -f "celery -A src.services.embedding.celery_app worker" || true
-	@pkill -f "celery -A src.services.embedding.celery_app beat" || true
-	@pkill -f "celery -A src.services.embedding.celery_app flower" || true
+	@if [ -f .logs/api.pid ]; then kill $$(cat .logs/api.pid) || true; rm -f .logs/api.pid; fi
+	@if [ -f .logs/worker.pid ]; then kill $$(cat .logs/worker.pid) || true; rm -f .logs/worker.pid; fi
+	@if [ -f .logs/beat.pid ]; then kill $$(cat .logs/beat.pid) || true; rm -f .logs/beat.pid; fi
+	@if [ -f .logs/flower.pid ]; then kill $$(cat .logs/flower.pid) || true; rm -f .logs/flower.pid; fi
 
 # ============== Cleanup ==============
 

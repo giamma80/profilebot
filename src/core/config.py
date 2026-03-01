@@ -23,10 +23,6 @@ class Settings(BaseSettings):
         default=3600,
         validation_alias="AVAILABILITY_CACHE_TTL",
     )
-    availability_refresh_csv_path: str | None = Field(
-        default=None,
-        validation_alias="AVAILABILITY_REFRESH_CSV_PATH",
-    )
     availability_refresh_schedule: str = Field(
         default="0 * * * *",
         validation_alias="AVAILABILITY_REFRESH_SCHEDULE",

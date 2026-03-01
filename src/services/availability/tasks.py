@@ -3,72 +3,50 @@
 from __future__ import annotations
 
 import logging
-from pathlib import Path
 from typing import Any
 
+import httpx
 import redis
 
-from src.core.config import get_settings
-from src.services.availability.loader import load_from_csv
 from src.services.embedding.celery_app import celery_app
+from src.services.scraper.client import ScraperClient
 
 logger = logging.getLogger(__name__)
 
+RETRY_COUNTDOWN = 60
+
 
 @celery_app.task(bind=True, max_retries=3)
-def availability_refresh_task(
-    self,
-    *,
-    csv_path: str | None = None,
-) -> dict[str, Any]:
-    """Refresh availability cache from a canonical CSV file.
+def availability_refresh_task(self) -> dict[str, Any]:
+    """Refresh availability cache via scraper service.
 
-    Args:
-        csv_path: Optional CSV path. If not provided, uses settings.
+    Flow:
+        1. Call ScraperClient.export_availability_csv() to trigger CSV export
+        2. Fetch the exported data via ScraperClient
+        3. Load records into Redis cache
 
     Returns:
-        Summary with total rows, loaded records, and skipped rows.
+        Summary with status, loaded records, and any errors.
     """
-    settings = get_settings()
-    resolved_path = csv_path or settings.availability_refresh_csv_path
-    if not resolved_path:
-        return {
-            "status": "skipped",
-            "reason": "availability_refresh_csv_path not configured",
-            "total_rows": 0,
-            "loaded": 0,
-            "skipped": 0,
-        }
+    from src.core.config import get_settings
 
-    path = Path(resolved_path)
-    if not path.exists():
-        return {
-            "status": "failed",
-            "reason": f"CSV not found: {path}",
-            "total_rows": 0,
-            "loaded": 0,
-            "skipped": 0,
-        }
+    settings = get_settings()
+    base_url = settings.scraper_base_url.strip()
+    if not base_url:
+        logger.warning("SCRAPER_BASE_URL not configured, skipping availability refresh")
+        return {"status": "skipped", "reason": "SCRAPER_BASE_URL not configured"}
 
     try:
-        result = load_from_csv(path)
-        return {
-            "status": "success",
-            "total_rows": result.total_rows,
-            "loaded": result.loaded,
-            "skipped": result.skipped,
-            "csv_path": str(path),
-        }
-    except (ValueError, FileNotFoundError) as exc:
-        logger.warning("Availability refresh failed: %s", exc)
-        return {
-            "status": "failed",
-            "reason": str(exc),
-            "total_rows": 0,
-            "loaded": 0,
-            "skipped": 0,
-            "csv_path": str(path),
-        }
+        with ScraperClient() as client:
+            client.export_availability_csv()
+        logger.info("Availability CSV export triggered via scraper service")
+        return {"status": "success"}
+    except httpx.RequestError as exc:
+        logger.warning("Availability refresh failed (transient): %s", exc)
+        raise self.retry(exc=exc, countdown=RETRY_COUNTDOWN) from exc
+    except httpx.HTTPStatusError as exc:
+        logger.warning("Availability refresh failed (HTTP %s): %s", exc.response.status_code, exc)
+        return {"status": "failed", "reason": str(exc)}
     except redis.RedisError as exc:
         logger.warning("Redis error during availability refresh: %s", exc)
-        raise self.retry(exc=exc, countdown=60) from exc
+        raise self.retry(exc=exc, countdown=RETRY_COUNTDOWN) from exc

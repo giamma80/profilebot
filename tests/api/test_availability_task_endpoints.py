@@ -22,8 +22,8 @@ def test_availability_refresh__queues_task__returns_accepted(
         def __init__(self, task_id: str) -> None:
             self.id = task_id
 
-    def _delay(*, csv_path: str | None = None) -> DummyTask:
-        task_id = f"task-{csv_path or 'default'}"
+    def _delay() -> DummyTask:
+        task_id = "task-default"
         task_ids.append(task_id)
         return DummyTask(task_id)
 
@@ -36,31 +36,6 @@ def test_availability_refresh__queues_task__returns_accepted(
     assert payload["status"] == "queued"
     assert payload["task_id"].startswith("task-")
     assert task_ids
-
-
-def test_availability_refresh__accepts_csv_path(
-    client: TestClient, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    class DummyTask:
-        def __init__(self, task_id: str) -> None:
-            self.id = task_id
-
-    captured: dict[str, Any] = {}
-
-    def _delay(*, csv_path: str | None = None) -> DummyTask:
-        captured["csv_path"] = csv_path
-        return DummyTask("task-csv")
-
-    monkeypatch.setattr("src.api.v1.availability.availability_refresh_task.delay", _delay)
-
-    response = client.post(
-        "/api/v1/availability/refresh",
-        json={"csv_path": "/tmp/availability.csv"},
-    )
-
-    assert response.status_code == 202
-    assert captured["csv_path"] == "/tmp/availability.csv"
-    assert response.json()["task_id"] == "task-csv"
 
 
 def test_availability_refresh_status__returns_result_when_ready(
