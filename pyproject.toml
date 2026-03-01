@@ -41,6 +41,7 @@ dev = [
     "types-redis>=4.6.0.20240425",
     "pre-commit>=3.6.0",
     "bandit>=1.7.0",
+    "fakeredis>=2.21.0",
 ]
 
 [build-system]

@@ -49,9 +49,7 @@ class NormalizedDocument(BaseModel):
         default_factory=dict,
         description="Detected sections (e.g. skills, experience, education)",
     )
-    raw_content: bytes | None = Field(
-        default=None, description="Original raw bytes, if retained"
-    )
+    raw_content: bytes | None = Field(default=None, description="Original raw bytes, if retained")
 
     model_config = {"extra": "forbid", "arbitrary_types_allowed": True}
 

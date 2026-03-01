@@ -24,10 +24,7 @@ class CircuitBreakerOpen(Exception):
         self.source_type = source_type
         self.reset_at = reset_at
         remaining = max(0, reset_at - time.time())
-        super().__init__(
-            f"Circuit breaker OPEN for '{source_type}', "
-            f"retry in {remaining:.1f}s"
-        )
+        super().__init__(f"Circuit breaker OPEN for '{source_type}', retry in {remaining:.1f}s")
 
 
 class CircuitBreaker:

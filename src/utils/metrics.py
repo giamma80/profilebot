@@ -5,9 +5,9 @@ from __future__ import annotations
 import logging
 import time
 from collections.abc import Callable
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from functools import wraps
-from typing import Any, ParamSpec, TypeVar
+from typing import ParamSpec, TypeVar
 
 import redis
 
@@ -112,8 +112,9 @@ class IngestionMetrics:
         for key in keys:
             # key format: profilebot:metrics:ingestion:{source_type}:total
             parts = key.split(":")
-            if len(parts) >= 4:
-                source_types.add(parts[3])
+            _source_type_idx = 3
+            if len(parts) > _source_type_idx:
+                source_types.add(parts[_source_type_idx])
         return [self.get_snapshot(st) for st in sorted(source_types)]
 
     def reset(self, source_type: str) -> None:

@@ -74,7 +74,8 @@ class DocxIngestionAdapter:
         Raises:
             ValidationError: If the content is not a valid DOCX.
         """
-        if len(raw) < 4:
+        _min_docx_size = 4
+        if len(raw) < _min_docx_size:
             raise ValidationError(
                 "Content too small to be a valid DOCX file",
                 source_type=SourceType.DOCX_CV,
