@@ -4,7 +4,7 @@
 > **Milestone GitHub:** Sprint 6 - KP Foundation
 > **Durata:** 2 settimane (27 feb – 13 mar 2026)
 > **Velocity target:** 18 SP (media storica: ~22 SP/sprint)
-> **SP completati al 01/03:** 7/18 (US-009.1 + US-009.2 chiuse)
+> **SP completati al 01/03:** 12/18 (US-009.1 + US-009.2 + US-009.3 chiuse, TD-001 + TD-004 in progress)
 > **Tema:** Costruire le fondamenta del Knowledge Profile per abilitare decisioni LLM multi-scenario
 
 ---
@@ -23,10 +23,10 @@ Al termine dello sprint, il sistema sarà in grado di assemblare un KP completo 
 |---|-------|--------|----|-------|------------|--------|
 | 1 | **US-009.1** Seniority Calculator | [#44](https://github.com/giamma80/profilebot/issues/44) | 2 | ✅ Done | — | `feature/US-009.1-seniority` |
 | 2 | **US-009.2** Reskilling Infrastructure | [#45](https://github.com/giamma80/profilebot/issues/45) | 5 | ✅ Done | — | `feature/US-009.2-reskilling` |
-| 3 | **US-009.3** KP Schema e Builder Base | [#46](https://github.com/giamma80/profilebot/issues/46) | 5 | 🟡 In Progress | US-009.1 ✅, US-009.2 ✅ | `feature/US-009.3-kp-builder` |
-| 4 | **TD-001** Connector Contract (starter) | [#47](https://github.com/giamma80/profilebot/issues/47) | 3 | 🔵 To Do | — | `feature/TD-001-connector-contract` |
-| 5 | **TD-004** Resilience Base (metrics + CB) | [#48](https://github.com/giamma80/profilebot/issues/48) | 3 | 🔵 To Do | — | `feature/TD-004-resilience-base` |
-| | **TOTALE** | | **18** | **7 done** | | |
+| 3 | **US-009.3** KP Schema e Builder Base | [#46](https://github.com/giamma80/profilebot/issues/46) | 5 | ✅ Done | US-009.1 ✅, US-009.2 ✅ | `feature/US-009.3-kp-builder` |
+| 4 | **TD-001** Connector Contract (starter) | [#47](https://github.com/giamma80/profilebot/issues/47) | 3 | 🟡 In Progress | — | `feature/TD-001-TD-004-infra` |
+| 5 | **TD-004** Resilience Base (metrics + CB) | [#48](https://github.com/giamma80/profilebot/issues/48) | 3 | 🟡 In Progress | — | `feature/TD-001-TD-004-infra` |
+| | **TOTALE** | | **18** | **12 done** | | |
 
 ---
 
@@ -41,9 +41,8 @@ Week 1 (completata)
     └── Skill Dictionary v2 merge ────── ✅ Done (1210 skill, 786 alias)
 
 Week 2 (giorni 4-10, corrente)
-├── US-009.3 KP Schema e Builder ──────── [giorno 4-6] 🟡 In Progress
-├── TD-001 Connector Contract ─────────── [giorno 4-5] (parallelizzabile)
-├── TD-004 Resilience Base ────────────── [giorno 5-6] (parallelizzabile)
+├── US-009.3 KP Schema e Builder ──────── ✅ Done (giorno 4-5)
+├── TD-001 + TD-004 (branch unificato) ── [giorno 5-7] 🟡 In Progress
 └── Review + fix + merge ──────────────── [giorno 7-8]
 ```
 
@@ -51,13 +50,13 @@ Week 2 (giorni 4-10, corrente)
 
 ```
 US-009.1 (seniority) ✅ ──┐
-                           ├──→ US-009.3 (KP Builder) 🟡 ──→ SPRINT GOAL ✅
+                           ├──→ US-009.3 (KP Builder) ✅ ──→ SPRINT GOAL ✅
 US-009.2 (reskilling) ✅ ──┘
 
-TD-001 e TD-004 sono indipendenti e parallelizzabili con US-009.3.
+TD-001 + TD-004 sviluppate su branch unificato feature/TD-001-TD-004-infra.
 ```
 
-> **Nota:** Tutte le dipendenze di US-009.3 sono soddisfatte. Il critical path è sbloccato.
+> **Nota:** Sprint goal raggiunto con US-009.3. TD-001 e TD-004 completano il consolidamento infrastrutturale.
 
 ---
 
@@ -95,25 +94,19 @@ TD-001 e TD-004 sono indipendenti e parallelizzabili con US-009.3.
 
 ---
 
-### US-009.3 — KP Schema e Builder Base (5 SP) — 🟡 IN PROGRESS
+### ✅ US-009.3 — KP Schema e Builder Base (5 SP) — COMPLETATA
 
 **Obiettivo:** Modello `KnowledgeProfile` unificato che assembla dati da 4 sorgenti (Qdrant, availability, reskilling, dictionary).
 
-**Dipendenze — tutte soddisfatte:** US-009.1 ✅, US-009.2 ✅, Skill Dictionary v2 ✅. Non servono mock/stub.
-
-**Deliverable:**
+**Risultato:**
 
 - `src/core/knowledge_profile/schemas.py` — `KnowledgeProfile` + sotto-modelli: `SkillDetail`, `AvailabilityDetail`, `ReskillingPath`, `ExperienceSnapshot`, `RelevantChunk`, `ICSubState(StrEnum)`
-- `src/core/knowledge_profile/ic_sub_state.py` — `calculate_ic_sub_state()` (None / ic_available / ic_in_reskilling / ic_in_transition)
-- `src/core/knowledge_profile/builder.py` — `KPBuilder` con constructor injection, graceful degradation per ogni sorgente
-- `src/core/knowledge_profile/serializer.py` — `KPContextSerializer` + `estimate_tokens()` (len/4)
-- Test: ≥ 8 test cases (IC sub-state ×4, builder ×3, serializer ×2)
-
-**⚠️ Attenzione delta design doc:** Lo schema in `docs/LLM-study.md` §3.2 è stato scritto prima di US-009.2. Differenze critiche: `ReskillingRecord.skill_target` è `str | None` (non `list[str]`), `ReskillingStatus` usa `IN_PROGRESS/COMPLETED/PLANNED` (non `ACTIVE/DROPPED`), `ic_sub_state` va nel KP top-level (non dentro AvailabilityDetail). Dettagli completi nella [issue #46](https://github.com/giamma80/profilebot/issues/46) aggiornata.
-
-**Rischi:** Basso (ridotto da medio-alto). Tutte le dipendenze sono soddisfatte, le interfacce dei servizi sono stabili.
-
-**Ref:** `docs/LLM-study.md` §3, §7, §9, §10 | Issue [#46](https://github.com/giamma80/profilebot/issues/46) aggiornata
+- `src/core/knowledge_profile/ic_sub_state.py` — `calculate_ic_sub_state()` con priorità transition > reskilling > available
+- `src/core/knowledge_profile/builder.py` — `KPBuilder` con Protocol injection, graceful degradation per ogni sorgente
+- `src/core/knowledge_profile/serializer.py` — `KPContextSerializer` con template §9.2 + `estimate_tokens()` (len/4)
+- 9 test (IC sub-state ×4, builder ×3, serializer ×2)
+- Delta design doc gestiti: `skill_target` wrappato in lista, `ReskillingStatus.IN_PROGRESS`, `ic_sub_state` top-level
+- PR mergiata su `main`, issue #46 chiusa
 
 ---
 
@@ -158,7 +151,7 @@ TD-001 e TD-004 sono indipendenti e parallelizzabili con US-009.3.
 - [ ] Coverage ≥ 80% sui nuovi moduli
 - [x] Nessun hardcode `"unknown"` residuo per seniority (✅ US-009.1)
 - [x] Reskilling layer consuma dati esclusivamente via REST API dello scraper service (✅ US-009.2)
-- [ ] KP Builder assembla profilo completo con dati reali o mock
+- [x] KP Builder assembla profilo completo con dati reali o mock (✅ US-009.3)
 - [ ] Documentazione aggiornata (BACKLOG.md, OpenAPI ref dello scraper service)
 
 ---
@@ -167,8 +160,8 @@ TD-001 e TD-004 sono indipendenti e parallelizzabili con US-009.3.
 
 | Metrica | Target | Attuale |
 |---------|--------|---------|
-| SP completati | ≥ 15/18 (83%) | 7/18 (39%) |
-| Issue chiuse | ≥ 4/5 | 2/5 |
+| SP completati | ≥ 15/18 (83%) | 12/18 (67%) |
+| Issue chiuse | ≥ 4/5 | 3/5 |
 | Test aggiunti | ≥ 25 nuovi test | — |
 | Coverage nuovi moduli | ≥ 80% | — |
 
