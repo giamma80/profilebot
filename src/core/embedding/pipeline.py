@@ -127,6 +127,12 @@ class EmbeddingPipeline:
         skill_result: SkillExtractionResult,
         created_at: datetime,
     ) -> list[models.PointStruct]:
+        """Build cv_skills points with enriched payload fields.
+
+        Payload includes: cv_id, res_id, normalized_skills, skill_domain, seniority_bucket,
+        dictionary_version, created_at, full_name, current_role, skill_details,
+        unknown_skills, experiences_compact, years_experience_estimate.
+        """
         cv_id = parsed_cv.metadata.cv_id
         if not skill_result.normalized_skills:
             logger.warning("CV '%s' has no skills, skipping cv_skills", cv_id)
@@ -148,11 +154,33 @@ class EmbeddingPipeline:
         if parsed_cv.metadata.current_role:
             role_titles.append(parsed_cv.metadata.current_role)
 
+        years_experience_estimate = calculate_total_experience_years(parsed_cv.experiences)
         seniority_bucket = calculate_seniority_bucket(
-            calculate_total_experience_years(parsed_cv.experiences),
+            years_experience_estimate,
             skill_result.skill_count,
             role_titles,
         )
+
+        skill_details = [
+            {
+                "canonical": skill.canonical,
+                "domain": skill.domain,
+                "confidence": skill.confidence,
+                "match_type": skill.match_type,
+            }
+            for skill in skill_result.normalized_skills
+        ]
+        experiences_compact = [
+            {
+                "company": experience.company,
+                "role": experience.role,
+                "start_year": experience.start_date.year if experience.start_date else None,
+                "end_year": experience.end_date.year if experience.end_date else None,
+                "is_current": experience.is_current,
+                "description_summary": _summarize_description(experience.description),
+            }
+            for experience in parsed_cv.experiences
+        ]
 
         payload = {
             "cv_id": cv_id,
@@ -163,6 +191,12 @@ class EmbeddingPipeline:
             "seniority_bucket": seniority_bucket,
             "dictionary_version": skill_result.dictionary_version,
             "created_at": created_at,
+            "full_name": parsed_cv.metadata.full_name,
+            "current_role": parsed_cv.metadata.current_role,
+            "skill_details": skill_details,
+            "unknown_skills": skill_result.unknown_skills,
+            "experiences_compact": experiences_compact,
+            "years_experience_estimate": years_experience_estimate,
         }
         point_id = _generate_point_id(cv_id, "skills")
         return [models.PointStruct(id=point_id, vector=vector, payload=payload)]
@@ -220,6 +254,15 @@ def _get_primary_domain(skills: Iterable[NormalizedSkill]) -> str:
         return "unknown"
     most_common = Counter(domain_list).most_common(1)
     return most_common[0][0] if most_common else "unknown"
+
+
+def _summarize_description(description: str, max_chars: int = 200) -> str:
+    cleaned = description.strip()
+    if not cleaned:
+        return ""
+    if len(cleaned) <= max_chars:
+        return cleaned
+    return f"{cleaned[:max_chars].rstrip()}..."
 
 
 def _dedupe_skills(skills: Iterable[NormalizedSkill]) -> list[str]:

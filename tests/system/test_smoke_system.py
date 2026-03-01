@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from typing import Any
 
 import pytest
@@ -66,14 +67,23 @@ def test_smoke__core_endpoints__respond_ok(
     monkeypatch.setattr("src.api.v1.search.search_by_skills", _search_by_skills)
 
     settings = get_settings()
-    if not settings.scraper_base_url:
-        pytest.fail("SCRAPER_BASE_URL is required for smoke tests")
+    require_scraper = os.getenv("SCRAPER_SMOKE_REQUIRED", "").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+    }
+    if require_scraper:
+        if not settings.scraper_base_url:
+            pytest.fail("SCRAPER_BASE_URL is required for smoke tests")
 
-    with ScraperClient() as scraper_client:
-        res_ids = scraper_client.fetch_inside_res_ids()
+        try:
+            with ScraperClient() as scraper_client:
+                res_ids = scraper_client.fetch_inside_res_ids()
+        except Exception as exc:
+            pytest.fail(f"Scraper service check failed: {exc}")
 
-    assert isinstance(res_ids, list)
-    assert all(isinstance(res_id, int) for res_id in res_ids)
+        assert isinstance(res_ids, list)
+        assert all(isinstance(res_id, int) for res_id in res_ids)
 
     health_response = client.get("/health")
     embeddings_response = client.get("/api/v1/embeddings/stats")

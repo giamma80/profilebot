@@ -204,3 +204,70 @@ def test_kp_builder__minimal_inputs__still_builds_profile() -> None:
     assert profile.match_ratio == 0.0
     assert profile.matched_skills == []
     assert profile.missing_skills == []
+
+
+def test_kp_builder__build_from_search__uses_payload() -> None:
+    builder = KPBuilder(
+        availability_service=_AvailabilityStub(_availability()),
+        reskilling_service=_ReskillingStub(None),
+        dictionary=_dictionary(),
+    )
+    payload = {
+        "full_name": "Ada Lovelace",
+        "current_role": "Backend Engineer",
+        "seniority_bucket": "senior",
+        "years_experience_estimate": 4,
+        "unknown_skills": ["fortran"],
+        "skill_details": [
+            {
+                "canonical": "python",
+                "domain": "backend",
+                "confidence": 0.95,
+                "match_type": "exact",
+            }
+        ],
+        "experiences_compact": [
+            {
+                "company": "Acme",
+                "role": "Engineer",
+                "start_year": 2020,
+                "end_year": 2022,
+                "is_current": False,
+                "description_summary": "Built APIs",
+            }
+        ],
+    }
+
+    profile = builder.build_from_search(
+        cv_id="cv-1",
+        res_id=123,
+        payload=payload,
+        query_skills=["python", "kubernetes"],
+        match_score=0.75,
+    )
+
+    assert profile.full_name == "Ada Lovelace"
+    assert profile.current_role == "Backend Engineer"
+    assert profile.total_skills == 1
+    assert profile.unknown_skills == ["fortran"]
+    assert profile.matched_skills == ["python"]
+    assert profile.missing_skills == ["kubernetes"]
+    assert profile.match_ratio == pytest.approx(0.5)
+    assert profile.experiences
+    assert profile.availability is not None
+
+
+def test_kp_builder__build_from_search__missing_skill_details_raises() -> None:
+    builder = KPBuilder(
+        availability_service=_AvailabilityStub(_availability()),
+        reskilling_service=_ReskillingStub(None),
+        dictionary=_dictionary(),
+    )
+
+    with pytest.raises(ValueError, match="skill_details"):
+        builder.build_from_search(
+            cv_id="cv-1",
+            res_id=123,
+            payload={},
+            query_skills=["python"],
+        )
