@@ -4,7 +4,7 @@
 > **Milestone GitHub:** Sprint 6 - KP Foundation
 > **Durata:** 2 settimane (27 feb – 13 mar 2026)
 > **Velocity target:** 18 SP (media storica: ~22 SP/sprint)
-> **SP completati al 28/02:** 2/18 (US-009.1 chiusa)
+> **SP completati al 01/03:** 7/18 (US-009.1 + US-009.2 chiuse)
 > **Tema:** Costruire le fondamenta del Knowledge Profile per abilitare decisioni LLM multi-scenario
 
 ---
@@ -22,41 +22,42 @@ Al termine dello sprint, il sistema sarà in grado di assemblare un KP completo 
 | # | Issue | GitHub | SP | Stato | Dipendenze | Branch |
 |---|-------|--------|----|-------|------------|--------|
 | 1 | **US-009.1** Seniority Calculator | [#44](https://github.com/giamma80/profilebot/issues/44) | 2 | ✅ Done | — | `feature/US-009.1-seniority` |
-| 2 | **US-009.2** Reskilling Infrastructure | [#45](https://github.com/giamma80/profilebot/issues/45) | 5 | 🔵 To Do | — | `feature/US-009.2-reskilling` |
-| 3 | **US-009.3** KP Schema e Builder Base | [#46](https://github.com/giamma80/profilebot/issues/46) | 5 | 🔵 To Do | US-009.1 ✅, US-009.2 | `feature/US-009.3-kp-builder` |
+| 2 | **US-009.2** Reskilling Infrastructure | [#45](https://github.com/giamma80/profilebot/issues/45) | 5 | ✅ Done | — | `feature/US-009.2-reskilling` |
+| 3 | **US-009.3** KP Schema e Builder Base | [#46](https://github.com/giamma80/profilebot/issues/46) | 5 | 🟡 In Progress | US-009.1 ✅, US-009.2 ✅ | `feature/US-009.3-kp-builder` |
 | 4 | **TD-001** Connector Contract (starter) | [#47](https://github.com/giamma80/profilebot/issues/47) | 3 | 🔵 To Do | — | `feature/TD-001-connector-contract` |
 | 5 | **TD-004** Resilience Base (metrics + CB) | [#48](https://github.com/giamma80/profilebot/issues/48) | 3 | 🔵 To Do | — | `feature/TD-004-resilience-base` |
-| | **TOTALE** | | **18** | **2 done** | | |
+| | **TOTALE** | | **18** | **7 done** | | |
 
 ---
 
 ## Sequenza di Lavoro Aggiornata
 
-US-009.1 è completata e mergiata su `main` (giorno 1-2). Il piano di lavoro per i giorni rimanenti:
+US-009.1 e US-009.2 sono completate e mergiate su `main`. Il piano aggiornato:
 
 ```
-Week 1 — giorni rimanenti (3-5)
-├── TD-001 Connector Contract ─────────── [giorno 3-4] (indipendente)
-├── TD-004 Resilience Base ────────────── [giorno 3-4] (parallelizzabile con TD-001)
-└── US-009.2 Reskilling Infrastructure ── [giorno 3-5] (start)
+Week 1 (completata)
+├── US-009.1 Seniority Calculator ────── ✅ Done (giorno 1-2)
+└── US-009.2 Reskilling Infrastructure ─ ✅ Done (giorno 2-3)
+    └── Skill Dictionary v2 merge ────── ✅ Done (1210 skill, 786 alias)
 
-Week 2 (giorni 6-10)
-├── US-009.2 completamento + test ─────── [giorno 6-7]
-├── US-009.3 KP Schema e Builder ──────── [giorno 7-9] (dopo US-009.2)
-└── Review + fix + merge ──────────────── [giorno 9-10]
+Week 2 (giorni 4-10, corrente)
+├── US-009.3 KP Schema e Builder ──────── [giorno 4-6] 🟡 In Progress
+├── TD-001 Connector Contract ─────────── [giorno 4-5] (parallelizzabile)
+├── TD-004 Resilience Base ────────────── [giorno 5-6] (parallelizzabile)
+└── Review + fix + merge ──────────────── [giorno 7-8]
 ```
 
 ### Critical Path
 
 ```
 US-009.1 (seniority) ✅ ──┐
-                           ├──→ US-009.3 (KP Builder) ──→ SPRINT GOAL ✅
-US-009.2 (reskilling) ────┘
+                           ├──→ US-009.3 (KP Builder) 🟡 ──→ SPRINT GOAL ✅
+US-009.2 (reskilling) ✅ ──┘
 
-TD-001 e TD-004 sono indipendenti e parallelizzabili in Week 1.
+TD-001 e TD-004 sono indipendenti e parallelizzabili con US-009.3.
 ```
 
-> **Nota:** La dipendenza bloccante rimasta è US-009.2 → US-009.3. Se US-009.2 ritarda, US-009.3 può essere sviluppata con mock tramite Protocol e integrata al merge.
+> **Nota:** Tutte le dipendenze di US-009.3 sono soddisfatte. Il critical path è sbloccato.
 
 ---
 
@@ -76,55 +77,43 @@ TD-001 e TD-004 sono indipendenti e parallelizzabili in Week 1.
 
 ---
 
-### US-009.2 — Reskilling Infrastructure (5 SP)
+### ✅ US-009.2 — Reskilling Infrastructure (5 SP) — COMPLETATA
 
 **Obiettivo:** Layer completo per consumare dati di reskilling via REST API dallo scraper service, normalizzarli, cacharli in Redis e servirli al KP Builder.
 
-**Pattern architetturale:** I dati di reskilling provengono dall'endpoint REST dello scraper service `GET /reskilling/csv/{res_id}`, che restituisce un JSON `{res_id, row}` con campi SharePoint dinamici (`additionalProperties: true`). Il contratto è definito in `docs/scraper-service/scraper-service-openapi.yaml`.
+**Risultato:**
 
-**Deliverable:**
+- `src/services/reskilling/schemas.py` — `ReskillingRecord(BaseModel)` + `ReskillingStatus(StrEnum)` con valori `IN_PROGRESS/COMPLETED/PLANNED`
+- `src/services/reskilling/normalizer.py` — mapping campi SharePoint raw → Pydantic, log warning su campi sconosciuti
+- `src/services/reskilling/cache.py` — `ReskillingCache` Redis con TTL configurabile
+- `src/services/reskilling/service.py` — `ReskillingService` con get/get_bulk/filter/refresh + read-through cache
+- `src/services/scraper/client.py` — `fetch_reskilling_row(res_id)` integrato
+- `data/skills_dictionary.yaml` aggiornato a v2.0.0 (1210 skill, 786 alias, 22 domini)
+- PR mergiata su `main`
 
-- `src/services/reskilling/schemas.py` — `ReskillingRecord(BaseModel)` + `ReskillingStatus(StrEnum)`
-- `src/services/reskilling/normalizer.py` — mapping campi SharePoint raw → Pydantic, con log warning su campi sconosciuti e fallback safe
-- `src/services/scraper/client.py` — nuovo metodo `fetch_reskilling_row(res_id: int) → dict` che chiama `GET /reskilling/csv/{res_id}`
-- `src/services/reskilling/cache.py` — `ReskillingCache` con Redis, TTL configurabile via `RESKILLING_CACHE_TTL`
-- `src/services/reskilling/service.py` — `ReskillingService` con get/get_bulk/filter
-- `src/services/scraper/tasks.py` — Celery task `reskilling_refresh_task` (REST → normalize → cache)
-- `src/core/config.py` — nuovi settings: `reskilling_cache_ttl`, `reskilling_refresh_schedule`
-- Test: ≥ 8 test cases (normalizer, cache, service, task con mock)
-
-**Acceptance Criteria:**
-
-- [ ] Schema Pydantic `ReskillingRecord` + `ReskillingStatus`
-- [ ] JSON row normalizer (mapping campi SharePoint raw → Pydantic)
-- [ ] `ScraperClient.fetch_reskilling_row(res_id)` integrato
-- [ ] Redis cache con TTL configurabile
-- [ ] Service con get/get_bulk/filter
-- [ ] Celery task reskilling_refresh_task (REST → normalize → cache)
-- [ ] 80%+ coverage sui nuovi moduli
-
-**Rischi:** Medio. Il mapping dei campi SharePoint dinamici potrebbe richiedere aggiornamento se il tracciato sorgente cambia. Il campo `row` nell'API ha `additionalProperties: true`, il che significa che nuovi campi possono apparire senza preavviso.
-
-**Mitigazione:** Normalizer con log warning su campi sconosciuti + fallback safe (`None` per campi opzionali). Il normalizer è l'unico punto di accoppiamento con la struttura dati sorgente.
+**Nota per US-009.3:** `ReskillingRecord` ha `skill_target: str | None` (singolo, non lista). `ReskillingStatus` usa `IN_PROGRESS` (non `ACTIVE`). Il Builder deve adattarsi ai tipi reali, non al design doc §3.2.
 
 ---
 
-### US-009.3 — KP Schema e Builder Base (5 SP)
+### US-009.3 — KP Schema e Builder Base (5 SP) — 🟡 IN PROGRESS
 
 **Obiettivo:** Modello `KnowledgeProfile` unificato che assembla dati da 4 sorgenti (Qdrant, availability, reskilling, dictionary).
 
+**Dipendenze — tutte soddisfatte:** US-009.1 ✅, US-009.2 ✅, Skill Dictionary v2 ✅. Non servono mock/stub.
+
 **Deliverable:**
 
-- `src/core/knowledge_profile/schemas.py` — Schema `KnowledgeProfile` con sezioni: identity, skills, seniority, experiences, availability, ic_sub_state, reskilling
-- `src/core/knowledge_profile/ic_sub_state.py` — `ICSubStateCalculator` (not_ic / ic_available / ic_in_reskilling / ic_in_transition)
-- `src/core/knowledge_profile/builder.py` — `KPBuilder` service (assembly dalle 4 sorgenti)
-- `src/core/knowledge_profile/serializer.py` — `KPContextSerializer` (output strutturato per prompt LLM)
-- Token budget estimator
-- Test: ≥ 8 test cases (builder con mock, serializer, IC sub-state)
+- `src/core/knowledge_profile/schemas.py` — `KnowledgeProfile` + sotto-modelli: `SkillDetail`, `AvailabilityDetail`, `ReskillingPath`, `ExperienceSnapshot`, `RelevantChunk`, `ICSubState(StrEnum)`
+- `src/core/knowledge_profile/ic_sub_state.py` — `calculate_ic_sub_state()` (None / ic_available / ic_in_reskilling / ic_in_transition)
+- `src/core/knowledge_profile/builder.py` — `KPBuilder` con constructor injection, graceful degradation per ogni sorgente
+- `src/core/knowledge_profile/serializer.py` — `KPContextSerializer` + `estimate_tokens()` (len/4)
+- Test: ≥ 8 test cases (IC sub-state ×4, builder ×3, serializer ×2)
 
-**Rischi:** Medio-alto. Dipende da US-009.1 (✅ completata) e US-009.2. Se US-009.2 ritarda, il KP Builder può essere sviluppato con mock/stub e integrato dopo.
+**⚠️ Attenzione delta design doc:** Lo schema in `docs/LLM-study.md` §3.2 è stato scritto prima di US-009.2. Differenze critiche: `ReskillingRecord.skill_target` è `str | None` (non `list[str]`), `ReskillingStatus` usa `IN_PROGRESS/COMPLETED/PLANNED` (non `ACTIVE/DROPPED`), `ic_sub_state` va nel KP top-level (non dentro AvailabilityDetail). Dettagli completi nella [issue #46](https://github.com/giamma80/profilebot/issues/46) aggiornata.
 
-**Mitigazione:** Definire le interfacce `get_seniority()` e `get_reskilling()` come Protocol, sviluppare Builder con mock, integrare reale in fase di merge.
+**Rischi:** Basso (ridotto da medio-alto). Tutte le dipendenze sono soddisfatte, le interfacce dei servizi sono stabili.
+
+**Ref:** `docs/LLM-study.md` §3, §7, §9, §10 | Issue [#46](https://github.com/giamma80/profilebot/issues/46) aggiornata
 
 ---
 
@@ -168,7 +157,7 @@ TD-001 e TD-004 sono indipendenti e parallelizzabili in Week 1.
 - [ ] Test passano su CI (ruff + pytest)
 - [ ] Coverage ≥ 80% sui nuovi moduli
 - [x] Nessun hardcode `"unknown"` residuo per seniority (✅ US-009.1)
-- [ ] Reskilling layer consuma dati esclusivamente via REST API dello scraper service
+- [x] Reskilling layer consuma dati esclusivamente via REST API dello scraper service (✅ US-009.2)
 - [ ] KP Builder assembla profilo completo con dati reali o mock
 - [ ] Documentazione aggiornata (BACKLOG.md, OpenAPI ref dello scraper service)
 
@@ -178,8 +167,8 @@ TD-001 e TD-004 sono indipendenti e parallelizzabili in Week 1.
 
 | Metrica | Target | Attuale |
 |---------|--------|---------|
-| SP completati | ≥ 15/18 (83%) | 2/18 (11%) |
-| Issue chiuse | ≥ 4/5 | 1/5 |
+| SP completati | ≥ 15/18 (83%) | 7/18 (39%) |
+| Issue chiuse | ≥ 4/5 | 2/5 |
 | Test aggiunti | ≥ 25 nuovi test | — |
 | Coverage nuovi moduli | ≥ 80% | — |
 
@@ -231,4 +220,4 @@ Con il KP Foundation completato, gli sprint successivi potranno:
 
 ---
 
-*Ultimo aggiornamento: 28 febbraio 2026*
+*Ultimo aggiornamento: 1 marzo 2026*

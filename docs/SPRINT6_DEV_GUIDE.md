@@ -2,7 +2,7 @@
 
 > **Destinatari:** Team di sviluppo ProfileBot
 > **Sprint:** 6 — KP Foundation (27 feb – 13 mar 2026)
-> **Ultimo aggiornamento:** 28 febbraio 2026
+> **Ultimo aggiornamento:** 1 marzo 2026
 
 ---
 
@@ -138,21 +138,48 @@ Create il branch da `main` aggiornato. La PR va verso `main`.
 
 ### US-009.3 — KP Schema e Builder Base (5 SP)
 
-**Dipendenze:** US-009.1 è completata (potete usare `src/core/seniority/calculator.py`). US-009.2 deve essere completata o almeno avere le interfacce definite (schemas + service stub).
+**Dipendenze — tutte soddisfatte:**
 
-**Se US-009.2 non è ancora pronta:** Definite un Protocol `ReskillingProvider` con il metodo `get(res_id) -> ReskillingRecord | None` e sviluppate il Builder con un mock. Al merge di US-009.2 collegherete il `ReskillingService` reale.
+| Dipendenza | Stato | Riferimento |
+|-----------|-------|-------------|
+| US-009.1 Seniority Calculator | ✅ Done | `src/core/seniority/calculator.py` → `calculate_seniority_bucket()`, `SeniorityBucket` |
+| US-009.2 Reskilling Infrastructure | ✅ Done | `src/services/reskilling/` → `ReskillingService`, `ReskillingRecord`, `ReskillingStatus` |
+| Skill Dictionary v2 | ✅ Done | `data/skills_dictionary.yaml` v2.0.0 — 1210 skill, 786 alias, 22 domini |
+
+**Non servono mock/stub.** Il Builder può usare i servizi reali fin da subito.
 
 **Cosa fare, in ordine:**
 
-1. **`src/core/knowledge_profile/schemas.py`** — Schema `KnowledgeProfile` che aggrega identity, skills, seniority, experiences, availability, reskilling, ic_sub_state. Leggete `docs/LLM-study.md` §3.2 per la struttura proposta.
+1. **`src/core/knowledge_profile/schemas.py`** — Schema `KnowledgeProfile` + sotto-modelli: `SkillDetail`, `AvailabilityDetail`, `ReskillingPath`, `ExperienceSnapshot`, `RelevantChunk`, `ICSubState(StrEnum)`. Leggete `docs/LLM-study.md` §3.2 per la struttura proposta, ma **attenzione ai delta con il codice reale** (vedi sotto).
 
-2. **`src/core/knowledge_profile/ic_sub_state.py`** — `ICSubStateCalculator` che calcola lo stato IC (not_ic, ic_available, ic_in_reskilling, ic_in_transition) a partire da availability + reskilling. Logica in `docs/LLM-study.md` §7.
+2. **`src/core/knowledge_profile/ic_sub_state.py`** — Funzione `calculate_ic_sub_state()` che prende `ProfileAvailability | None`, `list[ReskillingRecord]`, e flag `is_in_transition` → restituisce `ICSubState | None`. Logica: allocation > 0 → `None`; status non FREE/UNAVAILABLE → `None`; poi priorità: transition > reskilling > available. Ref: `docs/LLM-study.md` §7.2.
 
-3. **`src/core/knowledge_profile/builder.py`** — `KPBuilder` che assembla il KP dalle 4 sorgenti: Qdrant (via EmbeddingPipeline o query), AvailabilityService, ReskillingService, SkillDictionary. Ogni sorgente è opzionale: se una fallisce, il KP si costruisce comunque con i dati disponibili (graceful degradation).
+3. **`src/core/knowledge_profile/builder.py`** — `KPBuilder` con constructor injection delle 3 dipendenze (`AvailabilityService`, `ReskillingService`, `SkillDictionary`). Metodo `build()` prende `cv_id`, `res_id`, `ParsedCV`, `SkillExtractionResult`, e opzionalmente `query_skills` + `match_score`. Assembla il KP dalle 4 sorgenti con **graceful degradation**: ogni blocco sorgente in `try/except` con `logger.warning`. Se availability fallisce → `availability=None`; se reskilling fallisce → `reskilling_paths=[]`.
 
-4. **`src/core/knowledge_profile/serializer.py`** — `KPContextSerializer` che converte il KP in testo strutturato per il prompt LLM. Template in `docs/LLM-study.md` §9.2.
+4. **`src/core/knowledge_profile/serializer.py`** — `KPContextSerializer` con parametri di troncamento configurabili (`max_skills_per_domain`, `max_experiences`, `max_chunks`, `max_chunk_chars`). Metodi: `serialize(kp)` per singolo KP, `serialize_batch(profiles, scenario)` per più candidati con header "CANDIDATO N/totale". Template di output in `docs/LLM-study.md` §9.2. Include anche `estimate_tokens(text) -> int` statico (`len(text) // 4`).
 
-5. **Token budget estimator** — Funzione che stima i token necessari per serializzare un KP (approssimazione: `len(text) / 4`). Serve per decidere se attivare il livello 2 (chunk retrieval) o se il KP strutturato basta.
+**⚠️ Delta Design Doc vs Codice Reale — LEGGERE PRIMA DI INIZIARE:**
+
+Il design doc (`docs/LLM-study.md` §3.2) è stato scritto **prima** dell'implementazione di US-009.2. Ci sono differenze importanti tra lo schema proposto e i tipi reali implementati:
+
+| Punto | Design Doc | Codice Reale | Come gestire |
+|-------|-----------|-------------|-------------|
+| Reskilling target | `target_skills: list[str]` | `ReskillingRecord.skill_target: str \| None` | Nel builder wrappare: `[r.skill_target] if r.skill_target else []` |
+| Reskilling status enum | `ACTIVE / COMPLETED / DROPPED` | `ReskillingStatus.IN_PROGRESS / COMPLETED / PLANNED` | `is_active = (r.status == ReskillingStatus.IN_PROGRESS)` |
+| IC sub-state posizione | Campo dentro `AvailabilityDetail` | Campo separato nel KP top-level | Definire `KnowledgeProfile.ic_sub_state: ICSubState \| None` |
+| Seniority bucket tipo | Tipo inline nel KP | `SeniorityBucket` type alias in `src/core/seniority/calculator.py` | Importare e riusare il type alias esistente |
+| Skill dictionary lookup | `dictionary.get_domain(skill)` | `dictionary.get_by_canonical(name) → SkillEntry` | Accedere a `entry.domain`, `entry.certifications`, `entry.aliases` |
+
+**Il codice reale ha la precedenza sul design doc.**
+
+**Cosa NON fare:**
+
+- Non creare mock per availability/reskilling — i servizi reali sono pronti
+- Non usare i nomi enum del design doc (`ACTIVE`, `DROPPED`) — usate quelli reali (`IN_PROGRESS`, `PLANNED`)
+- Non duplicare la logica di seniority — importate `calculate_seniority_bucket` da `src.core.seniority.calculator`
+- Non mettere `ic_sub_state` dentro `AvailabilityDetail` — è un campo calcolato al livello `KnowledgeProfile`
+
+**Test:** Almeno 8 test case in `tests/core/knowledge_profile/`. IC sub-state: 4 test (not_ic, ic_available, ic_in_reskilling, ic_in_transition con priorità). Builder: 3 test (KP completo, graceful degradation quando una sorgente fallisce, input minimi). Serializer: 2 test (sezioni attese nell'output, estimate_tokens coerente).
 
 ---
 
