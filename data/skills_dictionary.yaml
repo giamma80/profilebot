@@ -1,358 +1,1618 @@
-version: "1.0.0"
-updated_at: "2026-02-06"
+version: "2.0.0"
+updated_at: "2026-03-01"
 
 domains:
+  - ai
   - backend
-  - frontend
+  - cloud
   - data
+  - database
   - devops
+  - domain
+  - frontend
+  - governance
+  - hardware
   - management
+  - media
+  - mobile
+  - network
+  - observability
+  - os
+  - platforms
   - qa
   - security
-  - mobile
-  - cloud
-  - database
-  - ai
-  - observability
-  - network
-  - telecom
-  - hardware
-  - os
-  - tools
-  - platforms
-  - governance
-  - domain
   - standards
-  - media
+  - telecom
+  - tools
 
 skills:
+  # Ai
+  ai:
+    canonical: "ai"
+    domain: "ai"
+    aliases: ["artificial intelligence"]
+    related: []
+  anthropic:
+    canonical: "anthropic"
+    domain: "ai"
+    aliases: []
+    related: []
+  anyscale:
+    canonical: "anyscale"
+    domain: "ai"
+    aliases: []
+    related: []
+  autogen:
+    canonical: "autogen"
+    domain: "ai"
+    aliases: []
+    related: []
+  automatic1111:
+    canonical: "automatic1111"
+    domain: "ai"
+    aliases: []
+    related: []
+  bentoml:
+    canonical: "bentoml"
+    domain: "ai"
+    aliases: []
+    related: []
+  bert:
+    canonical: "bert"
+    domain: "ai"
+    aliases: []
+    related: []
+  catboost:
+    canonical: "catboost"
+    domain: "ai"
+    aliases: []
+    related: []
+  chatgpt:
+    canonical: "chatgpt"
+    domain: "ai"
+    aliases: ["chat gpt"]
+    related: []
+  claude:
+    canonical: "claude"
+    domain: "ai"
+    aliases: []
+    related: []
+  cohere:
+    canonical: "cohere"
+    domain: "ai"
+    aliases: []
+    related: []
+  comet:
+    canonical: "comet"
+    domain: "ai"
+    aliases: []
+    related: []
+  comfyui:
+    canonical: "comfyui"
+    domain: "ai"
+    aliases: []
+    related: []
+  crewai:
+    canonical: "crewai"
+    domain: "ai"
+    aliases: []
+    related: []
+  cv:
+    canonical: "cv"
+    domain: "ai"
+    aliases: ["computer vision"]
+    related: []
+  dalle:
+    canonical: "dalle"
+    domain: "ai"
+    aliases: ["dall-e"]
+    related: []
+  data_analysis:
+    canonical: "data-analysis"
+    domain: "ai"
+    aliases: ["data analysis"]
+    related: []
+  data_analytics:
+    canonical: "data-analytics"
+    domain: "ai"
+    aliases: ["data analytics"]
+    related: []
+  data_mining:
+    canonical: "data-mining"
+    domain: "ai"
+    aliases: ["data mining"]
+    related: []
+  data_science:
+    canonical: "data-science"
+    domain: "ai"
+    aliases: ["data science"]
+    related: []
+  detectron:
+    canonical: "detectron"
+    domain: "ai"
+    aliases: []
+    related: []
+  diffusers:
+    canonical: "diffusers"
+    domain: "ai"
+    aliases: []
+    related: []
+  dl:
+    canonical: "dl"
+    domain: "ai"
+    aliases: ["deep learning"]
+    related: []
+  dspy:
+    canonical: "dspy"
+    domain: "ai"
+    aliases: []
+    related: []
+  dvc:
+    canonical: "dvc"
+    domain: "ai"
+    aliases: []
+    related: []
+  embeddings:
+    canonical: "embeddings"
+    domain: "ai"
+    aliases: []
+    related: []
+  fine_tuning:
+    canonical: "fine-tuning"
+    domain: "ai"
+    aliases: ["fine tuning", "finetuning"]
+    related: []
+  flax:
+    canonical: "flax"
+    domain: "ai"
+    aliases: []
+    related: []
+  gemini:
+    canonical: "gemini"
+    domain: "ai"
+    aliases: ["google gemini"]
+    related: []
+  genai:
+    canonical: "genai"
+    domain: "ai"
+    aliases: ["gen ai", "generative ai"]
+    related: []
+  gpt:
+    canonical: "gpt"
+    domain: "ai"
+    aliases: ["gpt-2", "gpt-4", "gpt-4o", "gpt4"]
+    related: []
+  groq:
+    canonical: "groq"
+    domain: "ai"
+    aliases: []
+    related: []
+  haystack:
+    canonical: "haystack"
+    domain: "ai"
+    aliases: []
+    related: []
+  huggingface:
+    canonical: "huggingface"
+    domain: "ai"
+    aliases: ["hugging face"]
+    related: []
+  jax:
+    canonical: "jax"
+    domain: "ai"
+    aliases: []
+    related: []
+  keras:
+    canonical: "keras"
+    domain: "ai"
+    aliases: []
+    related: []
+  kubeflow:
+    canonical: "kubeflow"
+    domain: "ai"
+    aliases: []
+    related: []
+  langchain:
+    canonical: "langchain"
+    domain: "ai"
+    aliases: ["lang chain"]
+    related: []
+  lightgbm:
+    canonical: "lightgbm"
+    domain: "ai"
+    aliases: []
+    related: []
+  llama:
+    canonical: "llama"
+    domain: "ai"
+    aliases: ["llama 2", "llama 3"]
+    related: []
+  llamaindex:
+    canonical: "llamaindex"
+    domain: "ai"
+    aliases: ["llama index"]
+    related: []
+  llm:
+    canonical: "llm"
+    domain: "ai"
+    aliases: ["large language model", "large language models", "llms"]
+    related: []
+  matplotlib:
+    canonical: "matplotlib"
+    domain: "ai"
+    aliases: []
+    related: []
+  midjourney:
+    canonical: "midjourney"
+    domain: "ai"
+    aliases: []
+    related: []
+  mistral:
+    canonical: "mistral"
+    domain: "ai"
+    aliases: ["mixtral"]
+    related: []
+  ml:
+    canonical: "ml"
+    domain: "ai"
+    aliases: ["machine learning"]
+    related: []
+  mlflow:
+    canonical: "mlflow"
+    domain: "ai"
+    aliases: []
+    related: []
+  mlops:
+    canonical: "mlops"
+    domain: "ai"
+    aliases: ["ml ops"]
+    related: []
+  mmdetection:
+    canonical: "mmdetection"
+    domain: "ai"
+    aliases: []
+    related: []
+  neptune:
+    canonical: "neptune"
+    domain: "ai"
+    aliases: []
+    related: []
+  nlp:
+    canonical: "nlp"
+    domain: "ai"
+    aliases: ["natural language processing"]
+    related: []
+  nltk:
+    canonical: "nltk"
+    domain: "ai"
+    aliases: []
+    related: []
+  ollama:
+    canonical: "ollama"
+    domain: "ai"
+    aliases: []
+    related: []
+  openai:
+    canonical: "openai"
+    domain: "ai"
+    aliases: ["open ai"]
+    related: []
+  opencv:
+    canonical: "opencv"
+    domain: "ai"
+    aliases: ["cv2", "open cv"]
+    related: []
+  peft:
+    canonical: "peft"
+    domain: "ai"
+    aliases: []
+    related: []
+  plotly:
+    canonical: "plotly"
+    domain: "ai"
+    aliases: []
+    related: []
+  pytorch:
+    canonical: "pytorch"
+    domain: "ai"
+    aliases: ["py torch", "torch"]
+    related: []
+  pytorch_lightning:
+    canonical: "pytorch-lightning"
+    domain: "ai"
+    aliases: ["lightning", "pytorch lightning"]
+    related: []
+  qlora:
+    canonical: "qlora"
+    domain: "ai"
+    aliases: []
+    related: []
+  rag:
+    canonical: "rag"
+    domain: "ai"
+    aliases: ["retrieval augmented generation"]
+    related: []
+  replicate:
+    canonical: "replicate"
+    domain: "ai"
+    aliases: []
+    related: []
+  scikit_learn:
+    canonical: "scikit-learn"
+    domain: "ai"
+    aliases: ["scikit learn", "sklearn"]
+    related: []
+  seaborn:
+    canonical: "seaborn"
+    domain: "ai"
+    aliases: []
+    related: []
+  seldon:
+    canonical: "seldon"
+    domain: "ai"
+    aliases: []
+    related: []
+  semantic_kernel:
+    canonical: "semantic-kernel"
+    domain: "ai"
+    aliases: ["semantic kernel"]
+    related: []
+  sentence_transformers:
+    canonical: "sentence-transformers"
+    domain: "ai"
+    aliases: ["sentence transformers"]
+    related: []
+  spacy:
+    canonical: "spacy"
+    domain: "ai"
+    aliases: []
+    related: []
+  stable_diffusion:
+    canonical: "stable-diffusion"
+    domain: "ai"
+    aliases: ["stable diffusion"]
+    related: []
+  statistics:
+    canonical: "statistics"
+    domain: "ai"
+    aliases: ["statistical analysis"]
+    related: []
+  t5:
+    canonical: "t5"
+    domain: "ai"
+    aliases: []
+    related: []
+  tensorflow:
+    canonical: "tensorflow"
+    domain: "ai"
+    aliases: ["tensor flow", "tf"]
+    related: []
+  together:
+    canonical: "together"
+    domain: "ai"
+    aliases: ["together ai"]
+    related: []
+  transformers:
+    canonical: "transformers"
+    domain: "ai"
+    aliases: []
+    related: []
+  wandb:
+    canonical: "wandb"
+    domain: "ai"
+    aliases: ["weights & biases", "weights and biases"]
+    related: []
+  xgboost:
+    canonical: "xgboost"
+    domain: "ai"
+    aliases: []
+    related: []
+  yolo:
+    canonical: "yolo"
+    domain: "ai"
+    aliases: []
+    related: []
+
   # Backend
-  python:
-    canonical: "python"
+  actix:
+    canonical: "actix"
     domain: "backend"
-    aliases: ["py", "python3", "python 3", "python3.x"]
-    related: ["django", "fastapi", "flask"]
-  java:
-    canonical: "java"
+    aliases: ["actix web", "actix-web"]
+    related: []
+  adonet:
+    canonical: "adonet"
     domain: "backend"
-    aliases: ["java 8", "java 11", "jdk", "jvm"]
-    related: ["spring", "maven", "gradle"]
-  csharp:
-    canonical: "csharp"
+    aliases: ["ado.net"]
+    related: []
+  aiohttp:
+    canonical: "aiohttp"
     domain: "backend"
-    aliases: ["c#", "dotnet", ".net", "microsoft .net framework 4.7"]
-    related: ["asp.net", "entity framework"]
-  nodejs:
-    canonical: "nodejs"
+    aliases: []
+    related: []
+  akka:
+    canonical: "akka"
     domain: "backend"
-    aliases: ["node.js", "node", "npm"]
-    related: ["express", "nestjs"]
-  go:
-    canonical: "go"
+    aliases: []
+    related: []
+  alembic:
+    canonical: "alembic"
     domain: "backend"
-    aliases: ["golang", "go lang"]
-    related: ["gin", "grpc"]
-  ruby:
-    canonical: "ruby"
+    aliases: []
+    related: []
+  ariadne:
+    canonical: "ariadne"
     domain: "backend"
-    aliases: ["ruby on rails", "rails"]
-    related: ["rails", "sinatra"]
-  php:
-    canonical: "php"
+    aliases: []
+    related: []
+  as400:
+    canonical: "as400"
     domain: "backend"
-    aliases: ["php7", "php8"]
-    related: ["laravel", "symfony"]
-  scala:
-    canonical: "scala"
+    aliases: ["as 400"]
+    related: []
+  asp:
+    canonical: "asp"
     domain: "backend"
-    aliases: ["scala 2", "scala 3"]
-    related: ["akka", "play"]
-  kotlin:
-    canonical: "kotlin"
-    domain: "backend"
-    aliases: ["kotlin/jvm"]
-    related: ["ktor", "spring"]
-  rust:
-    canonical: "rust"
-    domain: "backend"
-    aliases: ["rustlang"]
-    related: ["tokio", "actix"]
-  spring:
-    canonical: "spring"
-    domain: "backend"
-    aliases: ["spring boot", "spring framework"]
-    related: ["java", "hibernate"]
-  django:
-    canonical: "django"
-    domain: "backend"
-    aliases: ["django rest", "drf"]
-    related: ["python"]
-  fastapi:
-    canonical: "fastapi"
-    domain: "backend"
-    aliases: ["fast-api", "fast api"]
-    related: ["python", "pydantic"]
-  flask:
-    canonical: "flask"
-    domain: "backend"
-    aliases: ["flask api"]
-    related: ["python"]
-  express:
-    canonical: "express"
-    domain: "backend"
-    aliases: ["express.js"]
-    related: ["nodejs"]
-  nestjs:
-    canonical: "nestjs"
-    domain: "backend"
-    aliases: ["nest.js"]
-    related: ["nodejs", "typescript"]
-  graphql:
-    canonical: "graphql"
-    domain: "backend"
-    aliases: ["apollo", "graphql api", "graph ql"]
-    related: ["nodejs", "typescript"]
-  rest:
-    canonical: "rest"
-    domain: "backend"
-    aliases: ["rest api", "restful"]
-    related: ["http", "openapi"]
+    aliases: []
+    related: []
   aspnet:
     canonical: "aspnet"
     domain: "backend"
-    aliases: ["asp.net"]
+    aliases: ["asp.net", "microsoft asp.net"]
     related: ["csharp"]
   aspnet_core:
     canonical: "aspnet-core"
     domain: "backend"
     aliases: ["asp.net core"]
     related: ["csharp"]
-  razor:
-    canonical: "razor"
+  aspnet_mvc:
+    canonical: "aspnet-mvc"
     domain: "backend"
-    aliases: ["razor pages"]
-    related: ["csharp"]
+    aliases: ["asp.net mvc"]
+    related: []
+  aspnet_webapi:
+    canonical: "aspnet-webapi"
+    domain: "backend"
+    aliases: ["asp.net web api", "asp.net webapi"]
+    related: []
+  assembler:
+    canonical: "assembler"
+    domain: "backend"
+    aliases: ["arm assembly", "asm", "assembler 8086", "assembler mips", "assembly", "mips", "x86 assembly"]
+    related: []
+  asyncapi:
+    canonical: "asyncapi"
+    domain: "backend"
+    aliases: []
+    related: []
+  axum:
+    canonical: "axum"
+    domain: "backend"
+    aliases: []
+    related: []
+  backend:
+    canonical: "backend"
+    domain: "backend"
+    aliases: ["back end", "back-end"]
+    related: []
+  bash:
+    canonical: "bash"
+    domain: "backend"
+    aliases: ["bash script", "bash scripting", "linux shell scripting", "sh", "shell / bash", "shell script", "shell scripting"]
+    related: []
+  batch_scripting:
+    canonical: "batch-scripting"
+    domain: "backend"
+    aliases: ["bat", "batch scripting", "cmd"]
+    related: []
+  beego:
+    canonical: "beego"
+    domain: "backend"
+    aliases: []
+    related: []
+  bottle:
+    canonical: "bottle"
+    domain: "backend"
+    aliases: []
+    related: []
+  buffalo:
+    canonical: "buffalo"
+    domain: "backend"
+    aliases: []
+    related: []
+  bun:
+    canonical: "bun"
+    domain: "backend"
+    aliases: []
+    related: []
+  c:
+    canonical: "c"
+    domain: "backend"
+    aliases: ["ansi c", "c/c++", "embedded c"]
+    related: []
+  cakephp:
+    canonical: "cakephp"
+    domain: "backend"
+    aliases: []
+    related: []
+  chi:
+    canonical: "chi"
+    domain: "backend"
+    aliases: []
+    related: []
+  circuitpython:
+    canonical: "circuitpython"
+    domain: "backend"
+    aliases: []
+    related: []
+  clojure:
+    canonical: "clojure"
+    domain: "backend"
+    aliases: []
+    related: []
+  cloud_run:
+    canonical: "cloud-run"
+    domain: "backend"
+    aliases: ["cloud run", "google cloud run"]
+    related: []
+  cobol:
+    canonical: "cobol"
+    domain: "backend"
+    aliases: ["as400 cobol"]
+    related: []
+  codeigniter:
+    canonical: "codeigniter"
+    domain: "backend"
+    aliases: []
+    related: []
+  cpp:
+    canonical: "cpp"
+    domain: "backend"
+    aliases: ["c++", "dev-c++"]
+    related: []
+  credit_cards:
+    canonical: "credit-cards"
+    domain: "backend"
+    aliases: ["carta di credito", "carte di credito", "credit card", "credit cards"]
+    related: []
+  crystal:
+    canonical: "crystal"
+    domain: "backend"
+    aliases: []
+    related: []
+  csharp:
+    canonical: "csharp"
+    domain: "backend"
+    aliases: [".net", "c#", "dotnet", "microsoft .net framework 4.7", "visual c#"]
+    related: ["asp.net", "entity framework"]
+  csv:
+    canonical: "csv"
+    domain: "backend"
+    aliases: []
+    related: []
+  dapper:
+    canonical: "dapper"
+    domain: "backend"
+    aliases: []
+    related: []
+  dart:
+    canonical: "dart"
+    domain: "backend"
+    aliases: []
+    related: []
+  delphi:
+    canonical: "delphi"
+    domain: "backend"
+    aliases: []
+    related: []
+  deno:
+    canonical: "deno"
+    domain: "backend"
+    aliases: []
+    related: []
+  django:
+    canonical: "django"
+    domain: "backend"
+    aliases: ["django rest", "drf"]
+    related: ["python"]
+  drizzle:
+    canonical: "drizzle"
+    domain: "backend"
+    aliases: ["drizzle orm"]
+    related: []
+  dropwizard:
+    canonical: "dropwizard"
+    domain: "backend"
+    aliases: []
+    related: []
+  echo:
+    canonical: "echo"
+    domain: "backend"
+    aliases: []
+    related: []
+  ecto:
+    canonical: "ecto"
+    domain: "backend"
+    aliases: []
+    related: []
   ejb:
     canonical: "ejb"
     domain: "backend"
     aliases: []
     related: ["java"]
-  servlets:
-    canonical: "servlets"
+  electron:
+    canonical: "electron"
     domain: "backend"
     aliases: []
-    related: ["java"]
+    related: []
+  elixir:
+    canonical: "elixir"
+    domain: "backend"
+    aliases: []
+    related: []
+  entity_framework:
+    canonical: "entity-framework"
+    domain: "backend"
+    aliases: ["ado.net entity framework", "entity framework"]
+    related: []
+  entity_framework_core:
+    canonical: "entity-framework-core"
+    domain: "backend"
+    aliases: ["ef core", "entity framework core"]
+    related: []
+  erlang:
+    canonical: "erlang"
+    domain: "backend"
+    aliases: []
+    related: []
+  express:
+    canonical: "express"
+    domain: "backend"
+    aliases: ["express.js", "expressjs"]
+    related: ["nodejs"]
+  fastapi:
+    canonical: "fastapi"
+    domain: "backend"
+    aliases: ["fast-api", "fast api"]
+    related: ["python", "pydantic"]
+  fastify:
+    canonical: "fastify"
+    domain: "backend"
+    aliases: []
+    related: []
+  fiber:
+    canonical: "fiber"
+    domain: "backend"
+    aliases: []
+    related: []
+  fish:
+    canonical: "fish"
+    domain: "backend"
+    aliases: []
+    related: []
+  flask:
+    canonical: "flask"
+    domain: "backend"
+    aliases: ["flask api"]
+    related: ["python"]
+  fortran:
+    canonical: "fortran"
+    domain: "backend"
+    aliases: []
+    related: []
+  fsharp:
+    canonical: "fsharp"
+    domain: "backend"
+    aliases: ["f#"]
+    related: []
+  fullstack:
+    canonical: "fullstack"
+    domain: "backend"
+    aliases: ["full stack", "full-stack"]
+    related: []
+  gin:
+    canonical: "gin"
+    domain: "backend"
+    aliases: ["gin gonic"]
+    related: []
+  gleam:
+    canonical: "gleam"
+    domain: "backend"
+    aliases: []
+    related: []
+  go:
+    canonical: "go"
+    domain: "backend"
+    aliases: ["golang", "go lang"]
+    related: ["gin", "grpc"]
+  gorilla:
+    canonical: "gorilla"
+    domain: "backend"
+    aliases: ["gorilla mux"]
+    related: []
+  graalvm:
+    canonical: "graalvm"
+    domain: "backend"
+    aliases: []
+    related: []
+  grails:
+    canonical: "grails"
+    domain: "backend"
+    aliases: []
+    related: []
+  graphql:
+    canonical: "graphql"
+    domain: "backend"
+    aliases: ["apollo", "graphql api", "graph ql"]
+    related: ["nodejs", "typescript"]
+  groovy:
+    canonical: "groovy"
+    domain: "backend"
+    aliases: []
+    related: []
+  hanami:
+    canonical: "hanami"
+    domain: "backend"
+    aliases: []
+    related: []
+  hapi:
+    canonical: "hapi"
+    domain: "backend"
+    aliases: []
+    related: []
+  haskell:
+    canonical: "haskell"
+    domain: "backend"
+    aliases: []
+    related: []
+  hasura:
+    canonical: "hasura"
+    domain: "backend"
+    aliases: []
+    related: []
+  hibernate:
+    canonical: "hibernate"
+    domain: "backend"
+    aliases: ["hibernate orm", "hibernate-orm"]
+    related: []
+  iis:
+    canonical: "iis"
+    domain: "backend"
+    aliases: []
+    related: []
+  jakarta_ee:
+    canonical: "jakarta-ee"
+    domain: "backend"
+    aliases: ["jakarta ee"]
+    related: []
+  java:
+    canonical: "java"
+    domain: "backend"
+    aliases: ["java 8", "java 11", "jdk", "jvm"]
+    related: ["spring", "maven", "gradle"]
+  java_ee:
+    canonical: "java-ee"
+    domain: "backend"
+    aliases: ["j2ee", "java ee"]
+    related: []
+  jboss:
+    canonical: "jboss"
+    domain: "backend"
+    aliases: []
+    related: []
+  jpa:
+    canonical: "jpa"
+    domain: "backend"
+    aliases: []
+    related: []
+  jre:
+    canonical: "jre"
+    domain: "backend"
+    aliases: []
+    related: []
   jsf:
     canonical: "jsf"
     domain: "backend"
     aliases: ["java server faces"]
     related: ["java"]
+  json:
+    canonical: "json"
+    domain: "backend"
+    aliases: []
+    related: []
+  json_schema:
+    canonical: "json-schema"
+    domain: "backend"
+    aliases: ["json schema"]
+    related: []
+  jsp:
+    canonical: "jsp"
+    domain: "backend"
+    aliases: []
+    related: []
+  julia:
+    canonical: "julia"
+    domain: "backend"
+    aliases: []
+    related: []
+  knex:
+    canonical: "knex"
+    domain: "backend"
+    aliases: ["knex js", "knex.js"]
+    related: []
+  koa:
+    canonical: "koa"
+    domain: "backend"
+    aliases: []
+    related: []
+  kotlin:
+    canonical: "kotlin"
+    domain: "backend"
+    aliases: ["kotlin js", "kotlin jvm", "kotlin multiplatform", "kotlin native", "kotlin-js", "kotlin/jvm", "kotlin/native"]
+    related: ["ktor", "spring"]
+  laravel:
+    canonical: "laravel"
+    domain: "backend"
+    aliases: ["laravel php framework"]
+    related: []
+  less:
+    canonical: "less"
+    domain: "backend"
+    aliases: []
+    related: []
+  linq:
+    canonical: "linq"
+    domain: "backend"
+    aliases: []
+    related: []
+  lisp:
+    canonical: "lisp"
+    domain: "backend"
+    aliases: ["common lisp"]
+    related: []
+  litestar:
+    canonical: "litestar"
+    domain: "backend"
+    aliases: []
+    related: []
+  liveview:
+    canonical: "liveview"
+    domain: "backend"
+    aliases: ["live view"]
+    related: []
+  livewire:
+    canonical: "livewire"
+    domain: "backend"
+    aliases: []
+    related: []
+  lua:
+    canonical: "lua"
+    domain: "backend"
+    aliases: ["luajit"]
+    related: []
+  markdown:
+    canonical: "markdown"
+    domain: "backend"
+    aliases: ["md"]
+    related: []
+  micronaut:
+    canonical: "micronaut"
+    domain: "backend"
+    aliases: []
+    related: []
+  micropython:
+    canonical: "micropython"
+    domain: "backend"
+    aliases: []
+    related: []
+  mojo:
+    canonical: "mojo"
+    domain: "backend"
+    aliases: []
+    related: []
+  mongoose:
+    canonical: "mongoose"
+    domain: "backend"
+    aliases: []
+    related: []
+  mono:
+    canonical: "mono"
+    domain: "backend"
+    aliases: []
+    related: []
+  monolith:
+    canonical: "monolith"
+    domain: "backend"
+    aliases: []
+    related: []
+  mvc:
+    canonical: "mvc"
+    domain: "backend"
+    aliases: []
+    related: []
+  mybatis:
+    canonical: "mybatis"
+    domain: "backend"
+    aliases: []
+    related: []
+  nestjs:
+    canonical: "nestjs"
+    domain: "backend"
+    aliases: ["nest.js"]
+    related: ["nodejs", "typescript"]
+  nim:
+    canonical: "nim"
+    domain: "backend"
+    aliases: []
+    related: []
+  nodejs:
+    canonical: "nodejs"
+    domain: "backend"
+    aliases: ["node", "node js", "node.js", "npm"]
+    related: ["express", "nestjs"]
+  ocaml:
+    canonical: "ocaml"
+    domain: "backend"
+    aliases: []
+    related: []
+  openapi:
+    canonical: "openapi"
+    domain: "backend"
+    aliases: ["open api"]
+    related: []
+  openjdk:
+    canonical: "openjdk"
+    domain: "backend"
+    aliases: []
+    related: []
+  pascal:
+    canonical: "pascal"
+    domain: "backend"
+    aliases: []
+    related: []
+  payments:
+    canonical: "payments"
+    domain: "backend"
+    aliases: ["payment", "payment processing", "payment system", "payment systems", "sistema di pagamento", "sistemi di pagamento"]
+    related: []
+  peewee:
+    canonical: "peewee"
+    domain: "backend"
+    aliases: []
+    related: []
+  perl:
+    canonical: "perl"
+    domain: "backend"
+    aliases: []
+    related: []
+  phoenix:
+    canonical: "phoenix"
+    domain: "backend"
+    aliases: ["phoenix framework"]
+    related: []
+  php:
+    canonical: "php"
+    domain: "backend"
+    aliases: ["php7", "php8"]
+    related: ["laravel", "symfony"]
+  play:
+    canonical: "play"
+    domain: "backend"
+    aliases: ["play framework"]
+    related: []
+  plsql:
+    canonical: "plsql"
+    domain: "backend"
+    aliases: ["pl sql", "pl/sql", "pl/sql developer"]
+    related: []
+  ponyorm:
+    canonical: "ponyorm"
+    domain: "backend"
+    aliases: ["pony orm"]
+    related: []
+  powershell:
+    canonical: "powershell"
+    domain: "backend"
+    aliases: ["power shell", "pwsh", "windows powershell"]
+    related: []
+  prisma:
+    canonical: "prisma"
+    domain: "backend"
+    aliases: []
+    related: []
+  pyqt:
+    canonical: "pyqt"
+    domain: "backend"
+    aliases: []
+    related: []
+  pyramid:
+    canonical: "pyramid"
+    domain: "backend"
+    aliases: []
+    related: []
+  pyside:
+    canonical: "pyside"
+    domain: "backend"
+    aliases: []
+    related: []
+  python:
+    canonical: "python"
+    domain: "backend"
+    aliases: ["cpython", "py", "python 3", "python2", "python3", "python3.x"]
+    related: ["django", "fastapi", "flask"]
+  qt:
+    canonical: "qt"
+    domain: "backend"
+    aliases: ["qt framework"]
+    related: []
+  quarkus:
+    canonical: "quarkus"
+    domain: "backend"
+    aliases: []
+    related: []
+  r:
+    canonical: "r"
+    domain: "backend"
+    aliases: ["r language", "rstudio"]
+    related: []
+  racket:
+    canonical: "racket"
+    domain: "backend"
+    aliases: []
+    related: []
+  razor:
+    canonical: "razor"
+    domain: "backend"
+    aliases: ["razor pages"]
+    related: ["csharp"]
+  relay:
+    canonical: "relay"
+    domain: "backend"
+    aliases: []
+    related: []
+  rest:
+    canonical: "rest"
+    domain: "backend"
+    aliases: ["rest api", "restful"]
+    related: ["http", "openapi"]
+  roc:
+    canonical: "roc"
+    domain: "backend"
+    aliases: []
+    related: []
+  rocket:
+    canonical: "rocket"
+    domain: "backend"
+    aliases: []
+    related: []
+  ros:
+    canonical: "ros"
+    domain: "backend"
+    aliases: ["robot operating system"]
+    related: []
+  ros2:
+    canonical: "ros2"
+    domain: "backend"
+    aliases: []
+    related: []
+  ruby:
+    canonical: "ruby"
+    domain: "backend"
+    aliases: ["ruby on rails", "rails"]
+    related: ["rails", "sinatra"]
+  rust:
+    canonical: "rust"
+    domain: "backend"
+    aliases: ["rust lang", "rust-lang", "rustlang"]
+    related: ["tokio", "actix"]
+  sanic:
+    canonical: "sanic"
+    domain: "backend"
+    aliases: []
+    related: []
+  scala:
+    canonical: "scala"
+    domain: "backend"
+    aliases: ["scala 2", "scala 3"]
+    related: ["akka", "play"]
+  scheme:
+    canonical: "scheme"
+    domain: "backend"
+    aliases: []
+    related: []
+  sequelize:
+    canonical: "sequelize"
+    domain: "backend"
+    aliases: []
+    related: []
+  servlets:
+    canonical: "servlets"
+    domain: "backend"
+    aliases: []
+    related: ["java"]
+  sinatra:
+    canonical: "sinatra"
+    domain: "backend"
+    aliases: []
+    related: []
+  slim:
+    canonical: "slim"
+    domain: "backend"
+    aliases: []
+    related: []
+  solidity:
+    canonical: "solidity"
+    domain: "backend"
+    aliases: []
+    related: []
+  spring:
+    canonical: "spring"
+    domain: "backend"
+    aliases: ["spring framework"]
+    related: ["java", "hibernate"]
+  spring_boot:
+    canonical: "spring-boot"
+    domain: "backend"
+    aliases: ["spring boot", "springboot"]
+    related: []
+  spring_cloud:
+    canonical: "spring-cloud"
+    domain: "backend"
+    aliases: ["spring boot cloud", "spring cloud"]
+    related: ["spring"]
+  spring_data:
+    canonical: "spring-data"
+    domain: "backend"
+    aliases: ["spring data"]
+    related: []
+  spring_mvc:
+    canonical: "spring-mvc"
+    domain: "backend"
+    aliases: ["spring mvc"]
+    related: []
+  spring_security:
+    canonical: "spring-security"
+    domain: "backend"
+    aliases: ["spring security"]
+    related: []
+  sqlalchemy:
+    canonical: "sqlalchemy"
+    domain: "backend"
+    aliases: []
+    related: []
+  starlette:
+    canonical: "starlette"
+    domain: "backend"
+    aliases: []
+    related: []
+  strawberry_graphql:
+    canonical: "strawberry-graphql"
+    domain: "backend"
+    aliases: ["strawberry graphql"]
+    related: []
   struts:
     canonical: "struts"
     domain: "backend"
     aliases: ["apache struts"]
     related: ["java"]
-  spring_cloud:
-    canonical: "spring-cloud"
+  stylus:
+    canonical: "stylus"
     domain: "backend"
-    aliases: ["spring boot cloud"]
-    related: ["spring"]
-  winforms:
-    canonical: "winforms"
+    aliases: []
+    related: []
+  swagger:
+    canonical: "swagger"
     domain: "backend"
-    aliases: ["win forms"]
-    related: ["csharp"]
-  assembler:
-    canonical: "assembler"
+    aliases: []
+    related: []
+  symfony:
+    canonical: "symfony"
     domain: "backend"
-    aliases: ["assembler 8086", "assembler mips"]
+    aliases: []
+    related: []
+  systemverilog:
+    canonical: "systemverilog"
+    domain: "backend"
+    aliases: []
+    related: []
+  tauri:
+    canonical: "tauri"
+    domain: "backend"
+    aliases: []
+    related: []
+  tide:
+    canonical: "tide"
+    domain: "backend"
+    aliases: []
+    related: []
+  tokio:
+    canonical: "tokio"
+    domain: "backend"
+    aliases: []
+    related: []
+  tomcat:
+    canonical: "tomcat"
+    domain: "backend"
+    aliases: ["apache tomcat"]
+    related: []
+  toml:
+    canonical: "toml"
+    domain: "backend"
+    aliases: []
+    related: []
+  tornado:
+    canonical: "tornado"
+    domain: "backend"
+    aliases: []
+    related: []
+  tortoise_orm:
+    canonical: "tortoise-orm"
+    domain: "backend"
+    aliases: ["tortoise orm"]
+    related: []
+  trpc:
+    canonical: "trpc"
+    domain: "backend"
+    aliases: []
+    related: []
+  tsql:
+    canonical: "tsql"
+    domain: "backend"
+    aliases: ["t-sql", "transact-sql"]
+    related: []
+  typeorm:
+    canonical: "typeorm"
+    domain: "backend"
+    aliases: ["type orm"]
+    related: []
+  vb6:
+    canonical: "vb6"
+    domain: "backend"
+    aliases: ["vb 6", "visual basic 6"]
     related: []
   vba:
     canonical: "vba"
     domain: "backend"
-    aliases: ["vba voor ms excel"]
+    aliases: ["vba voor ms excel", "visual basic for applications"]
+    related: []
+  vbnet:
+    canonical: "vbnet"
+    domain: "backend"
+    aliases: ["vb.net", "visual basic"]
+    related: []
+  vbscript:
+    canonical: "vbscript"
+    domain: "backend"
+    aliases: []
+    related: []
+  vector_database:
+    canonical: "vector-database"
+    domain: "backend"
+    aliases: ["vector database", "vector db"]
+    related: []
+  verilog:
+    canonical: "verilog"
+    domain: "backend"
+    aliases: []
+    related: []
+  vertx:
+    canonical: "vertx"
+    domain: "backend"
+    aliases: ["vert.x"]
+    related: []
+  vhdl:
+    canonical: "vhdl"
+    domain: "backend"
+    aliases: []
+    related: []
+  vyper:
+    canonical: "vyper"
+    domain: "backend"
+    aliases: []
+    related: []
+  warp:
+    canonical: "warp"
+    domain: "backend"
+    aliases: []
+    related: []
+  wasm:
+    canonical: "wasm"
+    domain: "backend"
+    aliases: ["webassembly"]
+    related: []
+  weblogic:
+    canonical: "weblogic"
+    domain: "backend"
+    aliases: []
+    related: []
+  websphere:
+    canonical: "websphere"
+    domain: "backend"
+    aliases: []
+    related: []
+  wildfly:
+    canonical: "wildfly"
+    domain: "backend"
+    aliases: []
+    related: []
+  winforms:
+    canonical: "winforms"
+    domain: "backend"
+    aliases: ["win forms", "windows forms"]
+    related: ["csharp"]
+  xml:
+    canonical: "xml"
+    domain: "backend"
+    aliases: []
+    related: []
+  yaml:
+    canonical: "yaml"
+    domain: "backend"
+    aliases: []
+    related: []
+  yii:
+    canonical: "yii"
+    domain: "backend"
+    aliases: []
+    related: []
+  zig:
+    canonical: "zig"
+    domain: "backend"
+    aliases: []
+    related: []
+  zsh:
+    canonical: "zsh"
+    domain: "backend"
+    aliases: []
     related: []
 
-  # Frontend
-  javascript:
-    canonical: "javascript"
-    domain: "frontend"
-    aliases: ["js", "es6", "ecmascript"]
-    related: ["react", "vue", "angular"]
-  typescript:
-    canonical: "typescript"
-    domain: "frontend"
-    aliases: ["ts"]
-    related: ["react", "angular", "vue"]
-  react:
-    canonical: "react"
-    domain: "frontend"
-    aliases: ["react.js", "reactjs"]
-    related: ["javascript", "typescript"]
-  angular:
-    canonical: "angular"
-    domain: "frontend"
-    aliases: ["angularjs", "ng"]
-    related: ["typescript"]
-  vue:
-    canonical: "vue"
-    domain: "frontend"
-    aliases: ["vue.js", "vuejs"]
-    related: ["javascript"]
-  svelte:
-    canonical: "svelte"
-    domain: "frontend"
-    aliases: ["sveltekit"]
-    related: ["javascript", "typescript"]
-  html:
-    canonical: "html"
-    domain: "frontend"
-    aliases: ["html5", "xhtml"]
-    related: ["css", "javascript"]
-  css:
-    canonical: "css"
-    domain: "frontend"
-    aliases: ["css3"]
-    related: ["sass", "less"]
-  sass:
-    canonical: "sass"
-    domain: "frontend"
-    aliases: ["scss"]
-    related: ["css"]
-  webpack:
-    canonical: "webpack"
-    domain: "frontend"
-    aliases: ["webpack 5"]
-    related: ["javascript"]
-  vite:
-    canonical: "vite"
-    domain: "frontend"
-    aliases: ["vitejs"]
-    related: ["javascript"]
-  tailwind:
-    canonical: "tailwind"
-    domain: "frontend"
-    aliases: ["tailwindcss"]
-    related: ["css"]
-  ajax:
-    canonical: "ajax"
-    domain: "frontend"
+  # Cloud
+  aks:
+    canonical: "aks"
+    domain: "cloud"
+    aliases: ["azure kubernetes service"]
+    related: []
+  alibaba_cloud:
+    canonical: "alibaba-cloud"
+    domain: "cloud"
+    aliases: ["alibaba cloud"]
+    related: []
+  api_gateway:
+    canonical: "api-gateway"
+    domain: "cloud"
+    aliases: ["aws api gateway"]
+    related: []
+  aws:
+    canonical: "aws"
+    domain: "cloud"
+    aliases: ["amazon web services"]
+    related: ["ec2", "s3", "lambda"]
+  azure:
+    canonical: "azure"
+    domain: "cloud"
+    aliases: ["microsoft azure", "ms azure"]
+    related: ["azure devops"]
+  azure_app_service:
+    canonical: "azure-app-service"
+    domain: "cloud"
+    aliases: ["azure app service", "azure web app", "azure-web-app", "microsoft azure web app"]
+    related: ["azure"]
+  azure_blob:
+    canonical: "azure-blob"
+    domain: "cloud"
+    aliases: ["azure blob storage"]
+    related: []
+  azure_functions:
+    canonical: "azure-functions"
+    domain: "cloud"
+    aliases: ["azure functions"]
+    related: []
+  cloud:
+    canonical: "cloud"
+    domain: "cloud"
     aliases: []
-    related: ["javascript", "html", "css"]
-  jquery:
-    canonical: "jquery"
-    domain: "frontend"
-    aliases: ["j query"]
-    related: ["javascript"]
-  backbone:
-    canonical: "backbone"
-    domain: "frontend"
-    aliases: ["backbone.js"]
-    related: ["javascript"]
-  dom:
-    canonical: "dom"
-    domain: "frontend"
-    aliases: ["dom (xml parser)"]
-    related: ["html", "javascript"]
-  web_development:
-    canonical: "web-development"
-    domain: "frontend"
-    aliases: ["web"]
-    related: ["html", "css", "javascript"]
-
-  # Mobile
-  ionic:
-    canonical: "ionic"
-    domain: "mobile"
-    aliases: ["ionic framework"]
-    related: ["typescript", "javascript"]
-  react_native:
-    canonical: "react-native"
-    domain: "mobile"
-    aliases: ["react native"]
-    related: ["react"]
+    related: ["aws", "azure", "gcp"]
+  cloud_functions:
+    canonical: "cloud-functions"
+    domain: "cloud"
+    aliases: ["cloud functions", "google cloud functions"]
+    related: []
+  cloudflare:
+    canonical: "cloudflare"
+    domain: "cloud"
+    aliases: []
+    related: []
+  cloudflare_workers:
+    canonical: "cloudflare-workers"
+    domain: "cloud"
+    aliases: ["cloudflare workers"]
+    related: []
+  cloudwatch:
+    canonical: "cloudwatch"
+    domain: "cloud"
+    aliases: ["aws cloudwatch"]
+    related: []
+  cognito:
+    canonical: "cognito"
+    domain: "cloud"
+    aliases: ["aws cognito"]
+    related: ["aws"]
+  digitalocean:
+    canonical: "digitalocean"
+    domain: "cloud"
+    aliases: ["digital ocean"]
+    related: ["cloud"]
+  ec2:
+    canonical: "ec2"
+    domain: "cloud"
+    aliases: ["aws ec2"]
+    related: []
+  ecs:
+    canonical: "ecs"
+    domain: "cloud"
+    aliases: ["aws ecs"]
+    related: []
+  eks:
+    canonical: "eks"
+    domain: "cloud"
+    aliases: ["aws eks"]
+    related: []
+  fargate:
+    canonical: "fargate"
+    domain: "cloud"
+    aliases: ["aws fargate"]
+    related: []
+  firebase:
+    canonical: "firebase"
+    domain: "cloud"
+    aliases: ["firebase analytics"]
+    related: []
+  flyio:
+    canonical: "flyio"
+    domain: "cloud"
+    aliases: ["fly.io"]
+    related: []
+  gcp:
+    canonical: "gcp"
+    domain: "cloud"
+    aliases: ["google cloud", "google cloud platform"]
+    related: ["bigquery", "cloud run"]
+  gke:
+    canonical: "gke"
+    domain: "cloud"
+    aliases: ["google kubernetes engine"]
+    related: []
+  heroku:
+    canonical: "heroku"
+    domain: "cloud"
+    aliases: []
+    related: []
+  hetzner:
+    canonical: "hetzner"
+    domain: "cloud"
+    aliases: []
+    related: []
+  ibm_cloud:
+    canonical: "ibm-cloud"
+    domain: "cloud"
+    aliases: ["ibm cloud"]
+    related: []
+  lambda:
+    canonical: "lambda"
+    domain: "cloud"
+    aliases: ["aws lambda"]
+    related: ["aws"]
+  linode:
+    canonical: "linode"
+    domain: "cloud"
+    aliases: []
+    related: []
+  netlify:
+    canonical: "netlify"
+    domain: "cloud"
+    aliases: []
+    related: []
+  oracle_cloud:
+    canonical: "oracle-cloud"
+    domain: "cloud"
+    aliases: ["oracle cloud"]
+    related: []
+  pubsub:
+    canonical: "pubsub"
+    domain: "cloud"
+    aliases: ["google pubsub"]
+    related: []
+  railway:
+    canonical: "railway"
+    domain: "cloud"
+    aliases: []
+    related: []
+  rds:
+    canonical: "rds"
+    domain: "cloud"
+    aliases: ["aws rds"]
+    related: []
+  render:
+    canonical: "render"
+    domain: "cloud"
+    aliases: []
+    related: []
+  s3:
+    canonical: "s3"
+    domain: "cloud"
+    aliases: ["aws s3"]
+    related: ["aws"]
+  sam:
+    canonical: "sam"
+    domain: "cloud"
+    aliases: ["aws sam"]
+    related: []
+  serverless:
+    canonical: "serverless"
+    domain: "cloud"
+    aliases: ["serverless framework"]
+    related: ["lambda"]
+  sns:
+    canonical: "sns"
+    domain: "cloud"
+    aliases: ["aws sns"]
+    related: []
+  sqs:
+    canonical: "sqs"
+    domain: "cloud"
+    aliases: ["aws sqs"]
+    related: []
+  step_functions:
+    canonical: "step-functions"
+    domain: "cloud"
+    aliases: ["aws step functions"]
+    related: []
+  vercel:
+    canonical: "vercel"
+    domain: "cloud"
+    aliases: []
+    related: []
+  vultr:
+    canonical: "vultr"
+    domain: "cloud"
+    aliases: []
+    related: []
 
   # Data
-  sql:
-    canonical: "sql"
+  activemq:
+    canonical: "activemq"
     domain: "data"
-    aliases: ["structured query language"]
-    related: ["postgresql", "mysql", "oracle"]
-  pandas:
-    canonical: "pandas"
-    domain: "data"
-    aliases: ["pandas python"]
-    related: ["python"]
-  numpy:
-    canonical: "numpy"
-    domain: "data"
-    aliases: ["numpy python"]
-    related: ["python"]
-  spark:
-    canonical: "spark"
-    domain: "data"
-    aliases: ["apache spark", "pyspark"]
-    related: ["hadoop"]
-  hadoop:
-    canonical: "hadoop"
-    domain: "data"
-    aliases: ["apache hadoop"]
-    related: ["spark", "hdfs"]
+    aliases: []
+    related: []
   airflow:
     canonical: "airflow"
     domain: "data"
     aliases: ["apache airflow"]
     related: ["etl"]
-  etl:
-    canonical: "etl"
-    domain: "data"
-    aliases: ["data pipeline", "data integration"]
-    related: ["airflow", "spark"]
-  bi:
-    canonical: "bi"
-    domain: "data"
-    aliases: ["business intelligence"]
-    related: ["powerbi", "tableau"]
-  powerbi:
-    canonical: "powerbi"
-    domain: "data"
-    aliases: ["power bi"]
-    related: ["bi"]
-  tableau:
-    canonical: "tableau"
-    domain: "data"
-    aliases: []
-    related: ["bi"]
-  scipy:
-    canonical: "scipy"
-    domain: "data"
-    aliases: ["sci py"]
-    related: ["python", "numpy"]
-  anova:
-    canonical: "anova"
-    domain: "data"
-    aliases: []
-    related: []
-  sas:
-    canonical: "sas"
-    domain: "data"
-    aliases: []
-    related: []
   algorithms:
     canonical: "algorithms"
     domain: "data"
     aliases: []
     related: []
-  data_lake:
-    canonical: "data-lake"
+  anova:
+    canonical: "anova"
     domain: "data"
-    aliases: ["data lake"]
-    related: ["big-data"]
-  data_warehouse:
-    canonical: "data-warehouse"
+    aliases: []
+    related: []
+  avro:
+    canonical: "avro"
     domain: "data"
-    aliases: ["data warehouse"]
-    related: ["bi"]
+    aliases: []
+    related: []
+  beam:
+    canonical: "beam"
+    domain: "data"
+    aliases: ["apache beam"]
+    related: []
+  bi:
+    canonical: "bi"
+    domain: "data"
+    aliases: ["business intelligence"]
+    related: ["powerbi", "tableau"]
   big_data:
     canonical: "big-data"
     domain: "data"
@@ -363,26 +1623,256 @@ skills:
     domain: "data"
     aliases: ["big data architecture"]
     related: ["big-data"]
-  data_processing:
-    canonical: "data-processing"
+  confluent:
+    canonical: "confluent"
     domain: "data"
-    aliases: ["data processing"]
-    related: ["etl"]
+    aliases: []
+    related: []
+  dagster:
+    canonical: "dagster"
+    domain: "data"
+    aliases: []
+    related: []
+  data_catalog:
+    canonical: "data-catalog"
+    domain: "data"
+    aliases: ["data catalog"]
+    related: []
   data_cleaning:
     canonical: "data-cleaning"
     domain: "data"
     aliases: ["data cleaning"]
     related: ["data-processing"]
+  data_governance:
+    canonical: "data-governance"
+    domain: "data"
+    aliases: ["data governance"]
+    related: []
+  data_lake:
+    canonical: "data-lake"
+    domain: "data"
+    aliases: ["data lake"]
+    related: ["big-data"]
+  data_lineage:
+    canonical: "data-lineage"
+    domain: "data"
+    aliases: ["data lineage"]
+    related: []
+  data_mart:
+    canonical: "data-mart"
+    domain: "data"
+    aliases: ["data mart"]
+    related: []
+  data_mesh:
+    canonical: "data-mesh"
+    domain: "data"
+    aliases: ["data mesh"]
+    related: []
+  data_pipeline:
+    canonical: "data-pipeline"
+    domain: "data"
+    aliases: ["data pipeline"]
+    related: []
+  data_processing:
+    canonical: "data-processing"
+    domain: "data"
+    aliases: ["data processing"]
+    related: ["etl"]
+  data_quality:
+    canonical: "data-quality"
+    domain: "data"
+    aliases: ["data quality"]
+    related: []
   data_visualization:
     canonical: "data-visualization"
     domain: "data"
     aliases: ["data visualization"]
     related: ["bi"]
+  data_warehouse:
+    canonical: "data-warehouse"
+    domain: "data"
+    aliases: ["data warehouse", "dwh"]
+    related: ["bi"]
+  dbt:
+    canonical: "dbt"
+    domain: "data"
+    aliases: ["data build tool"]
+    related: []
+  delta_lake:
+    canonical: "delta-lake"
+    domain: "data"
+    aliases: ["delta", "delta lake"]
+    related: []
+  elt:
+    canonical: "elt"
+    domain: "data"
+    aliases: []
+    related: []
+  etl:
+    canonical: "etl"
+    domain: "data"
+    aliases: ["data integration"]
+    related: ["airflow", "spark"]
+  flink:
+    canonical: "flink"
+    domain: "data"
+    aliases: ["apache flink"]
+    related: []
+  great_expectations:
+    canonical: "great-expectations"
+    domain: "data"
+    aliases: ["great expectations"]
+    related: []
+  hadoop:
+    canonical: "hadoop"
+    domain: "data"
+    aliases: ["apache hadoop"]
+    related: ["spark", "hdfs"]
+  hive:
+    canonical: "hive"
+    domain: "data"
+    aliases: ["apache hive"]
+    related: []
+  hudi:
+    canonical: "hudi"
+    domain: "data"
+    aliases: []
+    related: []
+  iceberg:
+    canonical: "iceberg"
+    domain: "data"
+    aliases: ["apache iceberg"]
+    related: []
+  kafka:
+    canonical: "kafka"
+    domain: "data"
+    aliases: ["apache kafka"]
+    related: []
+  kafka_streams:
+    canonical: "kafka-streams"
+    domain: "data"
+    aliases: ["kafka streams"]
+    related: []
+  kinesis:
+    canonical: "kinesis"
+    domain: "data"
+    aliases: ["aws kinesis"]
+    related: []
+  ksqldb:
+    canonical: "ksqldb"
+    domain: "data"
+    aliases: []
+    related: []
+  lakehouse:
+    canonical: "lakehouse"
+    domain: "data"
+    aliases: []
+    related: []
+  luigi:
+    canonical: "luigi"
+    domain: "data"
+    aliases: []
+    related: []
+  mapreduce:
+    canonical: "mapreduce"
+    domain: "data"
+    aliases: ["map reduce"]
+    related: []
+  nats:
+    canonical: "nats"
+    domain: "data"
+    aliases: []
+    related: []
+  numpy:
+    canonical: "numpy"
+    domain: "data"
+    aliases: ["numpy python"]
+    related: ["python"]
+  olap:
+    canonical: "olap"
+    domain: "data"
+    aliases: []
+    related: []
+  oltp:
+    canonical: "oltp"
+    domain: "data"
+    aliases: []
+    related: []
+  orc:
+    canonical: "orc"
+    domain: "data"
+    aliases: []
+    related: []
+  pandas:
+    canonical: "pandas"
+    domain: "data"
+    aliases: ["pandas python"]
+    related: ["python"]
+  parquet:
+    canonical: "parquet"
+    domain: "data"
+    aliases: []
+    related: []
+  powerbi:
+    canonical: "powerbi"
+    domain: "data"
+    aliases: ["power bi"]
+    related: ["bi"]
+  prefect:
+    canonical: "prefect"
+    domain: "data"
+    aliases: []
+    related: []
+  presto:
+    canonical: "presto"
+    domain: "data"
+    aliases: []
+    related: []
+  pulsar:
+    canonical: "pulsar"
+    domain: "data"
+    aliases: []
+    related: []
+  rabbitmq:
+    canonical: "rabbitmq"
+    domain: "data"
+    aliases: ["rabbit mq"]
+    related: []
   relational_modeling:
     canonical: "relational-modeling"
     domain: "data"
     aliases: ["relational modeling"]
     related: ["sql"]
+  sas:
+    canonical: "sas"
+    domain: "data"
+    aliases: []
+    related: []
+  scipy:
+    canonical: "scipy"
+    domain: "data"
+    aliases: ["sci py"]
+    related: ["python", "numpy"]
+  spark:
+    canonical: "spark"
+    domain: "data"
+    aliases: ["apache spark", "pyspark"]
+    related: ["hadoop"]
+  sql:
+    canonical: "sql"
+    domain: "data"
+    aliases: ["structured query language"]
+    related: ["postgresql", "mysql", "oracle"]
+  tableau:
+    canonical: "tableau"
+    domain: "data"
+    aliases: []
+    related: ["bi"]
+  trino:
+    canonical: "trino"
+    domain: "data"
+    aliases: []
+    related: []
   xsd:
     canonical: "xsd"
     domain: "data"
@@ -393,856 +1883,704 @@ skills:
     domain: "data"
     aliases: ["xsl"]
     related: []
-
-  # AI
-  mlflow:
-    canonical: "mlflow"
-    domain: "ai"
+  zeromq:
+    canonical: "zeromq"
+    domain: "data"
     aliases: []
-    related: []
-  wandb:
-    canonical: "wandb"
-    domain: "ai"
-    aliases: ["weights & biases"]
     related: []
 
-  # DevOps
-  docker:
-    canonical: "docker"
-    domain: "devops"
-    aliases: ["container", "containerization"]
-    related: ["kubernetes", "docker-compose"]
-  kubernetes:
-    canonical: "kubernetes"
-    domain: "devops"
-    aliases: ["k8s"]
-    related: ["docker", "helm"]
-  helm:
-    canonical: "helm"
-    domain: "devops"
-    aliases: ["helm charts"]
-    related: ["kubernetes"]
-  terraform:
-    canonical: "terraform"
-    domain: "devops"
-    aliases: ["iac", "infrastructure as code"]
-    related: ["aws", "azure", "gcp"]
-  ansible:
-    canonical: "ansible"
-    domain: "devops"
+  # Database
+  algolia:
+    canonical: "algolia"
+    domain: "database"
     aliases: []
-    related: ["automation"]
-  jenkins:
-    canonical: "jenkins"
-    domain: "devops"
-    aliases: ["jenkins ci"]
-    related: ["ci/cd"]
-  cicd:
-    canonical: "ci/cd"
-    domain: "devops"
-    aliases: ["ci", "cd", "pipeline"]
-    related: ["jenkins", "github actions", "gitlab ci"]
-  github_actions:
-    canonical: "github actions"
-    domain: "devops"
-    aliases: ["gha"]
-    related: ["ci/cd"]
-  gitlab_ci:
-    canonical: "gitlab ci"
-    domain: "devops"
-    aliases: ["gitlab pipelines"]
-    related: ["ci/cd"]
-  monitoring:
-    canonical: "monitoring"
-    domain: "devops"
-    aliases: []
-    related: ["prometheus", "grafana"]
-  prometheus:
-    canonical: "prometheus"
-    domain: "devops"
-    aliases: []
-    related: ["monitoring", "grafana"]
-  grafana:
-    canonical: "grafana"
-    domain: "devops"
-    aliases: []
-    related: ["monitoring"]
-  devops:
-    canonical: "devops"
-    domain: "devops"
-    aliases: ["dev ops"]
-    related: ["ci/cd"]
-  istio:
-    canonical: "istio"
-    domain: "devops"
-    aliases: []
-    related: ["kubernetes"]
-  vault:
-    canonical: "vault"
-    domain: "devops"
-    aliases: ["hashicorp vault"]
-    related: ["security"]
-  configuration_management:
-    canonical: "configuration-management"
-    domain: "devops"
-    aliases: ["configuration management"]
-    related: ["ansible"]
-  apache:
-    canonical: "apache"
-    domain: "devops"
-    aliases: ["apache webserver", "apache http server"]
     related: []
-
-  # Cloud
-  aws:
-    canonical: "aws"
-    domain: "cloud"
-    aliases: ["amazon web services"]
-    related: ["ec2", "s3", "lambda"]
-  azure:
-    canonical: "azure"
-    domain: "cloud"
-    aliases: ["microsoft azure"]
-    related: ["azure devops"]
-  gcp:
-    canonical: "gcp"
-    domain: "cloud"
-    aliases: ["google cloud"]
-    related: ["bigquery", "cloud run"]
-  lambda:
-    canonical: "lambda"
-    domain: "cloud"
-    aliases: ["aws lambda"]
-    related: ["aws"]
-  s3:
-    canonical: "s3"
-    domain: "cloud"
-    aliases: ["aws s3"]
-    related: ["aws"]
-  cloud_run:
-    canonical: "cloud run"
-    domain: "cloud"
-    aliases: ["gcp cloud run"]
-    related: ["gcp"]
-  cloud:
-    canonical: "cloud"
-    domain: "cloud"
-    aliases: []
-    related: ["aws", "azure", "gcp"]
-  digitalocean:
-    canonical: "digitalocean"
-    domain: "cloud"
-    aliases: ["digital ocean"]
-    related: ["cloud"]
-  serverless:
-    canonical: "serverless"
-    domain: "cloud"
-    aliases: []
-    related: ["lambda"]
-  azure_app_service:
-    canonical: "azure-app-service"
-    domain: "cloud"
-    aliases: ["azure web app", "microsoft azure web app", "azure-web-app"]
-    related: ["azure"]
-  cognito:
-    canonical: "cognito"
-    domain: "cloud"
-    aliases: ["aws cognito"]
-    related: ["aws"]
-  firebase:
-    canonical: "firebase"
-    domain: "cloud"
-    aliases: ["firebase analytics"]
+  arangodb:
+    canonical: "arangodb"
+    domain: "database"
+    aliases: ["arango"]
     related: []
-
-  # Databases
-  postgresql:
-    canonical: "postgresql"
-    domain: "database"
-    aliases: ["postgres"]
-    related: ["sql"]
-  mysql:
-    canonical: "mysql"
+  athena:
+    canonical: "athena"
     domain: "database"
     aliases: []
-    related: ["sql"]
-  oracle:
-    canonical: "oracle"
-    domain: "database"
-    aliases: ["oracle db", "oracle 10g"]
-    related: ["sql"]
-  mongodb:
-    canonical: "mongodb"
-    domain: "database"
-    aliases: ["mongo"]
-    related: ["nosql"]
-  redis:
-    canonical: "redis"
-    domain: "database"
-    aliases: ["redis cache"]
-    related: ["cache"]
-  elasticsearch:
-    canonical: "elasticsearch"
-    domain: "database"
-    aliases: ["elastic"]
-    related: ["search"]
-  nosql:
-    canonical: "nosql"
-    domain: "database"
-    aliases: []
-    related: ["mongodb"]
-  sqlite:
-    canonical: "sqlite"
-    domain: "database"
-    aliases: []
-    related: ["sql"]
-  db2:
-    canonical: "db2"
-    domain: "database"
-    aliases: ["ibm db2"]
-    related: ["sql"]
-  sqlserver:
-    canonical: "sqlserver"
-    domain: "database"
-    aliases: ["ms sql server", "ms sql server 2005"]
-    related: ["sql"]
-  influxdb:
-    canonical: "influxdb"
-    domain: "database"
-    aliases: ["influx db"]
     related: []
-  dynamodb:
-    canonical: "dynamodb"
-    domain: "database"
-    aliases: ["aws dynamo db", "aws dynamodb"]
-    related: ["aws", "nosql"]
   aurora:
     canonical: "aurora"
     domain: "database"
     aliases: ["aws aurora"]
     related: ["aws", "postgresql", "mysql"]
+  azure_sql:
+    canonical: "azure-sql"
+    domain: "database"
+    aliases: ["azure sql", "ms azure sql database"]
+    related: []
+  bigquery:
+    canonical: "bigquery"
+    domain: "database"
+    aliases: ["big query", "google bigquery"]
+    related: []
+  bigtable:
+    canonical: "bigtable"
+    domain: "database"
+    aliases: []
+    related: []
+  cassandra:
+    canonical: "cassandra"
+    domain: "database"
+    aliases: ["apache cassandra"]
+    related: []
+  chroma:
+    canonical: "chroma"
+    domain: "database"
+    aliases: ["chromadb"]
+    related: []
+  citus:
+    canonical: "citus"
+    domain: "database"
+    aliases: []
+    related: []
+  clickhouse:
+    canonical: "clickhouse"
+    domain: "database"
+    aliases: ["click house"]
+    related: []
+  columnar_database:
+    canonical: "columnar-database"
+    domain: "database"
+    aliases: ["columnar database"]
+    related: []
+  cosmosdb:
+    canonical: "cosmosdb"
+    domain: "database"
+    aliases: ["cosmos db", "ms azure cosmos db"]
+    related: []
+  couchbase:
+    canonical: "couchbase"
+    domain: "database"
+    aliases: []
+    related: []
+  couchdb:
+    canonical: "couchdb"
+    domain: "database"
+    aliases: ["couch db"]
+    related: []
+  databricks:
+    canonical: "databricks"
+    domain: "database"
+    aliases: []
+    related: []
+  datagrip:
+    canonical: "datagrip"
+    domain: "database"
+    aliases: []
+    related: []
+  db2:
+    canonical: "db2"
+    domain: "database"
+    aliases: ["ibm db2"]
+    related: ["sql"]
+  dbeaver:
+    canonical: "dbeaver"
+    domain: "database"
+    aliases: []
+    related: []
+  dgraph:
+    canonical: "dgraph"
+    domain: "database"
+    aliases: []
+    related: []
+  document_database:
+    canonical: "document-database"
+    domain: "database"
+    aliases: ["document database"]
+    related: []
+  documentdb:
+    canonical: "documentdb"
+    domain: "database"
+    aliases: []
+    related: []
+  dynamodb:
+    canonical: "dynamodb"
+    domain: "database"
+    aliases: ["amazon dynamo db", "amazon dynamodb", "aws dynamo db", "aws dynamodb", "dynamo db"]
+    related: ["aws", "nosql"]
+  etcd:
+    canonical: "etcd"
+    domain: "database"
+    aliases: []
+    related: []
+  faiss:
+    canonical: "faiss"
+    domain: "database"
+    aliases: []
+    related: []
+  firebase_realtime_db:
+    canonical: "firebase-realtime-db"
+    domain: "database"
+    aliases: ["firebase realtime database", "realtime database"]
+    related: []
+  firestore:
+    canonical: "firestore"
+    domain: "database"
+    aliases: []
+    related: []
+  graph_database:
+    canonical: "graph-database"
+    domain: "database"
+    aliases: ["graph database"]
+    related: []
+  greenplum:
+    canonical: "greenplum"
+    domain: "database"
+    aliases: []
+    related: []
+  hbase:
+    canonical: "hbase"
+    domain: "database"
+    aliases: []
+    related: []
+  in_memory_database:
+    canonical: "in-memory-database"
+    domain: "database"
+    aliases: ["in memory database", "in-memory database"]
+    related: []
+  influxdb:
+    canonical: "influxdb"
+    domain: "database"
+    aliases: ["influx", "influx db"]
+    related: []
+  janusgraph:
+    canonical: "janusgraph"
+    domain: "database"
+    aliases: []
+    related: []
+  jdbc:
+    canonical: "jdbc"
+    domain: "database"
+    aliases: []
+    related: []
+  key_value_database:
+    canonical: "key-value-database"
+    domain: "database"
+    aliases: ["key value database", "key-value database"]
+    related: []
+  mariadb:
+    canonical: "mariadb"
+    domain: "database"
+    aliases: ["maria db"]
+    related: []
+  meilisearch:
+    canonical: "meilisearch"
+    domain: "database"
+    aliases: []
+    related: []
+  memcached:
+    canonical: "memcached"
+    domain: "database"
+    aliases: []
+    related: []
+  milvus:
+    canonical: "milvus"
+    domain: "database"
+    aliases: []
+    related: []
+  mongodb:
+    canonical: "mongodb"
+    domain: "database"
+    aliases: ["mongo", "mongo db"]
+    related: ["nosql"]
+  msaccess:
+    canonical: "msaccess"
+    domain: "database"
+    aliases: ["access", "microsoft access", "ms access"]
+    related: []
+  mysql:
+    canonical: "mysql"
+    domain: "database"
+    aliases: ["my sql"]
+    related: ["sql"]
+  mysql_workbench:
+    canonical: "mysql-workbench"
+    domain: "database"
+    aliases: ["mysql workbench"]
+    related: []
+  neo4j:
+    canonical: "neo4j"
+    domain: "database"
+    aliases: ["neo 4j"]
+    related: []
+  neptune_db:
+    canonical: "neptune-db"
+    domain: "database"
+    aliases: ["amazon neptune"]
+    related: []
+  newsql:
+    canonical: "newsql"
+    domain: "database"
+    aliases: ["new sql"]
+    related: []
+  nosql:
+    canonical: "nosql"
+    domain: "database"
+    aliases: ["no sql"]
+    related: ["mongodb"]
+  odbc:
+    canonical: "odbc"
+    domain: "database"
+    aliases: []
+    related: []
+  opensearch:
+    canonical: "opensearch"
+    domain: "database"
+    aliases: []
+    related: []
+  oracle:
+    canonical: "oracle"
+    domain: "database"
+    aliases: ["oracle 10g", "oracle 11g", "oracle 12c", "oracle 19c", "oracle 21c", "oracle db"]
+    related: ["sql"]
+  oracle_sql_developer:
+    canonical: "oracle-sql-developer"
+    domain: "database"
+    aliases: ["oracle sql developer"]
+    related: []
+  percona:
+    canonical: "percona"
+    domain: "database"
+    aliases: []
+    related: []
+  pgvector:
+    canonical: "pgvector"
+    domain: "database"
+    aliases: []
+    related: []
+  pinecone:
+    canonical: "pinecone"
+    domain: "database"
+    aliases: []
+    related: []
+  postgresql:
+    canonical: "postgresql"
+    domain: "database"
+    aliases: ["pg", "postgre", "postgre sql", "postgres"]
+    related: ["sql"]
+  qdrant:
+    canonical: "qdrant"
+    domain: "database"
+    aliases: []
+    related: []
+  questdb:
+    canonical: "questdb"
+    domain: "database"
+    aliases: []
+    related: []
+  redis:
+    canonical: "redis"
+    domain: "database"
+    aliases: ["redis cache"]
+    related: ["cache"]
+  redshift:
+    canonical: "redshift"
+    domain: "database"
+    aliases: ["amazon redshift"]
+    related: []
+  scylladb:
+    canonical: "scylladb"
+    domain: "database"
+    aliases: ["scylla"]
+    related: []
+  snowflake:
+    canonical: "snowflake"
+    domain: "database"
+    aliases: []
+    related: []
+  solr:
+    canonical: "solr"
+    domain: "database"
+    aliases: ["apache solr"]
+    related: []
+  sqlite:
+    canonical: "sqlite"
+    domain: "database"
+    aliases: ["sqlite3"]
+    related: ["sql"]
+  sqlserver:
+    canonical: "sqlserver"
+    domain: "database"
+    aliases: ["ms sql", "ms sql server", "ms sql server 2000", "ms sql server 2005", "ms sql server 2008", "ms sql server 2008 r2", "ms sql server 2012", "ms sql server 2014", "ms sql server 2016", "ms sql server 2017", "ms sql server 2019", "mssql", "sql server"]
+    related: ["sql"]
+  ssms:
+    canonical: "ssms"
+    domain: "database"
+    aliases: ["ms sql management studio"]
+    related: []
+  teradata:
+    canonical: "teradata"
+    domain: "database"
+    aliases: []
+    related: []
+  tigergraph:
+    canonical: "tigergraph"
+    domain: "database"
+    aliases: []
+    related: []
+  time_series_database:
+    canonical: "time-series-database"
+    domain: "database"
+    aliases: ["time series database", "time-series database"]
+    related: []
+  timescaledb:
+    canonical: "timescaledb"
+    domain: "database"
+    aliases: ["timescale"]
+    related: []
+  toad:
+    canonical: "toad"
+    domain: "database"
+    aliases: ["oracle toad", "toad oracle"]
+    related: []
+  typesense:
+    canonical: "typesense"
+    domain: "database"
+    aliases: []
+    related: []
+  vertica:
+    canonical: "vertica"
+    domain: "database"
+    aliases: []
+    related: []
+  victoriametrics:
+    canonical: "victoriametrics"
+    domain: "database"
+    aliases: []
+    related: []
+  weaviate:
+    canonical: "weaviate"
+    domain: "database"
+    aliases: []
+    related: []
 
-  # QA
-  testing:
-    canonical: "testing"
-    domain: "qa"
-    aliases: ["test", "qa"]
-    related: ["pytest", "selenium"]
-  pytest:
-    canonical: "pytest"
-    domain: "qa"
+  # Devops
+  ansible:
+    canonical: "ansible"
+    domain: "devops"
     aliases: []
-    related: ["python", "testing"]
-  junit:
-    canonical: "junit"
-    domain: "qa"
-    aliases: ["junit5"]
-    related: ["java", "testing"]
-  selenium:
-    canonical: "selenium"
-    domain: "qa"
-    aliases: ["selenium webdriver"]
-    related: ["testing"]
-  cypress:
-    canonical: "cypress"
-    domain: "qa"
-    aliases: ["cypress io"]
-    related: ["javascript", "testing"]
-  jest:
-    canonical: "jest"
-    domain: "qa"
+    related: ["automation"]
+  apache:
+    canonical: "apache"
+    domain: "devops"
+    aliases: ["apache webserver", "apache http server"]
+    related: []
+  argocd:
+    canonical: "argocd"
+    domain: "devops"
+    aliases: ["argo", "argo cd"]
+    related: []
+  azure_devops:
+    canonical: "azure-devops"
+    domain: "devops"
+    aliases: ["azure devops", "ms azure dev ops"]
+    related: []
+  azure_pipelines:
+    canonical: "azure-pipelines"
+    domain: "devops"
+    aliases: ["azure pipelines"]
+    related: []
+  bamboo:
+    canonical: "bamboo"
+    domain: "devops"
     aliases: []
-    related: ["javascript", "testing"]
-  integration_testing:
-    canonical: "integration-testing"
-    domain: "qa"
-    aliases: ["integration testing"]
-    related: ["testing"]
-  performance_testing:
-    canonical: "performance-testing"
-    domain: "qa"
-    aliases: ["performance testing"]
-    related: ["testing"]
-  katalon:
-    canonical: "katalon"
-    domain: "qa"
+    related: []
+  bicep:
+    canonical: "bicep"
+    domain: "devops"
     aliases: []
-    related: ["testing"]
-  uft:
-    canonical: "uft"
-    domain: "qa"
-    aliases: ["hp uft", "qtp"]
-    related: ["testing"]
-  hp_quality_center:
-    canonical: "hp-quality-center"
-    domain: "qa"
-    aliases: ["hp quality center", "quality center"]
-    related: ["testing"]
-  vectorcast:
-    canonical: "vectorcast"
-    domain: "qa"
-    aliases: ["vector cast"]
-    related: ["testing"]
-
-  # Security
-  security:
-    canonical: "security"
-    domain: "security"
-    aliases: ["cybersecurity"]
-    related: ["owasp", "iam"]
-  owasp:
-    canonical: "owasp"
-    domain: "security"
-    aliases: ["owasp top 10"]
+    related: []
+  buildah:
+    canonical: "buildah"
+    domain: "devops"
+    aliases: []
+    related: []
+  caddy:
+    canonical: "caddy"
+    domain: "devops"
+    aliases: []
+    related: []
+  cdk:
+    canonical: "cdk"
+    domain: "devops"
+    aliases: ["aws cdk"]
+    related: []
+  chef:
+    canonical: "chef"
+    domain: "devops"
+    aliases: []
+    related: []
+  cicd:
+    canonical: "cicd"
+    domain: "devops"
+    aliases: ["ci cd", "ci/cd", "continuous delivery", "continuous deployment", "continuous integration", "pipeline"]
+    related: []
+  circleci:
+    canonical: "circleci"
+    domain: "devops"
+    aliases: ["circle ci"]
+    related: []
+  cloudformation:
+    canonical: "cloudformation"
+    domain: "devops"
+    aliases: ["aws cloudformation"]
+    related: []
+  configuration_management:
+    canonical: "configuration-management"
+    domain: "devops"
+    aliases: ["configuration management"]
+    related: ["ansible"]
+  consul:
+    canonical: "consul"
+    domain: "devops"
+    aliases: []
+    related: []
+  containerd:
+    canonical: "containerd"
+    domain: "devops"
+    aliases: []
+    related: []
+  crio:
+    canonical: "crio"
+    domain: "devops"
+    aliases: ["cri-o"]
+    related: []
+  devops:
+    canonical: "devops"
+    domain: "devops"
+    aliases: ["dev ops"]
+    related: ["ci/cd"]
+  docker:
+    canonical: "docker"
+    domain: "devops"
+    aliases: ["container", "containerization", "docker containers", "dockerfile"]
+    related: ["kubernetes", "docker-compose"]
+  docker_compose:
+    canonical: "docker-compose"
+    domain: "devops"
+    aliases: ["docker compose"]
+    related: []
+  docker_swarm:
+    canonical: "docker-swarm"
+    domain: "devops"
+    aliases: ["docker swarm"]
+    related: []
+  drone:
+    canonical: "drone"
+    domain: "devops"
+    aliases: []
+    related: []
+  envoy:
+    canonical: "envoy"
+    domain: "devops"
+    aliases: []
+    related: []
+  flux:
+    canonical: "flux"
+    domain: "devops"
+    aliases: ["fluxcd"]
+    related: []
+  github_actions:
+    canonical: "github-actions"
+    domain: "devops"
+    aliases: ["github actions"]
+    related: []
+  gitlab_ci:
+    canonical: "gitlab-ci"
+    domain: "devops"
+    aliases: ["gitlab ci"]
+    related: []
+  gitops:
+    canonical: "gitops"
+    domain: "devops"
+    aliases: []
+    related: []
+  haproxy:
+    canonical: "haproxy"
+    domain: "devops"
+    aliases: []
+    related: []
+  helm:
+    canonical: "helm"
+    domain: "devops"
+    aliases: ["helm charts"]
+    related: ["kubernetes"]
+  istio:
+    canonical: "istio"
+    domain: "devops"
+    aliases: []
+    related: ["kubernetes"]
+  jenkins:
+    canonical: "jenkins"
+    domain: "devops"
+    aliases: ["jenkins ci"]
+    related: ["ci/cd"]
+  kubernetes:
+    canonical: "kubernetes"
+    domain: "devops"
+    aliases: ["k8s", "kubectl", "kubernates"]
+    related: ["docker", "helm"]
+  kustomize:
+    canonical: "kustomize"
+    domain: "devops"
+    aliases: []
+    related: []
+  linkerd:
+    canonical: "linkerd"
+    domain: "devops"
+    aliases: []
+    related: []
+  monitoring:
+    canonical: "monitoring"
+    domain: "devops"
+    aliases: []
+    related: ["prometheus", "grafana"]
+  nginx:
+    canonical: "nginx"
+    domain: "devops"
+    aliases: []
+    related: []
+  nomad:
+    canonical: "nomad"
+    domain: "devops"
+    aliases: []
+    related: []
+  openshift:
+    canonical: "openshift"
+    domain: "devops"
+    aliases: []
+    related: []
+  packer:
+    canonical: "packer"
+    domain: "devops"
+    aliases: []
+    related: []
+  podman:
+    canonical: "podman"
+    domain: "devops"
+    aliases: []
+    related: []
+  pulumi:
+    canonical: "pulumi"
+    domain: "devops"
+    aliases: []
+    related: []
+  puppet:
+    canonical: "puppet"
+    domain: "devops"
+    aliases: []
+    related: []
+  rancher:
+    canonical: "rancher"
+    domain: "devops"
+    aliases: []
+    related: []
+  saltstack:
+    canonical: "saltstack"
+    domain: "devops"
+    aliases: ["salt"]
+    related: []
+  secrets_manager:
+    canonical: "secrets-manager"
+    domain: "devops"
+    aliases: ["aws secrets manager"]
+    related: []
+  spinnaker:
+    canonical: "spinnaker"
+    domain: "devops"
+    aliases: []
+    related: []
+  teamcity:
+    canonical: "teamcity"
+    domain: "devops"
+    aliases: []
+    related: []
+  tekton:
+    canonical: "tekton"
+    domain: "devops"
+    aliases: []
+    related: []
+  terraform:
+    canonical: "terraform"
+    domain: "devops"
+    aliases: ["iac", "infrastructure as code"]
+    related: ["aws", "azure", "gcp"]
+  traefik:
+    canonical: "traefik"
+    domain: "devops"
+    aliases: []
+    related: []
+  travis_ci:
+    canonical: "travis-ci"
+    domain: "devops"
+    aliases: ["travis ci", "travisci"]
+    related: []
+  vagrant:
+    canonical: "vagrant"
+    domain: "devops"
+    aliases: []
+    related: []
+  vault:
+    canonical: "vault"
+    domain: "devops"
+    aliases: ["hashicorp vault"]
     related: ["security"]
-  iam:
-    canonical: "iam"
-    domain: "security"
-    aliases: ["identity and access management"]
-    related: ["security"]
-  oauth:
-    canonical: "oauth"
-    domain: "security"
-    aliases: ["oauth2"]
-    related: ["iam"]
-  jwt:
-    canonical: "jwt"
-    domain: "security"
-    aliases: ["json web token"]
-    related: ["oauth"]
-  burp_suite:
-    canonical: "burp-suite"
-    domain: "security"
-    aliases: ["burp suite"]
-    related: []
-
-  # Network / Protocols
-  telnet:
-    canonical: "telnet"
-    domain: "network"
-    aliases: []
-    related: []
-  ldap:
-    canonical: "ldap"
-    domain: "network"
-    aliases: ["lightweight directory access protocol"]
-    related: []
-  osi:
-    canonical: "osi"
-    domain: "network"
-    aliases: ["iso-osi model"]
-    related: []
-  soap:
-    canonical: "soap"
-    domain: "network"
-    aliases: []
-    related: ["wsdl"]
-  wsdl:
-    canonical: "wsdl"
-    domain: "network"
-    aliases: []
-    related: ["soap"]
-  csma_ca:
-    canonical: "csma-ca"
-    domain: "network"
-    aliases: ["csma/ca"]
-    related: []
-  csma_cd:
-    canonical: "csma-cd"
-    domain: "network"
-    aliases: ["csma/cd"]
-    related: []
-  token_ring:
-    canonical: "token-ring"
-    domain: "network"
-    aliases: ["token ring"]
-    related: []
-  base_1000_t:
-    canonical: "1000base-t"
-    domain: "network"
-    aliases: []
-    related: []
-  ieee_802_11a:
-    canonical: "ieee-802-11a"
-    domain: "network"
-    aliases: ["ieee 802.11a"]
-    related: []
-  cisco:
-    canonical: "cisco"
-    domain: "network"
-    aliases: ["cisco routers", "cisco switch/routers"]
-    related: []
-  cisco_ios:
-    canonical: "cisco-ios"
-    domain: "network"
-    aliases: ["cisco ios"]
-    related: ["cisco"]
-  huawei_routers:
-    canonical: "huawei-routers"
-    domain: "network"
-    aliases: ["huawei routers"]
-    related: []
-
-  # Telecom
-  can:
-    canonical: "can"
-    domain: "telecom"
-    aliases: ["can bus"]
-    related: []
-  five_g:
-    canonical: "5g"
-    domain: "telecom"
-    aliases: []
-    related: []
-  lte:
-    canonical: "lte"
-    domain: "telecom"
-    aliases: []
-    related: ["5g"]
-  cdma:
-    canonical: "cdma"
-    domain: "telecom"
-    aliases: []
-    related: []
-  hsdpa:
-    canonical: "hsdpa"
-    domain: "telecom"
-    aliases: []
-    related: []
-  lte_advanced:
-    canonical: "lte-advanced"
-    domain: "telecom"
-    aliases: ["lte advanced"]
-    related: ["lte"]
-  core_network:
-    canonical: "core-network"
-    domain: "telecom"
-    aliases: ["core network"]
-    related: []
-  bng:
-    canonical: "bng"
-    domain: "telecom"
-    aliases: []
-    related: []
-  dslam:
-    canonical: "dslam"
-    domain: "telecom"
-    aliases: []
-    related: []
-  otn:
-    canonical: "otn"
-    domain: "telecom"
-    aliases: []
-    related: []
-  olt:
-    canonical: "olt"
-    domain: "telecom"
-    aliases: []
-    related: []
-  rnc:
-    canonical: "rnc"
-    domain: "telecom"
-    aliases: []
-    related: []
-  mme:
-    canonical: "mme"
-    domain: "telecom"
-    aliases: []
-    related: []
-  enode_b:
-    canonical: "enode-b"
-    domain: "telecom"
-    aliases: ["enode b"]
-    related: []
-  node_b:
-    canonical: "node-b"
-    domain: "telecom"
-    aliases: ["node b"]
-    related: []
-  security_gateway:
-    canonical: "security-gateway"
-    domain: "telecom"
-    aliases: ["security gateway"]
-    related: []
-  bitstream:
-    canonical: "bitstream"
-    domain: "telecom"
-    aliases: []
-    related: []
-  ftte:
-    canonical: "ftte"
-    domain: "telecom"
-    aliases: []
-    related: []
-  asn:
-    canonical: "asn"
-    domain: "telecom"
-    aliases: []
-    related: []
-  abn:
-    canonical: "abn"
-    domain: "telecom"
-    aliases: []
-    related: []
-  dtn:
-    canonical: "dtn"
-    domain: "telecom"
-    aliases: []
-    related: []
-  cpe:
-    canonical: "cpe"
-    domain: "telecom"
-    aliases: []
-    related: []
-  edge:
-    canonical: "edge"
-    domain: "telecom"
-    aliases: []
-    related: []
-  pop:
-    canonical: "pop"
-    domain: "telecom"
-    aliases: []
-    related: []
-
-  # Hardware
-  arduino:
-    canonical: "arduino"
-    domain: "hardware"
-    aliases: []
-    related: []
-  pic:
-    canonical: "pic"
-    domain: "hardware"
-    aliases: []
-    related: []
-  avr:
-    canonical: "avr"
-    domain: "hardware"
-    aliases: []
-    related: []
-  x86:
-    canonical: "x86"
-    domain: "hardware"
-    aliases: ["80x86"]
-    related: []
-  amd64:
-    canonical: "amd64"
-    domain: "hardware"
-    aliases: []
-    related: []
-  fpga_altera:
-    canonical: "fpga-altera"
-    domain: "hardware"
-    aliases: ["fpga altera"]
-    related: []
-  fpga_xilinx:
-    canonical: "fpga-xilinx"
-    domain: "hardware"
-    aliases: ["fpga xilinx"]
-    related: []
-  arm:
-    canonical: "arm"
-    domain: "hardware"
-    aliases: []
-    related: []
-
-  # Operating Systems
-  linux:
-    canonical: "linux"
-    domain: "os"
-    aliases: []
-    related: []
-  freertos:
-    canonical: "freertos"
-    domain: "os"
-    aliases: ["free rtos"]
-    related: []
-  zephyr_rtos:
-    canonical: "zephyr-rtos"
-    domain: "os"
-    aliases: ["zephyr"]
-    related: []
-  windows:
-    canonical: "windows"
-    domain: "os"
-    aliases: ["open windows"]
-    related: []
-  windows_98:
-    canonical: "windows-98"
-    domain: "os"
-    aliases: ["windows 98"]
-    related: ["windows"]
-  windows_2000:
-    canonical: "windows-2000"
-    domain: "os"
-    aliases: ["windows 2000", "windows 2000 professional"]
-    related: ["windows"]
-  windows_server_2016:
-    canonical: "windows-server-2016"
-    domain: "os"
-    aliases: ["windows server 2016"]
-    related: ["windows"]
-  windows_phone:
-    canonical: "windows-phone"
-    domain: "os"
-    aliases: ["windows phone"]
-    related: ["windows"]
-  solaris:
-    canonical: "solaris"
-    domain: "os"
-    aliases: ["sun solaris"]
-    related: []
-
-  # Tools
-  git:
-    canonical: "git"
-    domain: "tools"
-    aliases: []
-    related: []
-  bitbucket:
-    canonical: "bitbucket"
-    domain: "tools"
-    aliases: ["atlassian bitbucket server", "bitbucket server"]
-    related: ["git"]
-  svn:
-    canonical: "svn"
-    domain: "tools"
-    aliases: ["subversion"]
-    related: ["git"]
-  sourcetree:
-    canonical: "sourcetree"
-    domain: "tools"
-    aliases: ["source tree"]
-    related: ["git"]
-  tfs:
-    canonical: "tfs"
-    domain: "tools"
-    aliases: ["team foundation server"]
-    related: ["git"]
-  vscode:
-    canonical: "vscode"
-    domain: "tools"
-    aliases: ["visual studio code"]
-    related: []
-  vim:
-    canonical: "vim"
-    domain: "tools"
-    aliases: []
-    related: []
-  cursor:
-    canonical: "cursor"
-    domain: "tools"
-    aliases: []
-    related: []
-  qt_creator:
-    canonical: "qt-creator"
-    domain: "tools"
-    aliases: ["qt creator"]
-    related: []
-  npm:
-    canonical: "npm"
-    domain: "tools"
-    aliases: []
-    related: ["nodejs"]
-  gcc:
-    canonical: "gcc"
-    domain: "tools"
-    aliases: []
-    related: []
-  jira:
-    canonical: "jira"
-    domain: "tools"
-    aliases: ["atlassian jira", "jira service desk"]
-    related: []
-  kicad:
-    canonical: "kicad"
-    domain: "tools"
-    aliases: []
-    related: []
-  canalyzer:
-    canonical: "canalyzer"
-    domain: "tools"
-    aliases: []
-    related: []
-  adams:
-    canonical: "adams"
-    domain: "tools"
-    aliases: []
-    related: []
-  rhinoceros:
-    canonical: "rhinoceros"
-    domain: "tools"
-    aliases: []
-    related: []
-  siemens_nx:
-    canonical: "siemens-nx"
-    domain: "tools"
-    aliases: ["siemens nx"]
-    related: []
-  creo_parametric:
-    canonical: "creo-parametric"
-    domain: "tools"
-    aliases: ["creo parametric"]
-    related: []
-  hyper_mesh:
-    canonical: "hyper-mesh"
-    domain: "tools"
-    aliases: ["hyper mesh"]
-    related: []
-  comsol_multiphysics:
-    canonical: "comsol-multiphysics"
-    domain: "tools"
-    aliases: ["comsol multiphysics"]
-    related: []
-  model_sim:
-    canonical: "model-sim"
-    domain: "tools"
-    aliases: ["model sim"]
-    related: []
-  quartus_ii:
-    canonical: "quartus-ii"
-    domain: "tools"
-    aliases: ["quartus ii"]
-    related: []
-  qgis:
-    canonical: "qgis"
-    domain: "tools"
-    aliases: []
-    related: []
-  star_uml:
-    canonical: "star-uml"
-    domain: "tools"
-    aliases: ["star uml"]
-    related: []
-  candela_studio:
-    canonical: "candela-studio"
-    domain: "tools"
-    aliases: ["candela studio"]
-    related: []
-  mathematica:
-    canonical: "mathematica"
-    domain: "tools"
-    aliases: []
-    related: []
-  jasper_reports:
-    canonical: "jasper-reports"
-    domain: "tools"
-    aliases: ["jasper reports"]
-    related: []
-  pgadmin:
-    canonical: "pgadmin"
-    domain: "tools"
-    aliases: ["pg admin"]
-    related: ["postgresql"]
-
-  # Platforms
-  salesforce:
-    canonical: "salesforce"
-    domain: "platforms"
-    aliases: []
-    related: []
-  supabase:
-    canonical: "supabase"
-    domain: "platforms"
-    aliases: []
-    related: []
-  iot:
-    canonical: "iot"
-    domain: "platforms"
-    aliases: ["io t", "internet of things"]
-    related: []
-  citrix:
-    canonical: "citrix"
-    domain: "platforms"
-    aliases: ["citrix client"]
-    related: []
-  bmc_itsm:
-    canonical: "bmc-itsm"
-    domain: "platforms"
-    aliases: ["bmc itsm"]
-    related: []
-  bmc_helix:
-    canonical: "bmc-helix"
-    domain: "platforms"
-    aliases: ["bmc helix"]
-    related: []
-  crm:
-    canonical: "crm"
-    domain: "platforms"
-    aliases: []
-    related: []
-  erp:
-    canonical: "erp"
-    domain: "platforms"
-    aliases: []
-    related: []
-  google_analytics:
-    canonical: "google-analytics"
-    domain: "platforms"
-    aliases: ["google analytics"]
-    related: []
-  google_maps_api:
-    canonical: "google-maps-api"
-    domain: "platforms"
-    aliases: ["google maps api"]
-    related: []
-  microsoft:
-    canonical: "microsoft"
-    domain: "platforms"
-    aliases: []
-    related: []
-  hp:
-    canonical: "hp"
-    domain: "platforms"
-    aliases: []
-    related: []
-
-  # Governance
-  agile:
-    canonical: "agile"
-    domain: "governance"
-    aliases: []
-    related: []
-  clean_architecture:
-    canonical: "clean-architecture"
-    domain: "governance"
-    aliases: ["clean architecture"]
-    related: []
-  microservices:
-    canonical: "microservices"
-    domain: "governance"
-    aliases: []
-    related: []
-  pdca:
-    canonical: "pdca"
-    domain: "governance"
-    aliases: []
-    related: []
-  ishikawa:
-    canonical: "ishikawa"
-    domain: "governance"
-    aliases: []
-    related: []
-  moscow:
-    canonical: "moscow"
-    domain: "governance"
-    aliases: ["mo sco w"]
-    related: []
-  software_development:
-    canonical: "software-development"
-    domain: "governance"
-    aliases: ["sviluppo software"]
-    related: []
-  change_control:
-    canonical: "change-control"
-    domain: "governance"
-    aliases: ["change control"]
-    related: []
 
   # Domain
-  packaging:
-    canonical: "packaging"
+  analytical_methods_development:
+    canonical: "analytical-methods-development"
+    domain: "domain"
+    aliases: ["analytical methods development"]
+    related: []
+  audit_reports:
+    canonical: "audit-reports"
+    domain: "domain"
+    aliases: ["audit reports"]
+    related: []
+  audits:
+    canonical: "audits"
+    domain: "domain"
+    aliases: []
+    related: []
+  autoclave:
+    canonical: "autoclave"
+    domain: "domain"
+    aliases: []
+    related: []
+  automotive:
+    canonical: "automotive"
+    domain: "domain"
+    aliases: []
+    related: []
+  cardiology:
+    canonical: "cardiology"
+    domain: "domain"
+    aliases: []
+    related: []
+  ce_marketing:
+    canonical: "ce-marketing"
+    domain: "domain"
+    aliases: ["ce marketing"]
+    related: []
+  cell_culture:
+    canonical: "cell-culture"
+    domain: "domain"
+    aliases: ["cell culture", "cells culture"]
+    related: []
+  chromatography_column:
+    canonical: "chromatography-column"
+    domain: "domain"
+    aliases: ["chromatography column"]
+    related: []
+  cic:
+    canonical: "cic"
     domain: "domain"
     aliases: []
     related: []
@@ -1266,60 +2604,45 @@ skills:
     domain: "domain"
     aliases: ["commissioning / revamping"]
     related: []
+  database_domain:
+    canonical: "database"
+    domain: "domain"
+    aliases: []
+    related: []
   fat_sat:
     canonical: "fat-sat"
     domain: "domain"
     aliases: ["fat / sat"]
+    related: []
+  gel_electrophoresis:
+    canonical: "gel-electrophoresis"
+    domain: "domain"
+    aliases: ["gel electrophoresis"]
+    related: []
+  hmi:
+    canonical: "hmi"
+    domain: "domain"
+    aliases: []
+    related: []
+  hvac:
+    canonical: "hvac"
+    domain: "domain"
+    aliases: []
+    related: []
+  inca:
+    canonical: "inca"
+    domain: "domain"
+    aliases: []
     related: []
   iq_oq:
     canonical: "iq-oq"
     domain: "domain"
     aliases: ["iq / oq"]
     related: []
-  pq:
-    canonical: "pq"
+  lab_equipments:
+    canonical: "lab-equipments"
     domain: "domain"
-    aliases: []
-    related: []
-  sop:
-    canonical: "sop"
-    domain: "domain"
-    aliases: ["standard operating procedures"]
-    related: []
-  work_instructions:
-    canonical: "work-instructions"
-    domain: "domain"
-    aliases: ["work instructions"]
-    related: []
-  audits:
-    canonical: "audits"
-    domain: "domain"
-    aliases: []
-    related: []
-  audit_reports:
-    canonical: "audit-reports"
-    domain: "domain"
-    aliases: ["audit reports"]
-    related: []
-  product_quality_management:
-    canonical: "product-quality-management"
-    domain: "domain"
-    aliases: ["product quality management"]
-    related: []
-  technical_documentation:
-    canonical: "technical-documentation"
-    domain: "domain"
-    aliases: ["technical documentation"]
-    related: []
-  training:
-    canonical: "training"
-    domain: "domain"
-    aliases: []
-    related: []
-  workshop:
-    canonical: "workshop"
-    domain: "domain"
-    aliases: []
+    aliases: ["lab equipments"]
     related: []
   lab_management:
     canonical: "lab-management"
@@ -1331,20 +2654,45 @@ skills:
     domain: "domain"
     aliases: ["lab management r&d"]
     related: []
-  lab_equipments:
-    canonical: "lab-equipments"
+  layout:
+    canonical: "layout"
     domain: "domain"
-    aliases: ["lab equipments"]
+    aliases: ["lay-out"]
     related: []
-  analytical_methods_development:
-    canonical: "analytical-methods-development"
+  packaging:
+    canonical: "packaging"
     domain: "domain"
-    aliases: ["analytical methods development"]
+    aliases: []
+    related: []
+  pcr:
+    canonical: "pcr"
+    domain: "domain"
+    aliases: []
+    related: []
+  pid:
+    canonical: "pid"
+    domain: "domain"
+    aliases: ["p&id"]
+    related: []
+  pq:
+    canonical: "pq"
+    domain: "domain"
+    aliases: []
+    related: []
+  product_quality_management:
+    canonical: "product-quality-management"
+    domain: "domain"
+    aliases: ["product quality management"]
     related: []
   rd_analytical_methods:
     canonical: "rd-analytical-methods"
     domain: "domain"
     aliases: ["r&d analytical methods"]
+    related: []
+  safety:
+    canonical: "safety"
+    domain: "domain"
+    aliases: []
     related: []
   sample_preparation_techniques:
     canonical: "sample-preparation-techniques"
@@ -1356,83 +2704,8 @@ skills:
     domain: "domain"
     aliases: ["sample preparation techniques r&d"]
     related: []
-  chromatography_column:
-    canonical: "chromatography-column"
-    domain: "domain"
-    aliases: ["chromatography column"]
-    related: []
-  spectrometry:
-    canonical: "spectrometry"
-    domain: "domain"
-    aliases: []
-    related: []
-  pcr:
-    canonical: "pcr"
-    domain: "domain"
-    aliases: []
-    related: []
-  gel_electrophoresis:
-    canonical: "gel-electrophoresis"
-    domain: "domain"
-    aliases: ["gel electrophoresis"]
-    related: []
-  cell_culture:
-    canonical: "cell-culture"
-    domain: "domain"
-    aliases: ["cell culture", "cells culture"]
-    related: []
-  autoclave:
-    canonical: "autoclave"
-    domain: "domain"
-    aliases: []
-    related: []
-  pid:
-    canonical: "pid"
-    domain: "domain"
-    aliases: ["p&id"]
-    related: []
-  hvac:
-    canonical: "hvac"
-    domain: "domain"
-    aliases: []
-    related: []
-  washing_machine:
-    canonical: "washing-machine"
-    domain: "domain"
-    aliases: ["washing machine"]
-    related: []
-  automotive:
-    canonical: "automotive"
-    domain: "domain"
-    aliases: []
-    related: []
-  cardiology:
-    canonical: "cardiology"
-    domain: "domain"
-    aliases: []
-    related: []
-  ce_marketing:
-    canonical: "ce-marketing"
-    domain: "domain"
-    aliases: ["ce marketing"]
-    related: []
-  safety:
-    canonical: "safety"
-    domain: "domain"
-    aliases: []
-    related: []
-  inca:
-    canonical: "inca"
-    domain: "domain"
-    aliases: []
-    related: []
-  xspotter:
-    canonical: "xspotter"
-    domain: "domain"
-    aliases: []
-    related: []
-  cic:
-    canonical: "cic"
+  scada:
+    canonical: "scada"
     domain: "domain"
     aliases: []
     related: []
@@ -1446,38 +2719,2390 @@ skills:
     domain: "domain"
     aliases: []
     related: []
-  database_domain:
-    canonical: "database"
+  sop:
+    canonical: "sop"
+    domain: "domain"
+    aliases: ["standard operating procedures"]
+    related: []
+  spectrometry:
+    canonical: "spectrometry"
     domain: "domain"
     aliases: []
     related: []
-  layout:
-    canonical: "layout"
+  technical_documentation:
+    canonical: "technical-documentation"
     domain: "domain"
-    aliases: ["lay-out"]
+    aliases: ["technical documentation"]
+    related: []
+  training:
+    canonical: "training"
+    domain: "domain"
+    aliases: []
+    related: []
+  washing_machine:
+    canonical: "washing-machine"
+    domain: "domain"
+    aliases: ["washing machine"]
+    related: []
+  work_instructions:
+    canonical: "work-instructions"
+    domain: "domain"
+    aliases: ["work instructions"]
+    related: []
+  workshop:
+    canonical: "workshop"
+    domain: "domain"
+    aliases: []
+    related: []
+  xspotter:
+    canonical: "xspotter"
+    domain: "domain"
+    aliases: []
+    related: []
+
+  # Frontend
+  ajax:
+    canonical: "ajax"
+    domain: "frontend"
+    aliases: []
+    related: ["javascript", "html", "css"]
+  alpinejs:
+    canonical: "alpinejs"
+    domain: "frontend"
+    aliases: ["alpine.js"]
+    related: []
+  angular:
+    canonical: "angular"
+    domain: "frontend"
+    aliases: ["angular 17", "angular 18", "angular 4", "angular 6", "angular js", "angularjs", "ng"]
+    related: ["typescript"]
+  astro:
+    canonical: "astro"
+    domain: "frontend"
+    aliases: []
+    related: []
+  avalonia:
+    canonical: "avalonia"
+    domain: "frontend"
+    aliases: []
+    related: []
+  backbone:
+    canonical: "backbone"
+    domain: "frontend"
+    aliases: ["backbone.js"]
+    related: ["javascript"]
+  blazor:
+    canonical: "blazor"
+    domain: "frontend"
+    aliases: ["blazor server", "blazor wasm"]
+    related: []
+  bootstrap:
+    canonical: "bootstrap"
+    domain: "frontend"
+    aliases: []
+    related: []
+  chakra_ui:
+    canonical: "chakra-ui"
+    domain: "frontend"
+    aliases: ["chakra", "chakra ui"]
+    related: []
+  css:
+    canonical: "css"
+    domain: "frontend"
+    aliases: ["css3"]
+    related: ["sass", "less"]
+  dom:
+    canonical: "dom"
+    domain: "frontend"
+    aliases: ["dom (xml parser)"]
+    related: ["html", "javascript"]
+  ember:
+    canonical: "ember"
+    domain: "frontend"
+    aliases: ["ember.js"]
+    related: []
+  emotion:
+    canonical: "emotion"
+    domain: "frontend"
+    aliases: []
+    related: []
+  esbuild:
+    canonical: "esbuild"
+    domain: "frontend"
+    aliases: []
+    related: []
+  frontend:
+    canonical: "frontend"
+    domain: "frontend"
+    aliases: ["front end", "front-end"]
+    related: []
+  html:
+    canonical: "html"
+    domain: "frontend"
+    aliases: ["html5", "xhtml"]
+    related: ["css", "javascript"]
+  htmx:
+    canonical: "htmx"
+    domain: "frontend"
+    aliases: []
+    related: []
+  javascript:
+    canonical: "javascript"
+    domain: "frontend"
+    aliases: ["ecmascript", "es2015", "es6", "js"]
+    related: ["react", "vue", "angular"]
+  jotai:
+    canonical: "jotai"
+    domain: "frontend"
+    aliases: []
+    related: []
+  jquery:
+    canonical: "jquery"
+    domain: "frontend"
+    aliases: ["j query"]
+    related: ["javascript"]
+  material_ui:
+    canonical: "material-ui"
+    domain: "frontend"
+    aliases: ["material ui", "mui"]
+    related: []
+  mobx:
+    canonical: "mobx"
+    domain: "frontend"
+    aliases: []
+    related: []
+  nextjs:
+    canonical: "nextjs"
+    domain: "frontend"
+    aliases: ["next 14", "next 15", "next js", "next.js"]
+    related: []
+  ngrx:
+    canonical: "ngrx"
+    domain: "frontend"
+    aliases: []
+    related: []
+  nuxtjs:
+    canonical: "nuxtjs"
+    domain: "frontend"
+    aliases: ["nuxt 3", "nuxt js", "nuxt.js"]
+    related: []
+  parcel:
+    canonical: "parcel"
+    domain: "frontend"
+    aliases: []
+    related: []
+  pinia:
+    canonical: "pinia"
+    domain: "frontend"
+    aliases: []
+    related: []
+  qwik:
+    canonical: "qwik"
+    domain: "frontend"
+    aliases: []
+    related: []
+  react:
+    canonical: "react"
+    domain: "frontend"
+    aliases: ["react js", "react.js", "reactjs"]
+    related: ["javascript", "typescript"]
+  react_query:
+    canonical: "react-query"
+    domain: "frontend"
+    aliases: ["react query", "tanstack query"]
+    related: []
+  recoil:
+    canonical: "recoil"
+    domain: "frontend"
+    aliases: []
+    related: []
+  redux:
+    canonical: "redux"
+    domain: "frontend"
+    aliases: ["redux toolkit", "rtk"]
+    related: []
+  remix:
+    canonical: "remix"
+    domain: "frontend"
+    aliases: ["remix.js"]
+    related: []
+  rollup:
+    canonical: "rollup"
+    domain: "frontend"
+    aliases: []
+    related: []
+  rxjs:
+    canonical: "rxjs"
+    domain: "frontend"
+    aliases: []
+    related: []
+  sass:
+    canonical: "sass"
+    domain: "frontend"
+    aliases: ["scss"]
+    related: ["css"]
+  snowpack:
+    canonical: "snowpack"
+    domain: "frontend"
+    aliases: []
+    related: []
+  solidjs:
+    canonical: "solidjs"
+    domain: "frontend"
+    aliases: ["solid js", "solid.js"]
+    related: []
+  styled_components:
+    canonical: "styled-components"
+    domain: "frontend"
+    aliases: ["styled components"]
+    related: []
+  svelte:
+    canonical: "svelte"
+    domain: "frontend"
+    aliases: ["sveltekit"]
+    related: ["javascript", "typescript"]
+  tailwind:
+    canonical: "tailwind"
+    domain: "frontend"
+    aliases: ["tailwindcss"]
+    related: ["css"]
+  turbopack:
+    canonical: "turbopack"
+    domain: "frontend"
+    aliases: []
+    related: []
+  typescript:
+    canonical: "typescript"
+    domain: "frontend"
+    aliases: ["ts", "type script"]
+    related: ["react", "angular", "vue"]
+  uwp:
+    canonical: "uwp"
+    domain: "frontend"
+    aliases: []
+    related: []
+  vite:
+    canonical: "vite"
+    domain: "frontend"
+    aliases: ["vitejs"]
+    related: ["javascript"]
+  vue:
+    canonical: "vue"
+    domain: "frontend"
+    aliases: ["vue 3", "vue js", "vue.js", "vuejs"]
+    related: ["javascript"]
+  vuex:
+    canonical: "vuex"
+    domain: "frontend"
+    aliases: []
+    related: []
+  web_development:
+    canonical: "web-development"
+    domain: "frontend"
+    aliases: ["html css javascript", "web", "web dev", "web development"]
+    related: ["html", "css", "javascript"]
+  webpack:
+    canonical: "webpack"
+    domain: "frontend"
+    aliases: ["webpack 5"]
+    related: ["javascript"]
+  wpf:
+    canonical: "wpf"
+    domain: "frontend"
+    aliases: []
+    related: []
+  zustand:
+    canonical: "zustand"
+    domain: "frontend"
+    aliases: []
+    related: []
+
+  # Governance
+  agile:
+    canonical: "agile"
+    domain: "governance"
+    aliases: []
+    related: []
+  bpmn:
+    canonical: "bpmn"
+    domain: "governance"
+    aliases: []
+    related: []
+  change_control:
+    canonical: "change-control"
+    domain: "governance"
+    aliases: ["change control"]
+    related: []
+  change_management:
+    canonical: "change-management"
+    domain: "governance"
+    aliases: ["change management"]
+    related: []
+  clean_architecture:
+    canonical: "clean-architecture"
+    domain: "governance"
+    aliases: ["clean architecture"]
+    related: []
+  cobit:
+    canonical: "cobit"
+    domain: "governance"
+    aliases: []
+    related: []
+  cqrs:
+    canonical: "cqrs"
+    domain: "governance"
+    aliases: []
+    related: []
+  csm:
+    canonical: "csm"
+    domain: "governance"
+    aliases: []
+    related: []
+  cspo:
+    canonical: "cspo"
+    domain: "governance"
+    aliases: []
+    related: []
+  ddd:
+    canonical: "ddd"
+    domain: "governance"
+    aliases: ["domain driven design"]
+    related: []
+  event_driven:
+    canonical: "event-driven"
+    domain: "governance"
+    aliases: ["event driven architecture"]
+    related: []
+  event_sourcing:
+    canonical: "event-sourcing"
+    domain: "governance"
+    aliases: ["event sourcing"]
+    related: []
+  five_whys:
+    canonical: "five-whys"
+    domain: "governance"
+    aliases: ["5 whys"]
+    related: []
+  fmea:
+    canonical: "fmea"
+    domain: "governance"
+    aliases: []
+    related: []
+  fmeca:
+    canonical: "fmeca"
+    domain: "governance"
+    aliases: []
+    related: []
+  gap_analysis:
+    canonical: "gap-analysis"
+    domain: "governance"
+    aliases: ["gap analysis"]
+    related: []
+  hexagonal_architecture:
+    canonical: "hexagonal-architecture"
+    domain: "governance"
+    aliases: ["hexagonal architecture"]
+    related: []
+  ishikawa:
+    canonical: "ishikawa"
+    domain: "governance"
+    aliases: []
+    related: []
+  istqb:
+    canonical: "istqb"
+    domain: "governance"
+    aliases: []
+    related: []
+  itil:
+    canonical: "itil"
+    domain: "governance"
+    aliases: []
+    related: []
+  kaizen:
+    canonical: "kaizen"
+    domain: "governance"
+    aliases: []
+    related: []
+  kanban:
+    canonical: "kanban"
+    domain: "governance"
+    aliases: []
+    related: []
+  lean:
+    canonical: "lean"
+    domain: "governance"
+    aliases: ["lean manufacturing", "lean startup"]
+    related: []
+  lean_six_sigma:
+    canonical: "lean-six-sigma"
+    domain: "governance"
+    aliases: ["lean six sigma"]
+    related: []
+  microservices:
+    canonical: "microservices"
+    domain: "governance"
+    aliases: ["micro services"]
+    related: []
+  moscow:
+    canonical: "moscow"
+    domain: "governance"
+    aliases: ["mo sco w"]
+    related: []
+  pdca:
+    canonical: "pdca"
+    domain: "governance"
+    aliases: []
+    related: []
+  pmbok:
+    canonical: "pmbok"
+    domain: "governance"
+    aliases: []
+    related: []
+  pmi:
+    canonical: "pmi"
+    domain: "governance"
+    aliases: []
+    related: []
+  pmp:
+    canonical: "pmp"
+    domain: "governance"
+    aliases: ["project management"]
+    related: []
+  prince2:
+    canonical: "prince2"
+    domain: "governance"
+    aliases: ["prince 2"]
+    related: []
+  product_management:
+    canonical: "product-management"
+    domain: "governance"
+    aliases: ["product management"]
+    related: []
+  product_owner:
+    canonical: "product-owner"
+    domain: "governance"
+    aliases: ["product owner"]
+    related: []
+  psm:
+    canonical: "psm"
+    domain: "governance"
+    aliases: []
+    related: []
+  requirements_engineering:
+    canonical: "requirements-engineering"
+    domain: "governance"
+    aliases: ["requirements engineering"]
+    related: []
+  requirements_management:
+    canonical: "requirements-management"
+    domain: "governance"
+    aliases: ["requirements management"]
+    related: []
+  risk_analysis:
+    canonical: "risk-analysis"
+    domain: "governance"
+    aliases: ["risk analysis"]
+    related: []
+  root_cause_analysis:
+    canonical: "root-cause-analysis"
+    domain: "governance"
+    aliases: ["root cause analysis"]
+    related: []
+  safe:
+    canonical: "safe"
+    domain: "governance"
+    aliases: ["scaled agile"]
+    related: []
+  scrum:
+    canonical: "scrum"
+    domain: "governance"
+    aliases: []
+    related: []
+  scrum_master:
+    canonical: "scrum-master"
+    domain: "governance"
+    aliases: ["scrum master"]
+    related: []
+  six_sigma:
+    canonical: "six-sigma"
+    domain: "governance"
+    aliases: ["six sigma"]
+    related: []
+  software_development:
+    canonical: "software-development"
+    domain: "governance"
+    aliases: ["sviluppo software"]
+    related: []
+  swot_analysis:
+    canonical: "swot-analysis"
+    domain: "governance"
+    aliases: ["swot analysis"]
+    related: []
+  togaf:
+    canonical: "togaf"
+    domain: "governance"
+    aliases: []
+    related: []
+  uml:
+    canonical: "uml"
+    domain: "governance"
+    aliases: []
+    related: []
+  v_model:
+    canonical: "v-model"
+    domain: "governance"
+    aliases: []
+    related: []
+  waterfall:
+    canonical: "waterfall"
+    domain: "governance"
+    aliases: []
+    related: []
+  xp:
+    canonical: "xp"
+    domain: "governance"
+    aliases: ["extreme programming"]
+    related: []
+
+  # Hardware
+  allen_bradley:
+    canonical: "allen-bradley"
+    domain: "hardware"
+    aliases: ["allen bradley", "rockwell"]
+    related: []
+  altera:
+    canonical: "altera"
+    domain: "hardware"
+    aliases: []
+    related: []
+  amd:
+    canonical: "amd"
+    domain: "hardware"
+    aliases: []
+    related: []
+  amd64:
+    canonical: "amd64"
+    domain: "hardware"
+    aliases: []
+    related: []
+  arduino:
+    canonical: "arduino"
+    domain: "hardware"
+    aliases: ["arduino mega", "arduino uno"]
+    related: []
+  arm:
+    canonical: "arm"
+    domain: "hardware"
+    aliases: ["arm cortex"]
+    related: []
+  arm7:
+    canonical: "arm7"
+    domain: "hardware"
+    aliases: []
+    related: []
+  avr:
+    canonical: "avr"
+    domain: "hardware"
+    aliases: ["atmega", "attiny"]
+    related: []
+  beaglebone:
+    canonical: "beaglebone"
+    domain: "hardware"
+    aliases: []
+    related: []
+  beckhoff:
+    canonical: "beckhoff"
+    domain: "hardware"
+    aliases: []
+    related: []
+  broadcom:
+    canonical: "broadcom"
+    domain: "hardware"
+    aliases: []
+    related: []
+  cortex_a:
+    canonical: "cortex-a"
+    domain: "hardware"
+    aliases: ["cortex a"]
+    related: []
+  cortex_m0:
+    canonical: "cortex-m0"
+    domain: "hardware"
+    aliases: ["cortex m0"]
+    related: []
+  cortex_m3:
+    canonical: "cortex-m3"
+    domain: "hardware"
+    aliases: ["cortex m3"]
+    related: []
+  cortex_m4:
+    canonical: "cortex-m4"
+    domain: "hardware"
+    aliases: ["cortex m4"]
+    related: []
+  cortex_m7:
+    canonical: "cortex-m7"
+    domain: "hardware"
+    aliases: ["cortex m7"]
+    related: []
+  cpld:
+    canonical: "cpld"
+    domain: "hardware"
+    aliases: []
+    related: []
+  esp32:
+    canonical: "esp32"
+    domain: "hardware"
+    aliases: ["esp"]
+    related: []
+  esp8266:
+    canonical: "esp8266"
+    domain: "hardware"
+    aliases: []
+    related: []
+  fpga:
+    canonical: "fpga"
+    domain: "hardware"
+    aliases: ["intel fpga"]
+    related: []
+  fpga_altera:
+    canonical: "fpga-altera"
+    domain: "hardware"
+    aliases: ["fpga altera"]
+    related: []
+  fpga_xilinx:
+    canonical: "fpga-xilinx"
+    domain: "hardware"
+    aliases: ["fpga xilinx"]
+    related: []
+  intel:
+    canonical: "intel"
+    domain: "hardware"
+    aliases: []
+    related: []
+  jetson:
+    canonical: "jetson"
+    domain: "hardware"
+    aliases: ["nvidia jetson"]
+    related: []
+  mitsubishi_plc:
+    canonical: "mitsubishi-plc"
+    domain: "hardware"
+    aliases: ["mitsubishi plc"]
+    related: []
+  nvidia:
+    canonical: "nvidia"
+    domain: "hardware"
+    aliases: []
+    related: []
+  omron:
+    canonical: "omron"
+    domain: "hardware"
+    aliases: []
+    related: []
+  orangepi:
+    canonical: "orangepi"
+    domain: "hardware"
+    aliases: ["orange pi"]
+    related: []
+  pic:
+    canonical: "pic"
+    domain: "hardware"
+    aliases: ["pic microcontroller"]
+    related: []
+  plc:
+    canonical: "plc"
+    domain: "hardware"
+    aliases: []
+    related: []
+  qualcomm:
+    canonical: "qualcomm"
+    domain: "hardware"
+    aliases: []
+    related: []
+  quartus:
+    canonical: "quartus"
+    domain: "hardware"
+    aliases: []
+    related: []
+  raspberrypi:
+    canonical: "raspberrypi"
+    domain: "hardware"
+    aliases: ["raspberry", "raspberry pi", "rpi"]
+    related: []
+  schneider:
+    canonical: "schneider"
+    domain: "hardware"
+    aliases: []
+    related: []
+  siemens:
+    canonical: "siemens"
+    domain: "hardware"
+    aliases: ["simatic"]
+    related: []
+  siemens_s7:
+    canonical: "siemens-s7"
+    domain: "hardware"
+    aliases: ["plc siemens s7", "plc simatic s7", "s7", "siemens s7"]
+    related: []
+  step7:
+    canonical: "step7"
+    domain: "hardware"
+    aliases: ["step 7"]
+    related: []
+  stm32:
+    canonical: "stm32"
+    domain: "hardware"
+    aliases: ["stm"]
+    related: []
+  teensy:
+    canonical: "teensy"
+    domain: "hardware"
+    aliases: []
+    related: []
+  tia_portal:
+    canonical: "tia-portal"
+    domain: "hardware"
+    aliases: ["tia portal"]
+    related: []
+  twincat:
+    canonical: "twincat"
+    domain: "hardware"
+    aliases: []
+    related: []
+  vivado:
+    canonical: "vivado"
+    domain: "hardware"
+    aliases: []
+    related: []
+  x86:
+    canonical: "x86"
+    domain: "hardware"
+    aliases: ["80x86"]
+    related: []
+  xilinx:
+    canonical: "xilinx"
+    domain: "hardware"
+    aliases: []
+    related: []
+
+  # Media
+  ffmpeg:
+    canonical: "ffmpeg"
+    domain: "media"
+    aliases: []
+    related: []
+  obs:
+    canonical: "obs"
+    domain: "media"
+    aliases: ["obs studio"]
+    related: []
+  vlc:
+    canonical: "vlc"
+    domain: "media"
+    aliases: ["vlc media player"]
+    related: []
+
+  # Mobile
+  android_studio:
+    canonical: "android-studio"
+    domain: "mobile"
+    aliases: ["android studio"]
+    related: []
+  app_store:
+    canonical: "app-store"
+    domain: "mobile"
+    aliases: ["app store"]
+    related: []
+  capacitor:
+    canonical: "capacitor"
+    domain: "mobile"
+    aliases: []
+    related: []
+  cocoapods:
+    canonical: "cocoapods"
+    domain: "mobile"
+    aliases: []
+    related: []
+  cordova:
+    canonical: "cordova"
+    domain: "mobile"
+    aliases: []
+    related: []
+  espresso:
+    canonical: "espresso"
+    domain: "mobile"
+    aliases: []
+    related: []
+  expo:
+    canonical: "expo"
+    domain: "mobile"
+    aliases: []
+    related: []
+  fastlane:
+    canonical: "fastlane"
+    domain: "mobile"
+    aliases: []
+    related: []
+  flutter:
+    canonical: "flutter"
+    domain: "mobile"
+    aliases: []
+    related: []
+  ionic:
+    canonical: "ionic"
+    domain: "mobile"
+    aliases: ["ionic framework"]
+    related: ["typescript", "javascript"]
+  jetpack:
+    canonical: "jetpack"
+    domain: "mobile"
+    aliases: []
+    related: []
+  jetpack_compose:
+    canonical: "jetpack-compose"
+    domain: "mobile"
+    aliases: ["compose", "jetpack compose"]
+    related: []
+  maui:
+    canonical: "maui"
+    domain: "mobile"
+    aliases: [".net maui"]
+    related: []
+  phonegap:
+    canonical: "phonegap"
+    domain: "mobile"
+    aliases: []
+    related: []
+  play_store:
+    canonical: "play-store"
+    domain: "mobile"
+    aliases: ["play store"]
+    related: []
+  react_native:
+    canonical: "react-native"
+    domain: "mobile"
+    aliases: ["react native"]
+    related: ["react"]
+  spm:
+    canonical: "spm"
+    domain: "mobile"
+    aliases: ["swift package manager"]
+    related: []
+  swift:
+    canonical: "swift"
+    domain: "mobile"
+    aliases: ["swift 5"]
+    related: []
+  swiftui:
+    canonical: "swiftui"
+    domain: "mobile"
+    aliases: ["swift ui"]
+    related: []
+  testflight:
+    canonical: "testflight"
+    domain: "mobile"
+    aliases: []
+    related: []
+  uikit:
+    canonical: "uikit"
+    domain: "mobile"
+    aliases: []
+    related: []
+  xamarin:
+    canonical: "xamarin"
+    domain: "mobile"
+    aliases: []
+    related: []
+  xcode:
+    canonical: "xcode"
+    domain: "mobile"
+    aliases: []
+    related: []
+  xctest:
+    canonical: "xctest"
+    domain: "mobile"
+    aliases: []
+    related: []
+
+  # Network
+  amqp:
+    canonical: "amqp"
+    domain: "network"
+    aliases: []
+    related: []
+  arp:
+    canonical: "arp"
+    domain: "network"
+    aliases: []
+    related: []
+  base_1000_t:
+    canonical: "1000base-t"
+    domain: "network"
+    aliases: []
+    related: []
+  bgp:
+    canonical: "bgp"
+    domain: "network"
+    aliases: []
+    related: []
+  ble:
+    canonical: "ble"
+    domain: "network"
+    aliases: ["bluetooth low energy"]
+    related: []
+  bluetooth:
+    canonical: "bluetooth"
+    domain: "network"
+    aliases: []
+    related: []
+  cisco:
+    canonical: "cisco"
+    domain: "network"
+    aliases: ["cisco routers", "cisco switch/routers"]
+    related: []
+  cisco_ios:
+    canonical: "cisco-ios"
+    domain: "network"
+    aliases: ["cisco ios"]
+    related: ["cisco"]
+  coap:
+    canonical: "coap"
+    domain: "network"
+    aliases: []
+    related: []
+  csma_ca:
+    canonical: "csma-ca"
+    domain: "network"
+    aliases: ["csma/ca"]
+    related: []
+  csma_cd:
+    canonical: "csma-cd"
+    domain: "network"
+    aliases: ["csma/cd"]
+    related: []
+  dhcp:
+    canonical: "dhcp"
+    domain: "network"
+    aliases: []
+    related: []
+  dns:
+    canonical: "dns"
+    domain: "network"
+    aliases: []
+    related: []
+  ethernet:
+    canonical: "ethernet"
+    domain: "network"
+    aliases: []
+    related: []
+  firewall:
+    canonical: "firewall"
+    domain: "network"
+    aliases: []
+    related: []
+  ftp:
+    canonical: "ftp"
+    domain: "network"
+    aliases: []
+    related: []
+  ftps:
+    canonical: "ftps"
+    domain: "network"
+    aliases: []
+    related: []
+  grpc:
+    canonical: "grpc"
+    domain: "network"
+    aliases: ["g rpc"]
+    related: []
+  http:
+    canonical: "http"
+    domain: "network"
+    aliases: []
+    related: []
+  http2:
+    canonical: "http2"
+    domain: "network"
+    aliases: ["http/2"]
+    related: []
+  http3:
+    canonical: "http3"
+    domain: "network"
+    aliases: ["http/3"]
+    related: []
+  https:
+    canonical: "https"
+    domain: "network"
+    aliases: []
+    related: []
+  huawei_routers:
+    canonical: "huawei-routers"
+    domain: "network"
+    aliases: ["huawei routers"]
+    related: []
+  icmp:
+    canonical: "icmp"
+    domain: "network"
+    aliases: []
+    related: []
+  ieee_802_11a:
+    canonical: "ieee-802-11a"
+    domain: "network"
+    aliases: ["ieee 802.11a"]
+    related: []
+  imap:
+    canonical: "imap"
+    domain: "network"
+    aliases: []
+    related: []
+  ip:
+    canonical: "ip"
+    domain: "network"
+    aliases: []
+    related: []
+  lan:
+    canonical: "lan"
+    domain: "network"
+    aliases: []
+    related: []
+  ldap:
+    canonical: "ldap"
+    domain: "network"
+    aliases: ["lightweight directory access protocol"]
+    related: []
+  lora_protocol:
+    canonical: "lora-protocol"
+    domain: "network"
+    aliases: ["lora"]
+    related: []
+  lorawan:
+    canonical: "lorawan"
+    domain: "network"
+    aliases: []
+    related: []
+  mpls:
+    canonical: "mpls"
+    domain: "network"
+    aliases: []
+    related: []
+  mqtt:
+    canonical: "mqtt"
+    domain: "network"
+    aliases: []
+    related: []
+  nat:
+    canonical: "nat"
+    domain: "network"
+    aliases: []
+    related: []
+  nfc:
+    canonical: "nfc"
+    domain: "network"
+    aliases: []
+    related: []
+  ntp:
+    canonical: "ntp"
+    domain: "network"
+    aliases: []
+    related: []
+  openssl:
+    canonical: "openssl"
+    domain: "network"
+    aliases: ["open ssl"]
+    related: []
+  osi:
+    canonical: "osi"
+    domain: "network"
+    aliases: ["iso-osi model"]
+    related: []
+  ospf:
+    canonical: "ospf"
+    domain: "network"
+    aliases: []
+    related: []
+  pop3:
+    canonical: "pop3"
+    domain: "network"
+    aliases: []
+    related: []
+  protobuf:
+    canonical: "protobuf"
+    domain: "network"
+    aliases: ["protocol buffers"]
+    related: []
+  quic:
+    canonical: "quic"
+    domain: "network"
+    aliases: []
+    related: []
+  rfid:
+    canonical: "rfid"
+    domain: "network"
+    aliases: []
+    related: []
+  routing:
+    canonical: "routing"
+    domain: "network"
+    aliases: ["router"]
+    related: []
+  rsync:
+    canonical: "rsync"
+    domain: "network"
+    aliases: []
+    related: []
+  scp:
+    canonical: "scp"
+    domain: "network"
+    aliases: []
+    related: []
+  sftp:
+    canonical: "sftp"
+    domain: "network"
+    aliases: []
+    related: []
+  smtp:
+    canonical: "smtp"
+    domain: "network"
+    aliases: []
+    related: []
+  snmp:
+    canonical: "snmp"
+    domain: "network"
+    aliases: []
+    related: []
+  soap:
+    canonical: "soap"
+    domain: "network"
+    aliases: []
+    related: ["wsdl"]
+  sse:
+    canonical: "sse"
+    domain: "network"
+    aliases: ["server sent events"]
+    related: []
+  ssh:
+    canonical: "ssh"
+    domain: "network"
+    aliases: []
+    related: []
+  ssl:
+    canonical: "ssl"
+    domain: "network"
+    aliases: []
+    related: []
+  switching:
+    canonical: "switching"
+    domain: "network"
+    aliases: []
+    related: []
+  syslog:
+    canonical: "syslog"
+    domain: "network"
+    aliases: []
+    related: []
+  tcp:
+    canonical: "tcp"
+    domain: "network"
+    aliases: []
+    related: []
+  tcpip:
+    canonical: "tcpip"
+    domain: "network"
+    aliases: ["tcp ip", "tcp-ip", "tcp/ip"]
+    related: []
+  telnet:
+    canonical: "telnet"
+    domain: "network"
+    aliases: []
+    related: []
+  tls:
+    canonical: "tls"
+    domain: "network"
+    aliases: []
+    related: []
+  token_ring:
+    canonical: "token-ring"
+    domain: "network"
+    aliases: ["token ring"]
+    related: []
+  udp:
+    canonical: "udp"
+    domain: "network"
+    aliases: []
+    related: []
+  vlan:
+    canonical: "vlan"
+    domain: "network"
+    aliases: []
+    related: []
+  vpn:
+    canonical: "vpn"
+    domain: "network"
+    aliases: []
+    related: []
+  wan:
+    canonical: "wan"
+    domain: "network"
+    aliases: []
+    related: []
+  webhooks:
+    canonical: "webhooks"
+    domain: "network"
+    aliases: ["webhook"]
+    related: []
+  webrtc:
+    canonical: "webrtc"
+    domain: "network"
+    aliases: []
+    related: []
+  websocket:
+    canonical: "websocket"
+    domain: "network"
+    aliases: ["web socket", "websockets"]
+    related: []
+  wifi:
+    canonical: "wifi"
+    domain: "network"
+    aliases: ["wi fi", "wi-fi", "wireless", "wlan"]
+    related: []
+  wsdl:
+    canonical: "wsdl"
+    domain: "network"
+    aliases: []
+    related: ["soap"]
+  zigbee:
+    canonical: "zigbee"
+    domain: "network"
+    aliases: []
+    related: []
+  zwave:
+    canonical: "zwave"
+    domain: "network"
+    aliases: ["z-wave"]
+    related: []
+
+  # Observability
+  appdynamics:
+    canonical: "appdynamics"
+    domain: "observability"
+    aliases: ["app dynamics"]
+    related: []
+  datadog:
+    canonical: "datadog"
+    domain: "observability"
+    aliases: []
+    related: []
+  dynatrace:
+    canonical: "dynatrace"
+    domain: "observability"
+    aliases: []
+    related: []
+  elasticsearch:
+    canonical: "elasticsearch"
+    domain: "observability"
+    aliases: ["elastic", "elastic search"]
+    related: ["search"]
+  elk:
+    canonical: "elk"
+    domain: "observability"
+    aliases: ["elk stack"]
+    related: []
+  fluentbit:
+    canonical: "fluentbit"
+    domain: "observability"
+    aliases: ["fluent bit"]
+    related: []
+  fluentd:
+    canonical: "fluentd"
+    domain: "observability"
+    aliases: []
+    related: []
+  grafana:
+    canonical: "grafana"
+    domain: "observability"
+    aliases: []
+    related: ["monitoring"]
+  icinga:
+    canonical: "icinga"
+    domain: "observability"
+    aliases: []
+    related: []
+  jaeger:
+    canonical: "jaeger"
+    domain: "observability"
+    aliases: []
+    related: []
+  kibana:
+    canonical: "kibana"
+    domain: "observability"
+    aliases: []
+    related: []
+  logstash:
+    canonical: "logstash"
+    domain: "observability"
+    aliases: []
+    related: []
+  loki:
+    canonical: "loki"
+    domain: "observability"
+    aliases: ["grafana loki"]
+    related: []
+  nagios:
+    canonical: "nagios"
+    domain: "observability"
+    aliases: []
+    related: []
+  newrelic:
+    canonical: "newrelic"
+    domain: "observability"
+    aliases: ["new relic"]
+    related: []
+  opentelemetry:
+    canonical: "opentelemetry"
+    domain: "observability"
+    aliases: ["otel"]
+    related: []
+  opsgenie:
+    canonical: "opsgenie"
+    domain: "observability"
+    aliases: []
+    related: []
+  pagerduty:
+    canonical: "pagerduty"
+    domain: "observability"
+    aliases: []
+    related: []
+  prometheus:
+    canonical: "prometheus"
+    domain: "observability"
+    aliases: []
+    related: ["monitoring", "grafana"]
+  rollbar:
+    canonical: "rollbar"
+    domain: "observability"
+    aliases: []
+    related: []
+  sentry:
+    canonical: "sentry"
+    domain: "observability"
+    aliases: []
+    related: []
+  splunk:
+    canonical: "splunk"
+    domain: "observability"
+    aliases: []
+    related: []
+  tempo:
+    canonical: "tempo"
+    domain: "observability"
+    aliases: ["grafana tempo"]
+    related: []
+  zabbix:
+    canonical: "zabbix"
+    domain: "observability"
+    aliases: []
+    related: []
+  zipkin:
+    canonical: "zipkin"
+    domain: "observability"
+    aliases: []
+    related: []
+
+  # Os
+  alpine:
+    canonical: "alpine"
+    domain: "os"
+    aliases: ["alpine linux"]
+    related: []
+  android:
+    canonical: "android"
+    domain: "os"
+    aliases: ["google android"]
+    related: []
+  archlinux:
+    canonical: "archlinux"
+    domain: "os"
+    aliases: ["arch", "arch linux", "linux arch"]
+    related: []
+  bsd:
+    canonical: "bsd"
+    domain: "os"
+    aliases: []
+    related: []
+  buildroot:
+    canonical: "buildroot"
+    domain: "os"
+    aliases: []
+    related: []
+  centos:
+    canonical: "centos"
+    domain: "os"
+    aliases: ["linux centos"]
+    related: []
+  chromeos:
+    canonical: "chromeos"
+    domain: "os"
+    aliases: ["chrome os"]
+    related: []
+  contiki:
+    canonical: "contiki"
+    domain: "os"
+    aliases: []
+    related: []
+  debian:
+    canonical: "debian"
+    domain: "os"
+    aliases: ["linux debian"]
+    related: []
+  embedded_linux:
+    canonical: "embedded-linux"
+    domain: "os"
+    aliases: ["embedded linux"]
+    related: []
+  fedora:
+    canonical: "fedora"
+    domain: "os"
+    aliases: ["linux fedora"]
+    related: []
+  freebsd:
+    canonical: "freebsd"
+    domain: "os"
+    aliases: []
+    related: []
+  freertos:
+    canonical: "freertos"
+    domain: "os"
+    aliases: ["free rtos"]
+    related: []
+  gentoo:
+    canonical: "gentoo"
+    domain: "os"
+    aliases: []
+    related: []
+  ios:
+    canonical: "ios"
+    domain: "os"
+    aliases: ["iphone"]
+    related: []
+  ipados:
+    canonical: "ipados"
+    domain: "os"
+    aliases: []
+    related: []
+  kali:
+    canonical: "kali"
+    domain: "os"
+    aliases: ["kali linux"]
+    related: []
+  linux:
+    canonical: "linux"
+    domain: "os"
+    aliases: []
+    related: []
+  macos:
+    canonical: "macos"
+    domain: "os"
+    aliases: ["mac os", "mac os x", "osx"]
+    related: []
+  manjaro:
+    canonical: "manjaro"
+    domain: "os"
+    aliases: []
+    related: []
+  mbed:
+    canonical: "mbed"
+    domain: "os"
+    aliases: ["mbed os"]
+    related: []
+  mint:
+    canonical: "mint"
+    domain: "os"
+    aliases: ["linux mint"]
+    related: []
+  msdos:
+    canonical: "msdos"
+    domain: "os"
+    aliases: ["dos", "ms-dos"]
+    related: []
+  netbsd:
+    canonical: "netbsd"
+    domain: "os"
+    aliases: []
+    related: []
+  nuttx:
+    canonical: "nuttx"
+    domain: "os"
+    aliases: []
+    related: []
+  openbsd:
+    canonical: "openbsd"
+    domain: "os"
+    aliases: []
+    related: []
+  opensuse:
+    canonical: "opensuse"
+    domain: "os"
+    aliases: []
+    related: []
+  qnx:
+    canonical: "qnx"
+    domain: "os"
+    aliases: []
+    related: []
+  raspbian:
+    canonical: "raspbian"
+    domain: "os"
+    aliases: ["raspberry pi os"]
+    related: []
+  redhat:
+    canonical: "redhat"
+    domain: "os"
+    aliases: ["linux red hat", "red hat", "rhel"]
+    related: []
+  riot_os:
+    canonical: "riot-os"
+    domain: "os"
+    aliases: ["riot"]
+    related: []
+  rtlinux:
+    canonical: "rtlinux"
+    domain: "os"
+    aliases: []
+    related: []
+  solaris:
+    canonical: "solaris"
+    domain: "os"
+    aliases: ["sun solaris"]
+    related: []
+  suse:
+    canonical: "suse"
+    domain: "os"
+    aliases: []
+    related: []
+  threadx:
+    canonical: "threadx"
+    domain: "os"
+    aliases: []
+    related: []
+  tvos:
+    canonical: "tvos"
+    domain: "os"
+    aliases: []
+    related: []
+  ubuntu:
+    canonical: "ubuntu"
+    domain: "os"
+    aliases: ["linux ubuntu"]
+    related: []
+  unix:
+    canonical: "unix"
+    domain: "os"
+    aliases: []
+    related: []
+  vxworks:
+    canonical: "vxworks"
+    domain: "os"
+    aliases: []
+    related: []
+  watchos:
+    canonical: "watchos"
+    domain: "os"
+    aliases: []
+    related: []
+  windows:
+    canonical: "windows"
+    domain: "os"
+    aliases: ["open windows", "windows 10", "windows 11"]
+    related: []
+  windows_2000:
+    canonical: "windows-2000"
+    domain: "os"
+    aliases: ["windows 2000", "windows 2000 professional"]
+    related: ["windows"]
+  windows_98:
+    canonical: "windows-98"
+    domain: "os"
+    aliases: ["windows 98"]
+    related: ["windows"]
+  windows_phone:
+    canonical: "windows-phone"
+    domain: "os"
+    aliases: ["windows phone"]
+    related: ["windows"]
+  windows_server:
+    canonical: "windows-server"
+    domain: "os"
+    aliases: ["windows server"]
+    related: []
+  windows_server_2016:
+    canonical: "windows-server-2016"
+    domain: "os"
+    aliases: ["windows server 2016"]
+    related: ["windows"]
+  yocto:
+    canonical: "yocto"
+    domain: "os"
+    aliases: []
+    related: []
+  zephyr_rtos:
+    canonical: "zephyr-rtos"
+    domain: "os"
+    aliases: ["zephyr"]
+    related: []
+
+  # Platforms
+  airtable:
+    canonical: "airtable"
+    domain: "platforms"
+    aliases: []
+    related: []
+  amplify:
+    canonical: "amplify"
+    domain: "platforms"
+    aliases: ["aws amplify"]
+    related: []
+  appwrite:
+    canonical: "appwrite"
+    domain: "platforms"
+    aliases: []
+    related: []
+  bmc_helix:
+    canonical: "bmc-helix"
+    domain: "platforms"
+    aliases: ["bmc helix"]
+    related: []
+  bmc_itsm:
+    canonical: "bmc-itsm"
+    domain: "platforms"
+    aliases: ["bmc itsm"]
+    related: []
+  bubble:
+    canonical: "bubble"
+    domain: "platforms"
+    aliases: []
+    related: []
+  citrix:
+    canonical: "citrix"
+    domain: "platforms"
+    aliases: ["citrix client"]
+    related: []
+  contentful:
+    canonical: "contentful"
+    domain: "platforms"
+    aliases: []
+    related: []
+  crm:
+    canonical: "crm"
+    domain: "platforms"
+    aliases: []
+    related: []
+  domo:
+    canonical: "domo"
+    domain: "platforms"
+    aliases: []
+    related: []
+  drupal:
+    canonical: "drupal"
+    domain: "platforms"
+    aliases: []
+    related: []
+  dynamics365:
+    canonical: "dynamics365"
+    domain: "platforms"
+    aliases: ["dynamics 365"]
+    related: []
+  erp:
+    canonical: "erp"
+    domain: "platforms"
+    aliases: []
+    related: []
+  ghost:
+    canonical: "ghost"
+    domain: "platforms"
+    aliases: []
+    related: []
+  google_analytics:
+    canonical: "google-analytics"
+    domain: "platforms"
+    aliases: ["google analytics"]
+    related: []
+  google_maps_api:
+    canonical: "google-maps-api"
+    domain: "platforms"
+    aliases: ["google maps api"]
+    related: []
+  google_workspace:
+    canonical: "google-workspace"
+    domain: "platforms"
+    aliases: ["google workspace"]
+    related: []
+  hp:
+    canonical: "hp"
+    domain: "platforms"
+    aliases: []
+    related: []
+  hubspot:
+    canonical: "hubspot"
+    domain: "platforms"
+    aliases: []
+    related: []
+  iot:
+    canonical: "iot"
+    domain: "platforms"
+    aliases: ["io t", "internet of things"]
+    related: []
+  joomla:
+    canonical: "joomla"
+    domain: "platforms"
+    aliases: []
+    related: []
+  looker:
+    canonical: "looker"
+    domain: "platforms"
+    aliases: []
+    related: []
+  magento:
+    canonical: "magento"
+    domain: "platforms"
+    aliases: []
+    related: []
+  mainframe:
+    canonical: "mainframe"
+    domain: "platforms"
+    aliases: []
+    related: []
+  mendix:
+    canonical: "mendix"
+    domain: "platforms"
+    aliases: []
+    related: []
+  metabase:
+    canonical: "metabase"
+    domain: "platforms"
+    aliases: []
+    related: []
+  microsoft:
+    canonical: "microsoft"
+    domain: "platforms"
+    aliases: []
+    related: []
+  msoffice:
+    canonical: "msoffice"
+    domain: "platforms"
+    aliases: ["ms office", "ms office 365", "office 365"]
+    related: []
+  n8n:
+    canonical: "n8n"
+    domain: "platforms"
+    aliases: []
+    related: []
+  outsystems:
+    canonical: "outsystems"
+    domain: "platforms"
+    aliases: []
+    related: []
+  power_automate:
+    canonical: "power-automate"
+    domain: "platforms"
+    aliases: ["power automate"]
+    related: []
+  powerapps:
+    canonical: "powerapps"
+    domain: "platforms"
+    aliases: ["power apps"]
+    related: []
+  qlik:
+    canonical: "qlik"
+    domain: "platforms"
+    aliases: ["qlik sense", "qlikview"]
+    related: []
+  retool:
+    canonical: "retool"
+    domain: "platforms"
+    aliases: []
+    related: []
+  salesforce:
+    canonical: "salesforce"
+    domain: "platforms"
+    aliases: []
+    related: []
+  sanity:
+    canonical: "sanity"
+    domain: "platforms"
+    aliases: []
+    related: []
+  sap:
+    canonical: "sap"
+    domain: "platforms"
+    aliases: []
+    related: []
+  sap_s4hana:
+    canonical: "sap-s4hana"
+    domain: "platforms"
+    aliases: ["sap s/4hana"]
+    related: []
+  saphana:
+    canonical: "saphana"
+    domain: "platforms"
+    aliases: ["sap hana"]
+    related: []
+  servicenow:
+    canonical: "servicenow"
+    domain: "platforms"
+    aliases: ["service now"]
+    related: []
+  sharepoint:
+    canonical: "sharepoint"
+    domain: "platforms"
+    aliases: ["ms sharepoint"]
+    related: []
+  shopify:
+    canonical: "shopify"
+    domain: "platforms"
+    aliases: []
+    related: []
+  strapi:
+    canonical: "strapi"
+    domain: "platforms"
+    aliases: []
+    related: []
+  stripe:
+    canonical: "stripe"
+    domain: "platforms"
+    aliases: []
+    related: []
+  supabase:
+    canonical: "supabase"
+    domain: "platforms"
+    aliases: []
+    related: []
+  superset:
+    canonical: "superset"
+    domain: "platforms"
+    aliases: []
+    related: []
+  webflow:
+    canonical: "webflow"
+    domain: "platforms"
+    aliases: []
+    related: []
+  woocommerce:
+    canonical: "woocommerce"
+    domain: "platforms"
+    aliases: []
+    related: []
+  wordpress:
+    canonical: "wordpress"
+    domain: "platforms"
+    aliases: []
+    related: []
+  zapier:
+    canonical: "zapier"
+    domain: "platforms"
+    aliases: []
+    related: []
+  zendesk:
+    canonical: "zendesk"
+    domain: "platforms"
+    aliases: []
+    related: []
+
+  # Qa
+  appium:
+    canonical: "appium"
+    domain: "qa"
+    aliases: []
+    related: []
+  artillery:
+    canonical: "artillery"
+    domain: "qa"
+    aliases: []
+    related: []
+  bdd:
+    canonical: "bdd"
+    domain: "qa"
+    aliases: ["behavior driven development"]
+    related: []
+  behave:
+    canonical: "behave"
+    domain: "qa"
+    aliases: []
+    related: []
+  chai:
+    canonical: "chai"
+    domain: "qa"
+    aliases: []
+    related: []
+  cucumber:
+    canonical: "cucumber"
+    domain: "qa"
+    aliases: []
+    related: []
+  cypress:
+    canonical: "cypress"
+    domain: "qa"
+    aliases: ["cypress io"]
+    related: ["javascript", "testing"]
+  detox:
+    canonical: "detox"
+    domain: "qa"
+    aliases: []
+    related: []
+  gatling:
+    canonical: "gatling"
+    domain: "qa"
+    aliases: []
+    related: []
+  gherkin:
+    canonical: "gherkin"
+    domain: "qa"
+    aliases: []
+    related: []
+  hp_alm:
+    canonical: "hp-alm"
+    domain: "qa"
+    aliases: ["hp alm"]
+    related: []
+  hp_quality_center:
+    canonical: "hp-quality-center"
+    domain: "qa"
+    aliases: ["hp quality center", "quality center"]
+    related: ["testing"]
+  hypothesis:
+    canonical: "hypothesis"
+    domain: "qa"
+    aliases: []
+    related: []
+  insomnia:
+    canonical: "insomnia"
+    domain: "qa"
+    aliases: []
+    related: []
+  integration_testing:
+    canonical: "integration-testing"
+    domain: "qa"
+    aliases: ["integration testing"]
+    related: ["testing"]
+  jasmine:
+    canonical: "jasmine"
+    domain: "qa"
+    aliases: []
+    related: []
+  jest:
+    canonical: "jest"
+    domain: "qa"
+    aliases: []
+    related: ["javascript", "testing"]
+  jmeter:
+    canonical: "jmeter"
+    domain: "qa"
+    aliases: ["apache jmeter"]
+    related: []
+  junit:
+    canonical: "junit"
+    domain: "qa"
+    aliases: ["junit5"]
+    related: ["java", "testing"]
+  k6:
+    canonical: "k6"
+    domain: "qa"
+    aliases: []
+    related: []
+  karate:
+    canonical: "karate"
+    domain: "qa"
+    aliases: []
+    related: []
+  karma:
+    canonical: "karma"
+    domain: "qa"
+    aliases: []
+    related: []
+  katalon:
+    canonical: "katalon"
+    domain: "qa"
+    aliases: []
+    related: ["testing"]
+  locust:
+    canonical: "locust"
+    domain: "qa"
+    aliases: []
+    related: []
+  mocha:
+    canonical: "mocha"
+    domain: "qa"
+    aliases: []
+    related: []
+  mockito:
+    canonical: "mockito"
+    domain: "qa"
+    aliases: []
+    related: []
+  mstest:
+    canonical: "mstest"
+    domain: "qa"
+    aliases: []
+    related: []
+  nunit:
+    canonical: "nunit"
+    domain: "qa"
+    aliases: []
+    related: []
+  pact:
+    canonical: "pact"
+    domain: "qa"
+    aliases: []
+    related: []
+  performance_testing:
+    canonical: "performance-testing"
+    domain: "qa"
+    aliases: ["performance testing"]
+    related: ["testing"]
+  playwright:
+    canonical: "playwright"
+    domain: "qa"
+    aliases: []
+    related: []
+  postman:
+    canonical: "postman"
+    domain: "qa"
+    aliases: []
+    related: []
+  puppeteer:
+    canonical: "puppeteer"
+    domain: "qa"
+    aliases: []
+    related: []
+  pytest:
+    canonical: "pytest"
+    domain: "qa"
+    aliases: ["py test"]
+    related: ["python", "testing"]
+  qc:
+    canonical: "qc"
+    domain: "qa"
+    aliases: ["quality control"]
+    related: []
+  rest_assured:
+    canonical: "rest-assured"
+    domain: "qa"
+    aliases: ["rest assured"]
+    related: []
+  robot_framework:
+    canonical: "robot-framework"
+    domain: "qa"
+    aliases: ["robot framework"]
+    related: []
+  selenium:
+    canonical: "selenium"
+    domain: "qa"
+    aliases: ["selenium webdriver"]
+    related: ["testing"]
+  soapui:
+    canonical: "soapui"
+    domain: "qa"
+    aliases: ["soap ui"]
+    related: []
+  software_testing:
+    canonical: "software-testing"
+    domain: "qa"
+    aliases: ["software testing"]
+    related: []
+  specflow:
+    canonical: "specflow"
+    domain: "qa"
+    aliases: []
+    related: []
+  spock:
+    canonical: "spock"
+    domain: "qa"
+    aliases: []
+    related: []
+  tdd:
+    canonical: "tdd"
+    domain: "qa"
+    aliases: ["test driven development"]
+    related: []
+  test_automation:
+    canonical: "test-automation"
+    domain: "qa"
+    aliases: ["test automation"]
+    related: []
+  testing:
+    canonical: "testing"
+    domain: "qa"
+    aliases: ["test", "qa"]
+    related: ["pytest", "selenium"]
+  testlink:
+    canonical: "testlink"
+    domain: "qa"
+    aliases: []
+    related: []
+  testng:
+    canonical: "testng"
+    domain: "qa"
+    aliases: []
+    related: []
+  testrail:
+    canonical: "testrail"
+    domain: "qa"
+    aliases: []
+    related: []
+  uft:
+    canonical: "uft"
+    domain: "qa"
+    aliases: ["hp uft", "qtp"]
+    related: ["testing"]
+  unit_testing:
+    canonical: "unit-testing"
+    domain: "qa"
+    aliases: ["unit testing"]
+    related: []
+  unittest:
+    canonical: "unittest"
+    domain: "qa"
+    aliases: []
+    related: []
+  vectorcast:
+    canonical: "vectorcast"
+    domain: "qa"
+    aliases: ["vector cast"]
+    related: ["testing"]
+  vitest:
+    canonical: "vitest"
+    domain: "qa"
+    aliases: []
+    related: []
+  webdriver:
+    canonical: "webdriver"
+    domain: "qa"
+    aliases: []
+    related: []
+  xunit:
+    canonical: "xunit"
+    domain: "qa"
+    aliases: []
+    related: []
+
+  # Security
+  active_directory:
+    canonical: "active-directory"
+    domain: "security"
+    aliases: ["active directory", "ad"]
+    related: []
+  appsec:
+    canonical: "appsec"
+    domain: "security"
+    aliases: ["application security"]
+    related: []
+  aqua:
+    canonical: "aqua"
+    domain: "security"
+    aliases: []
+    related: []
+  auth0:
+    canonical: "auth0"
+    domain: "security"
+    aliases: []
+    related: []
+  azure_ad:
+    canonical: "azure-ad"
+    domain: "security"
+    aliases: ["azure ad"]
+    related: []
+  burp_suite:
+    canonical: "burp-suite"
+    domain: "security"
+    aliases: ["burp suite"]
+    related: []
+  checkmarx:
+    canonical: "checkmarx"
+    domain: "security"
+    aliases: []
+    related: []
+  dast:
+    canonical: "dast"
+    domain: "security"
+    aliases: ["dynamic analysis"]
+    related: []
+  dependabot:
+    canonical: "dependabot"
+    domain: "security"
+    aliases: []
+    related: []
+  devsecops:
+    canonical: "devsecops"
+    domain: "security"
+    aliases: ["dev sec ops"]
+    related: []
+  entra_id:
+    canonical: "entra-id"
+    domain: "security"
+    aliases: ["entra id"]
+    related: []
+  falco:
+    canonical: "falco"
+    domain: "security"
+    aliases: []
+    related: []
+  fortify:
+    canonical: "fortify"
+    domain: "security"
+    aliases: []
+    related: []
+  gdpr:
+    canonical: "gdpr"
+    domain: "security"
+    aliases: []
+    related: []
+  iam:
+    canonical: "iam"
+    domain: "security"
+    aliases: ["aws iam", "identity and access management"]
+    related: ["security"]
+  infosec:
+    canonical: "infosec"
+    domain: "security"
+    aliases: ["information security"]
+    related: []
+  jwt:
+    canonical: "jwt"
+    domain: "security"
+    aliases: ["json web token", "jsonwebtoken"]
+    related: ["oauth"]
+  kerberos:
+    canonical: "kerberos"
+    domain: "security"
+    aliases: []
+    related: []
+  keycloak:
+    canonical: "keycloak"
+    domain: "security"
+    aliases: []
+    related: []
+  mfa:
+    canonical: "mfa"
+    domain: "security"
+    aliases: ["2fa", "two factor authentication"]
+    related: []
+  nist:
+    canonical: "nist"
+    domain: "security"
+    aliases: []
+    related: []
+  oauth:
+    canonical: "oauth"
+    domain: "security"
+    aliases: ["oauth2"]
+    related: ["iam"]
+  oidc:
+    canonical: "oidc"
+    domain: "security"
+    aliases: ["openid", "openid connect"]
+    related: []
+  okta:
+    canonical: "okta"
+    domain: "security"
+    aliases: []
+    related: []
+  opa:
+    canonical: "opa"
+    domain: "security"
+    aliases: ["open policy agent"]
+    related: []
+  owasp:
+    canonical: "owasp"
+    domain: "security"
+    aliases: ["owasp top 10"]
+    related: ["security"]
+  pentest:
+    canonical: "pentest"
+    domain: "security"
+    aliases: ["penetration testing"]
+    related: []
+  renovate:
+    canonical: "renovate"
+    domain: "security"
+    aliases: []
+    related: []
+  saml:
+    canonical: "saml"
+    domain: "security"
+    aliases: []
+    related: []
+  sast:
+    canonical: "sast"
+    domain: "security"
+    aliases: ["static analysis"]
+    related: []
+  sca:
+    canonical: "sca"
+    domain: "security"
+    aliases: []
+    related: []
+  security:
+    canonical: "security"
+    domain: "security"
+    aliases: ["cybersecurity"]
+    related: ["owasp", "iam"]
+  snyk:
+    canonical: "snyk"
+    domain: "security"
+    aliases: []
+    related: []
+  sonarqube:
+    canonical: "sonarqube"
+    domain: "security"
+    aliases: ["sonar qube"]
+    related: []
+  sso:
+    canonical: "sso"
+    domain: "security"
+    aliases: ["single sign on"]
+    related: []
+  trivy:
+    canonical: "trivy"
+    domain: "security"
+    aliases: []
+    related: []
+  veracode:
+    canonical: "veracode"
+    domain: "security"
+    aliases: []
+    related: []
+  waf:
+    canonical: "waf"
+    domain: "security"
+    aliases: ["web application firewall"]
     related: []
 
   # Standards
-  iso:
-    canonical: "iso"
+  as9100:
+    canonical: "as9100"
     domain: "standards"
     aliases: []
     related: []
-  hipaa:
-    canonical: "hipaa"
+  aspice:
+    canonical: "aspice"
+    domain: "standards"
+    aliases: ["a-spice"]
+    related: []
+  cmmi:
+    canonical: "cmmi"
     domain: "standards"
     aliases: []
     related: []
-  soc2:
-    canonical: "soc2"
+  do_178b:
+    canonical: "do-178b"
     domain: "standards"
     aliases: []
     related: []
-  iso_14001:
-    canonical: "iso-14001"
+  do_178c:
+    canonical: "do-178c"
     domain: "standards"
-    aliases: ["iso 14001"]
-    related: ["iso"]
+    aliases: []
+    related: []
   en_50128:
     canonical: "en-50128"
     domain: "standards"
@@ -1493,20 +5118,1002 @@ skills:
     domain: "standards"
     aliases: []
     related: []
-  mil_std_1553:
-    canonical: "mil-std-1553"
-    domain: "standards"
-    aliases: []
-    related: []
   fda:
     canonical: "fda"
     domain: "standards"
     aliases: []
     related: []
+  hipaa:
+    canonical: "hipaa"
+    domain: "standards"
+    aliases: []
+    related: []
+  iatf_16949:
+    canonical: "iatf-16949"
+    domain: "standards"
+    aliases: ["iatf 16949"]
+    related: []
+  iec_62304:
+    canonical: "iec-62304"
+    domain: "standards"
+    aliases: ["iec 62304"]
+    related: []
+  iso:
+    canonical: "iso"
+    domain: "standards"
+    aliases: []
+    related: []
+  iso26262:
+    canonical: "iso26262"
+    domain: "standards"
+    aliases: ["iso 26262"]
+    related: []
+  iso27001:
+    canonical: "iso27001"
+    domain: "standards"
+    aliases: ["iso 27001"]
+    related: []
+  iso9001:
+    canonical: "iso9001"
+    domain: "standards"
+    aliases: ["iso 9001"]
+    related: []
+  iso_14001:
+    canonical: "iso-14001"
+    domain: "standards"
+    aliases: ["iso 14001"]
+    related: ["iso"]
+  mil_std_1553:
+    canonical: "mil-std-1553"
+    domain: "standards"
+    aliases: []
+    related: []
+  soc2:
+    canonical: "soc2"
+    domain: "standards"
+    aliases: []
+    related: []
 
-  # Media
-  vlc:
-    canonical: "vlc"
-    domain: "media"
-    aliases: ["vlc media player"]
+  # Telecom
+  abn:
+    canonical: "abn"
+    domain: "telecom"
+    aliases: []
+    related: []
+  adsl:
+    canonical: "adsl"
+    domain: "telecom"
+    aliases: []
+    related: []
+  asn:
+    canonical: "asn"
+    domain: "telecom"
+    aliases: []
+    related: []
+  atm:
+    canonical: "atm"
+    domain: "telecom"
+    aliases: []
+    related: []
+  bitstream:
+    canonical: "bitstream"
+    domain: "telecom"
+    aliases: []
+    related: []
+  bng:
+    canonical: "bng"
+    domain: "telecom"
+    aliases: []
+    related: []
+  can:
+    canonical: "can"
+    domain: "telecom"
+    aliases: ["can bus", "canbus"]
+    related: []
+  canopen:
+    canonical: "canopen"
+    domain: "telecom"
+    aliases: []
+    related: []
+  cdma:
+    canonical: "cdma"
+    domain: "telecom"
+    aliases: []
+    related: []
+  core_network:
+    canonical: "core-network"
+    domain: "telecom"
+    aliases: ["core network"]
+    related: []
+  cpe:
+    canonical: "cpe"
+    domain: "telecom"
+    aliases: []
+    related: []
+  dsl:
+    canonical: "dsl"
+    domain: "telecom"
+    aliases: []
+    related: []
+  dslam:
+    canonical: "dslam"
+    domain: "telecom"
+    aliases: []
+    related: []
+  dtn:
+    canonical: "dtn"
+    domain: "telecom"
+    aliases: []
+    related: []
+  edge:
+    canonical: "edge"
+    domain: "telecom"
+    aliases: []
+    related: []
+  enode_b:
+    canonical: "enode-b"
+    domain: "telecom"
+    aliases: ["enode b"]
+    related: []
+  ethercat:
+    canonical: "ethercat"
+    domain: "telecom"
+    aliases: []
+    related: []
+  five_g:
+    canonical: "5g"
+    domain: "telecom"
+    aliases: []
+    related: []
+  fttc:
+    canonical: "fttc"
+    domain: "telecom"
+    aliases: []
+    related: []
+  ftte:
+    canonical: "ftte"
+    domain: "telecom"
+    aliases: []
+    related: []
+  ftth:
+    canonical: "ftth"
+    domain: "telecom"
+    aliases: []
+    related: []
+  gprs:
+    canonical: "gprs"
+    domain: "telecom"
+    aliases: []
+    related: []
+  gsm:
+    canonical: "gsm"
+    domain: "telecom"
+    aliases: []
+    related: []
+  hsdpa:
+    canonical: "hsdpa"
+    domain: "telecom"
+    aliases: []
+    related: []
+  i2c:
+    canonical: "i2c"
+    domain: "telecom"
+    aliases: []
+    related: []
+  j1939:
+    canonical: "j1939"
+    domain: "telecom"
+    aliases: ["can j1939", "sae j1939"]
+    related: []
+  lin_bus:
+    canonical: "lin-bus"
+    domain: "telecom"
+    aliases: ["lin bus", "linbus"]
+    related: []
+  lte:
+    canonical: "lte"
+    domain: "telecom"
+    aliases: ["4g"]
+    related: ["5g"]
+  lte_advanced:
+    canonical: "lte-advanced"
+    domain: "telecom"
+    aliases: ["lte advanced"]
+    related: ["lte"]
+  mme:
+    canonical: "mme"
+    domain: "telecom"
+    aliases: []
+    related: []
+  modbus:
+    canonical: "modbus"
+    domain: "telecom"
+    aliases: ["modbus tcp"]
+    related: []
+  node_b:
+    canonical: "node-b"
+    domain: "telecom"
+    aliases: ["node b"]
+    related: []
+  olt:
+    canonical: "olt"
+    domain: "telecom"
+    aliases: []
+    related: []
+  opcua:
+    canonical: "opcua"
+    domain: "telecom"
+    aliases: ["opc ua", "opc-ua"]
+    related: []
+  otn:
+    canonical: "otn"
+    domain: "telecom"
+    aliases: []
+    related: []
+  pop:
+    canonical: "pop"
+    domain: "telecom"
+    aliases: []
+    related: []
+  profibus:
+    canonical: "profibus"
+    domain: "telecom"
+    aliases: []
+    related: []
+  profinet:
+    canonical: "profinet"
+    domain: "telecom"
+    aliases: []
+    related: []
+  rnc:
+    canonical: "rnc"
+    domain: "telecom"
+    aliases: []
+    related: []
+  rs232:
+    canonical: "rs232"
+    domain: "telecom"
+    aliases: ["rs-232"]
+    related: []
+  rs485:
+    canonical: "rs485"
+    domain: "telecom"
+    aliases: ["rs-485"]
+    related: []
+  sdh:
+    canonical: "sdh"
+    domain: "telecom"
+    aliases: []
+    related: []
+  security_gateway:
+    canonical: "security-gateway"
+    domain: "telecom"
+    aliases: ["security gateway"]
+    related: []
+  sip:
+    canonical: "sip"
+    domain: "telecom"
+    aliases: []
+    related: []
+  sonet:
+    canonical: "sonet"
+    domain: "telecom"
+    aliases: []
+    related: []
+  spi:
+    canonical: "spi"
+    domain: "telecom"
+    aliases: []
+    related: []
+  uart:
+    canonical: "uart"
+    domain: "telecom"
+    aliases: []
+    related: []
+  umts:
+    canonical: "umts"
+    domain: "telecom"
+    aliases: []
+    related: []
+  usb:
+    canonical: "usb"
+    domain: "telecom"
+    aliases: []
+    related: []
+  voip:
+    canonical: "voip"
+    domain: "telecom"
+    aliases: ["vo ip"]
+    related: []
+  volte:
+    canonical: "volte"
+    domain: "telecom"
+    aliases: ["vo lte"]
+    related: []
+
+  # Tools
+  adams:
+    canonical: "adams"
+    domain: "tools"
+    aliases: []
+    related: []
+  adobe_xd:
+    canonical: "adobe-xd"
+    domain: "tools"
+    aliases: ["adobe xd"]
+    related: []
+  ansys:
+    canonical: "ansys"
+    domain: "tools"
+    aliases: []
+    related: []
+  asana:
+    canonical: "asana"
+    domain: "tools"
+    aliases: []
+    related: []
+  atom:
+    canonical: "atom"
+    domain: "tools"
+    aliases: []
+    related: []
+  autocad:
+    canonical: "autocad"
+    domain: "tools"
+    aliases: []
+    related: []
+  bazel:
+    canonical: "bazel"
+    domain: "tools"
+    aliases: []
+    related: []
+  bitbucket:
+    canonical: "bitbucket"
+    domain: "tools"
+    aliases: ["atlassian bitbucket server", "bitbucket server"]
+    related: ["git"]
+  blender:
+    canonical: "blender"
+    domain: "tools"
+    aliases: []
+    related: []
+  bugzilla:
+    canonical: "bugzilla"
+    domain: "tools"
+    aliases: []
+    related: []
+  canalyzer:
+    canonical: "canalyzer"
+    domain: "tools"
+    aliases: []
+    related: []
+  candela_studio:
+    canonical: "candela-studio"
+    domain: "tools"
+    aliases: ["candela studio"]
+    related: []
+  canva:
+    canonical: "canva"
+    domain: "tools"
+    aliases: []
+    related: []
+  cargo:
+    canonical: "cargo"
+    domain: "tools"
+    aliases: []
+    related: []
+  catia:
+    canonical: "catia"
+    domain: "tools"
+    aliases: []
+    related: []
+  clickup:
+    canonical: "clickup"
+    domain: "tools"
+    aliases: []
+    related: []
+  clion:
+    canonical: "clion"
+    domain: "tools"
+    aliases: []
+    related: []
+  cmake:
+    canonical: "cmake"
+    domain: "tools"
+    aliases: []
+    related: []
+  coda:
+    canonical: "coda"
+    domain: "tools"
+    aliases: []
+    related: []
+  codewhisperer:
+    canonical: "codewhisperer"
+    domain: "tools"
+    aliases: []
+    related: []
+  composer:
+    canonical: "composer"
+    domain: "tools"
+    aliases: []
+    related: []
+  comsol_multiphysics:
+    canonical: "comsol-multiphysics"
+    domain: "tools"
+    aliases: ["comsol multiphysics"]
+    related: []
+  conda:
+    canonical: "conda"
+    domain: "tools"
+    aliases: []
+    related: []
+  confluence:
+    canonical: "confluence"
+    domain: "tools"
+    aliases: []
+    related: []
+  copilot:
+    canonical: "copilot"
+    domain: "tools"
+    aliases: ["github copilot"]
+    related: []
+  creo_parametric:
+    canonical: "creo-parametric"
+    domain: "tools"
+    aliases: ["creo parametric"]
+    related: []
+  cron:
+    canonical: "cron"
+    domain: "tools"
+    aliases: []
+    related: []
+  cursor:
+    canonical: "cursor"
+    domain: "tools"
+    aliases: []
+    related: []
+  discord:
+    canonical: "discord"
+    domain: "tools"
+    aliases: []
+    related: []
+  docusaurus:
+    canonical: "docusaurus"
+    domain: "tools"
+    aliases: []
+    related: []
+  doors:
+    canonical: "doors"
+    domain: "tools"
+    aliases: ["ibm doors"]
+    related: []
+  drawio:
+    canonical: "drawio"
+    domain: "tools"
+    aliases: ["draw.io"]
+    related: []
+  eclipse:
+    canonical: "eclipse"
+    domain: "tools"
+    aliases: []
+    related: []
+  emacs:
+    canonical: "emacs"
+    domain: "tools"
+    aliases: []
+    related: []
+  excalidraw:
+    canonical: "excalidraw"
+    domain: "tools"
+    aliases: []
+    related: []
+  figma:
+    canonical: "figma"
+    domain: "tools"
+    aliases: []
+    related: []
+  filezilla:
+    canonical: "filezilla"
+    domain: "tools"
+    aliases: []
+    related: []
+  fleet:
+    canonical: "fleet"
+    domain: "tools"
+    aliases: []
+    related: []
+  framer:
+    canonical: "framer"
+    domain: "tools"
+    aliases: []
+    related: []
+  gcc:
+    canonical: "gcc"
+    domain: "tools"
+    aliases: []
+    related: []
+  gerrit:
+    canonical: "gerrit"
+    domain: "tools"
+    aliases: []
+    related: []
+  gimp:
+    canonical: "gimp"
+    domain: "tools"
+    aliases: []
+    related: []
+  git:
+    canonical: "git"
+    domain: "tools"
+    aliases: []
+    related: []
+  gitbook:
+    canonical: "gitbook"
+    domain: "tools"
+    aliases: []
+    related: []
+  github:
+    canonical: "github"
+    domain: "tools"
+    aliases: []
+    related: []
+  gitkraken:
+    canonical: "gitkraken"
+    domain: "tools"
+    aliases: ["git kraken"]
+    related: []
+  gitlab:
+    canonical: "gitlab"
+    domain: "tools"
+    aliases: []
+    related: []
+  godot:
+    canonical: "godot"
+    domain: "tools"
+    aliases: []
+    related: []
+  goland:
+    canonical: "goland"
+    domain: "tools"
+    aliases: []
+    related: []
+  google_meet:
+    canonical: "google-meet"
+    domain: "tools"
+    aliases: ["google meet"]
+    related: []
+  gradle:
+    canonical: "gradle"
+    domain: "tools"
+    aliases: []
+    related: []
+  homebrew:
+    canonical: "homebrew"
+    domain: "tools"
+    aliases: ["brew"]
+    related: []
+  hyper_mesh:
+    canonical: "hyper-mesh"
+    domain: "tools"
+    aliases: ["hyper mesh"]
+    related: []
+  illustrator:
+    canonical: "illustrator"
+    domain: "tools"
+    aliases: ["adobe illustrator"]
+    related: []
+  inkscape:
+    canonical: "inkscape"
+    domain: "tools"
+    aliases: []
+    related: []
+  intellij:
+    canonical: "intellij"
+    domain: "tools"
+    aliases: ["intelli j idea", "intellij idea", "jetbrains intellij idea"]
+    related: []
+  invision:
+    canonical: "invision"
+    domain: "tools"
+    aliases: []
+    related: []
+  jasper_reports:
+    canonical: "jasper-reports"
+    domain: "tools"
+    aliases: ["jasper reports"]
+    related: []
+  jetbrains:
+    canonical: "jetbrains"
+    domain: "tools"
+    aliases: []
+    related: []
+  jira:
+    canonical: "jira"
+    domain: "tools"
+    aliases: ["atlassian jira", "jira service desk"]
+    related: []
+  kicad:
+    canonical: "kicad"
+    domain: "tools"
+    aliases: []
+    related: []
+  labview:
+    canonical: "labview"
+    domain: "tools"
+    aliases: []
+    related: []
+  latex:
+    canonical: "latex"
+    domain: "tools"
+    aliases: []
+    related: []
+  linear:
+    canonical: "linear"
+    domain: "tools"
+    aliases: []
+    related: []
+  lucidchart:
+    canonical: "lucidchart"
+    domain: "tools"
+    aliases: []
+    related: []
+  make:
+    canonical: "make"
+    domain: "tools"
+    aliases: []
+    related: []
+  mathematica:
+    canonical: "mathematica"
+    domain: "tools"
+    aliases: []
+    related: []
+  matlab:
+    canonical: "matlab"
+    domain: "tools"
+    aliases: []
+    related: []
+  maven:
+    canonical: "maven"
+    domain: "tools"
+    aliases: []
+    related: []
+  mercurial:
+    canonical: "mercurial"
+    domain: "tools"
+    aliases: ["hg"]
+    related: []
+  mermaid:
+    canonical: "mermaid"
+    domain: "tools"
+    aliases: []
+    related: []
+  mintlify:
+    canonical: "mintlify"
+    domain: "tools"
+    aliases: []
+    related: []
+  mkdocs:
+    canonical: "mkdocs"
+    domain: "tools"
+    aliases: []
+    related: []
+  mobaxterm:
+    canonical: "mobaxterm"
+    domain: "tools"
+    aliases: []
+    related: []
+  model_sim:
+    canonical: "model-sim"
+    domain: "tools"
+    aliases: ["model sim"]
+    related: []
+  monday:
+    canonical: "monday"
+    domain: "tools"
+    aliases: []
+    related: []
+  msbuild:
+    canonical: "msbuild"
+    domain: "tools"
+    aliases: []
+    related: []
+  neovim:
+    canonical: "neovim"
+    domain: "tools"
+    aliases: ["nvim"]
+    related: []
+  netbeans:
+    canonical: "netbeans"
+    domain: "tools"
+    aliases: ["net beans"]
+    related: []
+  ninja:
+    canonical: "ninja"
+    domain: "tools"
+    aliases: []
+    related: []
+  nmap:
+    canonical: "nmap"
+    domain: "tools"
+    aliases: []
+    related: []
+  notepadpp:
+    canonical: "notepadpp"
+    domain: "tools"
+    aliases: ["notepad++"]
+    related: []
+  notion:
+    canonical: "notion"
+    domain: "tools"
+    aliases: []
+    related: []
+  npm:
+    canonical: "npm"
+    domain: "tools"
+    aliases: []
+    related: ["nodejs"]
+  nuget:
+    canonical: "nuget"
+    domain: "tools"
+    aliases: []
+    related: []
+  parallels:
+    canonical: "parallels"
+    domain: "tools"
+    aliases: []
+    related: []
+  pgadmin:
+    canonical: "pgadmin"
+    domain: "tools"
+    aliases: ["pg admin"]
+    related: ["postgresql"]
+  phabricator:
+    canonical: "phabricator"
+    domain: "tools"
+    aliases: []
+    related: []
+  photoshop:
+    canonical: "photoshop"
+    domain: "tools"
+    aliases: ["adobe photoshop"]
+    related: []
+  phpstorm:
+    canonical: "phpstorm"
+    domain: "tools"
+    aliases: []
+    related: []
+  pip:
+    canonical: "pip"
+    domain: "tools"
+    aliases: []
+    related: []
+  pipenv:
+    canonical: "pipenv"
+    domain: "tools"
+    aliases: []
+    related: []
+  plantuml:
+    canonical: "plantuml"
+    domain: "tools"
+    aliases: []
+    related: []
+  pnpm:
+    canonical: "pnpm"
+    domain: "tools"
+    aliases: []
+    related: []
+  poetry:
+    canonical: "poetry"
+    domain: "tools"
+    aliases: []
+    related: []
+  putty:
+    canonical: "putty"
+    domain: "tools"
+    aliases: []
+    related: []
+  pycharm:
+    canonical: "pycharm"
+    domain: "tools"
+    aliases: ["py charm"]
+    related: []
+  qemu:
+    canonical: "qemu"
+    domain: "tools"
+    aliases: []
+    related: []
+  qgis:
+    canonical: "qgis"
+    domain: "tools"
+    aliases: []
+    related: []
+  qt_creator:
+    canonical: "qt-creator"
+    domain: "tools"
+    aliases: ["qt creator"]
+    related: []
+  quartus_ii:
+    canonical: "quartus-ii"
+    domain: "tools"
+    aliases: ["quartus ii"]
+    related: []
+  redmine:
+    canonical: "redmine"
+    domain: "tools"
+    aliases: []
+    related: []
+  regex:
+    canonical: "regex"
+    domain: "tools"
+    aliases: ["regular expressions"]
+    related: []
+  rhinoceros:
+    canonical: "rhinoceros"
+    domain: "tools"
+    aliases: []
+    related: []
+  rider:
+    canonical: "rider"
+    domain: "tools"
+    aliases: []
+    related: []
+  rubymine:
+    canonical: "rubymine"
+    domain: "tools"
+    aliases: []
+    related: []
+  siemens_nx:
+    canonical: "siemens-nx"
+    domain: "tools"
+    aliases: ["siemens nx"]
+    related: []
+  simulink:
+    canonical: "simulink"
+    domain: "tools"
+    aliases: []
+    related: []
+  sketch:
+    canonical: "sketch"
+    domain: "tools"
+    aliases: []
+    related: []
+  slack:
+    canonical: "slack"
+    domain: "tools"
+    aliases: []
+    related: []
+  solidworks:
+    canonical: "solidworks"
+    domain: "tools"
+    aliases: []
+    related: []
+  sourcetree:
+    canonical: "sourcetree"
+    domain: "tools"
+    aliases: ["source tree"]
+    related: ["git"]
+  sphinx:
+    canonical: "sphinx"
+    domain: "tools"
+    aliases: []
+    related: []
+  star_uml:
+    canonical: "star-uml"
+    domain: "tools"
+    aliases: ["star uml"]
+    related: []
+  sublime_text:
+    canonical: "sublime-text"
+    domain: "tools"
+    aliases: ["sublime", "sublime text"]
+    related: []
+  svn:
+    canonical: "svn"
+    domain: "tools"
+    aliases: ["subversion"]
+    related: ["git"]
+  systemd:
+    canonical: "systemd"
+    domain: "tools"
+    aliases: []
+    related: []
+  tabnine:
+    canonical: "tabnine"
+    domain: "tools"
+    aliases: []
+    related: []
+  teams:
+    canonical: "teams"
+    domain: "tools"
+    aliases: ["microsoft teams"]
+    related: []
+  tfs:
+    canonical: "tfs"
+    domain: "tools"
+    aliases: ["team foundation server"]
+    related: ["git"]
+  tmux:
+    canonical: "tmux"
+    domain: "tools"
+    aliases: []
+    related: []
+  trello:
+    canonical: "trello"
+    domain: "tools"
+    aliases: []
+    related: []
+  unity:
+    canonical: "unity"
+    domain: "tools"
+    aliases: []
+    related: []
+  unreal:
+    canonical: "unreal"
+    domain: "tools"
+    aliases: ["unreal engine"]
+    related: []
+  vim:
+    canonical: "vim"
+    domain: "tools"
+    aliases: []
+    related: []
+  virtualbox:
+    canonical: "virtualbox"
+    domain: "tools"
+    aliases: []
+    related: []
+  visual_studio:
+    canonical: "visual-studio"
+    domain: "tools"
+    aliases: ["ms visual studio", "visual studio"]
+    related: []
+  vmware:
+    canonical: "vmware"
+    domain: "tools"
+    aliases: []
+    related: []
+  vscode:
+    canonical: "vscode"
+    domain: "tools"
+    aliases: ["visual studio code", "vs code"]
+    related: []
+  webstorm:
+    canonical: "webstorm"
+    domain: "tools"
+    aliases: ["web storm"]
+    related: []
+  winscp:
+    canonical: "winscp"
+    domain: "tools"
+    aliases: []
+    related: []
+  wireshark:
+    canonical: "wireshark"
+    domain: "tools"
+    aliases: []
+    related: []
+  yarn:
+    canonical: "yarn"
+    domain: "tools"
+    aliases: []
+    related: []
+  youtrack:
+    canonical: "youtrack"
+    domain: "tools"
+    aliases: []
+    related: []
+  zed:
+    canonical: "zed"
+    domain: "tools"
+    aliases: []
+    related: []
+  zeplin:
+    canonical: "zeplin"
+    domain: "tools"
+    aliases: []
+    related: []
+  zoom:
+    canonical: "zoom"
+    domain: "tools"
+    aliases: []
     related: []
