@@ -43,7 +43,13 @@ class DummyEmbeddingService(EmbeddingService):
 
 
 def _make_parsed_cv() -> ParsedCV:
-    metadata = CVMetadata(cv_id="cv-123", res_id=12345, file_name="cv.docx")
+    metadata = CVMetadata(
+        cv_id="cv-123",
+        res_id=12345,
+        file_name="cv.docx",
+        full_name="Mario Rossi",
+        current_role="Senior Engineer",
+    )
     skills = SkillSection(raw_text="Python, FastAPI", skill_keywords=["Python", "FastAPI"])
     experiences = [
         ExperienceItem(
@@ -177,6 +183,12 @@ def test_process_cv__upsert_payloads__include_expected_fields() -> None:
     assert cv_skills_payload["skill_domain"] == "backend"
     assert cv_skills_payload["seniority_bucket"] in {"junior", "mid", "senior", "lead"}
     assert isinstance(cv_skills_payload["created_at"], datetime)
+    assert cv_skills_payload["full_name"] == "Mario Rossi"
+    assert cv_skills_payload["current_role"] == "Senior Engineer"
+    assert isinstance(cv_skills_payload["skill_details"], list)
+    assert cv_skills_payload["unknown_skills"] == []
+    assert isinstance(cv_skills_payload["experiences_compact"], list)
+    assert cv_skills_payload["years_experience_estimate"] is not None
 
     cv_exp_points = cv_experiences_call.kwargs["points"]
     assert len(cv_exp_points) == 2

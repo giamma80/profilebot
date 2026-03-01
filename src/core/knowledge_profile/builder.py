@@ -7,7 +7,7 @@ from collections import Counter
 from collections.abc import Iterable
 from datetime import date
 from pathlib import Path
-from typing import Protocol
+from typing import Any, Literal, Protocol, cast
 
 from src.core.knowledge_profile.ic_sub_state import calculate_ic_sub_state
 from src.core.knowledge_profile.schemas import (
@@ -19,6 +19,7 @@ from src.core.knowledge_profile.schemas import (
 )
 from src.core.parser.schemas import ParsedCV
 from src.core.seniority.calculator import (
+    SeniorityBucket,
     calculate_seniority_bucket,
     calculate_total_experience_years,
 )
@@ -132,6 +133,94 @@ class KPBuilder:
             match_score=match_score,
             matched_skills=matched_skills,
             missing_skills=missing_skills,
+            match_ratio=match_ratio,
+        )
+
+    def build_from_search(  # noqa: PLR0913
+        self,
+        *,
+        cv_id: str,
+        res_id: int,
+        payload: dict[str, Any],
+        query_skills: Iterable[str] | None = None,
+        match_score: float = 0.0,
+        matched_skills: list[str] | None = None,
+        missing_skills: list[str] | None = None,
+        seniority_bucket: SeniorityBucket | None = None,
+    ) -> KnowledgeProfile:
+        """Build a KnowledgeProfile from search payload data."""
+        skills = self._build_skill_details_from_payload(payload)
+        reskilling_records = self._safe_get_reskilling_records(res_id)
+        if reskilling_records:
+            skills.extend(
+                self._build_skill_details(
+                    SkillExtractionResult(
+                        cv_id=cv_id,
+                        normalized_skills=[],
+                        unknown_skills=[],
+                        dictionary_version="",
+                    ),
+                    reskilling_records,
+                )
+            )
+
+        skill_domains = self._count_skill_domains(skills)
+        availability = self._safe_get_availability(res_id)
+        reskilling_paths = self._build_reskilling_paths(reskilling_records)
+        ic_sub_state = calculate_ic_sub_state(
+            availability,
+            reskilling_records,
+            is_in_transition=False,
+        )
+
+        if matched_skills is None or missing_skills is None:
+            matched_skills, missing_skills, match_ratio = self._build_match_stats(
+                query_skills=query_skills,
+                skills=skills,
+            )
+        else:
+            normalized_query = [
+                skill.strip().lower() for skill in (query_skills or []) if skill.strip()
+            ]
+            match_ratio = len(matched_skills) / len(normalized_query) if normalized_query else 0.0
+
+        payload_unknowns = payload.get("unknown_skills")
+        unknown_skills = payload_unknowns if isinstance(payload_unknowns, list) else []
+
+        payload_years = payload.get("years_experience_estimate")
+        years_experience = payload_years if isinstance(payload_years, int) else None
+
+        payload_seniority = (
+            payload.get("seniority_bucket")
+            if isinstance(payload.get("seniority_bucket"), str)
+            else None
+        )
+        resolved_seniority = self._coerce_seniority_bucket(payload_seniority or seniority_bucket)
+
+        return KnowledgeProfile(
+            cv_id=cv_id,
+            res_id=res_id,
+            full_name=payload.get("full_name")
+            if isinstance(payload.get("full_name"), str)
+            else None,
+            current_role=payload.get("current_role")
+            if isinstance(payload.get("current_role"), str)
+            else None,
+            skills=skills,
+            skill_domains=skill_domains,
+            total_skills=len(skills),
+            unknown_skills=unknown_skills,
+            seniority_bucket=resolved_seniority,
+            years_experience_estimate=years_experience,
+            availability=self._build_availability_detail(availability),
+            ic_sub_state=ic_sub_state,
+            reskilling_paths=reskilling_paths,
+            has_active_reskilling=any(path.is_active for path in reskilling_paths),
+            experiences=self._build_experiences_from_payload(payload),
+            relevant_chunks=[],
+            match_score=match_score,
+            matched_skills=matched_skills or [],
+            missing_skills=missing_skills or [],
             match_ratio=match_ratio,
         )
 
@@ -260,6 +349,96 @@ class KPBuilder:
         missing = [skill for skill in normalized_query if skill not in available]
         match_ratio = len(matched) / len(normalized_query)
         return matched, missing, match_ratio
+
+    def _build_skill_details_from_payload(self, payload: dict[str, Any]) -> list[SkillDetail]:
+        raw = payload.get("skill_details")
+        if not isinstance(raw, list) or not raw:
+            raise ValueError("skill_details missing from payload")
+        skills: list[SkillDetail] = []
+        for item in raw:
+            if not isinstance(item, dict):
+                continue
+            canonical = str(item.get("canonical", "")).strip().lower()
+            if not canonical:
+                continue
+            domain = str(item.get("domain", "unknown")).strip().lower() or "unknown"
+            confidence = item.get("confidence")
+            if not isinstance(confidence, int | float):
+                confidence = 0.0
+            match_type = item.get("match_type")
+            if match_type not in ("exact", "alias", "fuzzy"):
+                match_type = "exact"
+            match_type = cast(Literal["exact", "alias", "fuzzy"], match_type)
+            entry = self._dictionary.get_by_canonical(canonical)
+            if entry and entry.domain:
+                domain = entry.domain
+            certifications = entry.certifications if entry else []
+            skills.append(
+                SkillDetail(
+                    canonical=canonical,
+                    domain=domain,
+                    confidence=float(confidence),
+                    match_type=match_type,
+                    source="cv",
+                    reskilling_completion_pct=None,
+                    related_certifications=certifications,
+                    last_used_hint=None,
+                )
+            )
+        if not skills:
+            raise ValueError("skill_details missing from payload")
+        return skills
+
+    @staticmethod
+    def _build_experiences_from_payload(payload: dict[str, Any]) -> list[ExperienceSnapshot]:
+        raw = payload.get("experiences_compact")
+        if not isinstance(raw, list):
+            return []
+        snapshots: list[ExperienceSnapshot] = []
+        for item in raw:
+            if not isinstance(item, dict):
+                continue
+            start_year = item.get("start_year")
+            end_year = item.get("end_year")
+            is_current = bool(item.get("is_current"))
+            period = KPBuilder._format_compact_period(start_year, end_year, is_current)
+            description = item.get("description_summary")
+            description_summary = str(description).strip() if description is not None else ""
+            related_skills = item.get("related_skills")
+            skills_list = related_skills if isinstance(related_skills, list) else []
+            snapshots.append(
+                ExperienceSnapshot(
+                    company=item.get("company") if isinstance(item.get("company"), str) else None,
+                    role=item.get("role") if isinstance(item.get("role"), str) else None,
+                    period=period,
+                    description_summary=description_summary,
+                    related_skills=[str(skill) for skill in skills_list if str(skill).strip()],
+                )
+            )
+        return snapshots
+
+    @staticmethod
+    def _format_compact_period(
+        start_year: int | None,
+        end_year: int | None,
+        is_current: bool,
+    ) -> str:
+        if isinstance(start_year, int) and isinstance(end_year, int):
+            return f"{start_year}-{end_year}"
+        if isinstance(start_year, int) and is_current:
+            return f"{start_year}-oggi"
+        if isinstance(start_year, int):
+            return f"{start_year}-"
+        return "N/A"
+
+    @staticmethod
+    def _coerce_seniority_bucket(value: str | None) -> SeniorityBucket:
+        if not value:
+            return "unknown"
+        normalized = value.strip().lower()
+        if normalized in {"junior", "mid", "senior", "lead", "unknown"}:
+            return cast(SeniorityBucket, normalized)
+        return "unknown"
 
     def _build_experiences(
         self,

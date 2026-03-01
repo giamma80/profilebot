@@ -8,6 +8,7 @@ from typing import Any
 import httpx
 import redis
 
+from src.core.config import get_settings
 from src.services.embedding.celery_app import celery_app
 from src.services.scraper.client import ScraperClient
 
@@ -28,8 +29,6 @@ def availability_refresh_task(self) -> dict[str, Any]:
     Returns:
         Summary with status, loaded records, and any errors.
     """
-    from src.core.config import get_settings
-
     settings = get_settings()
     base_url = settings.scraper_base_url.strip()
     if not base_url:

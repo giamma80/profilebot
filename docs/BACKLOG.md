@@ -1,6 +1,6 @@
 # Product Backlog - ProfileBot MVP
 
-> **Ultimo aggiornamento:** 28 febbraio 2026
+> **Ultimo aggiornamento:** 1 marzo 2026
 
 ## Epic 1: Infrastructure Setup
 > Configurazione ambiente e infrastruttura base
@@ -264,33 +264,67 @@
 
 ---
 
-### US-009.4: Integrazione KP Context nella Pipeline di Matching
+### US-009.4: Integrazione KP Context nella Pipeline di Matching ✅
 **Come** sistema
 **Voglio** che la pipeline di matching utilizzi KPBuilder + KPContextSerializer al posto del contesto flat attuale
 **Per** fornire all'LLM un contesto ricco (availability, reskilling, IC sub-state, skill per domain) e ottenere ranking più accurati e motivazioni più complete
 
 **Acceptance Criteria:**
-- [ ] `matcher.py` Step 2→3: dopo la ricerca Qdrant, costruire `KnowledgeProfile` per ogni candidato top-K via `KPBuilder.build()`
-- [ ] Sostituire `build_candidates_context()` in `candidate_ranker.py` con `KPContextSerializer.serialize_batch()` (scenario "matching")
-- [ ] Aggiornare `RANKING_SYSTEM_PROMPT` e `RANKING_USER_PROMPT` per riflettere il contesto strutturato (availability, reskilling, IC, skill per domain)
-- [ ] L'output LLM (`CandidateMatch`) include i nuovi campi già presenti nello schema: `strengths`, `gaps`, `explanation`
-- [ ] Fallback `search_only_rank()` invariato (non dipende dal KP)
-- [ ] Token budget: il contesto serializzato per 7 candidati non supera `llm_max_tokens * 0.6`
-- [ ] Test unitari: mock KPBuilder + mock LLM, verificare che il contesto inviato all'LLM contenga sezioni availability/reskilling
-- [ ] Integration test: pipeline end-to-end con dati di test (JD → search → KP → LLM → CandidateMatch)
-- [ ] Backward compatible: se KPBuilder fallisce per un candidato, fallback al formato flat per quel candidato
+- [x] Nuovo metodo `KPBuilder.build_from_search()` che costruisce il KP dal payload arricchito + availability/reskilling da Redis
+- [x] `build_candidates_context_structured()` in `candidate_ranker.py` per ogni candidato top-K via `KPBuilder.build_from_search()`
+- [x] Sostituire `build_candidates_context()` (deprecata, delegata a `build_candidates_context_flat()`)
+- [x] Aggiornare `RANKING_SYSTEM_PROMPT` e `RANKING_USER_PROMPT` per il contesto strutturato
+- [x] L'output LLM (`CandidateMatch`) include `strengths`, `gaps`, `explanation`
+- [x] Fallback `search_only_rank()` invariato
+- [x] Token budget: contesto per 7 candidati ≤ `llm_max_tokens * 0.6` (3 config progressive in `_KP_SERIALIZER_CONFIGS`)
+- [x] Test unitari: mock KPBuilder + mock LLM (`test_renders_kp_blocks`, `test_fallbacks_to_flat_on_builder_error`)
+- [x] Backward compatible: se KPBuilder fallisce per un candidato, fallback al formato flat
+- [ ] Integration test e2e (JD → search → KP → LLM → CandidateMatch) — coperto parzialmente dai test con mock; vero e2e richiede Qdrant+Redis+LLM
+- [ ] Note review non bloccanti: (1) reskilling merge contorto in `build_from_search`, (2) availability None forza fallback flat — TODO configurabilità futura
 
 **Story Points:** 5
 **Priority:** P1 - High
-**Status:** 🔜 Sprint 7 — [#54](https://github.com/giamma80/profilebot/issues/54)
+**Status:** ⏳ In Review (Sprint 7) — [#54](https://github.com/giamma80/profilebot/issues/54) — AC funzionali completati, restano note review non bloccanti
 **Ref:** LLM-study.md §6.2 (Scenario Matching), §9 (Context Builder), §13 Fase 3
-**Dipendenze:** US-009.2 ✅, US-009.3 ✅
+**Dipendenze:** US-009.2 ✅, US-009.3 ✅, US-009.5 ✅
 
 **Note tecniche:**
-- Punto di wiring: `matcher.py` linea 95-101 (step 3: LLM ranking)
-- `build_candidates_context()` in `candidate_ranker.py` → da sostituire con `KPContextSerializer.serialize_batch(profiles, "matching")`
-- `KPBuilder.build()` necessita di `cv_id`, `res_id`, `parsed_cv`, `skill_result` — il `parsed_cv` e `skill_result` vanno recuperati dal payload Qdrant o ricostruiti dai metadata
-- Prompt attuale è in italiano (RANKING_SYSTEM_PROMPT/RANKING_USER_PROMPT) — il nuovo prompt deve mantenere lo stesso stile ma referenziare le sezioni KP (disponibilità, reskilling, IC)
+- Punto di wiring: `candidate_ranker.py` → `build_candidates_context_structured()` con `KPContextSerializer`
+- `KPBuilder.build_from_search(match, qdrant_payload, query_skills)` lavora con il payload arricchito (US-009.5)
+- Graceful degradation: se payload non arricchito (CV pre-009.5), fallback flat per quel candidato
+- `if profile.availability is None: raise ValueError(...)` → TODO: `Settings.kp_require_availability`
+
+---
+
+### US-009.5: Arricchimento Payload Qdrant per KP ✅
+**Come** sistema
+**Voglio** che il payload Qdrant `cv_skills` contenga i dati strutturati necessari al KPBuilder
+**Per** consentire la costruzione del Knowledge Profile direttamente dal risultato di ricerca, senza dover re-parsare i CV
+
+**Contesto:**
+Oggi il payload `cv_skills` in Qdrant contiene solo: `cv_id`, `res_id`, `normalized_skills` (lista flat), `skill_domain`, `seniority_bucket`, `dictionary_version`. Mancano: `full_name`, `current_role`, `experiences`, `confidence/match_type` per skill, `unknown_skills`. Questa US arricchisce il payload durante l'embedding e triggera un re-embedding dei CV esistenti.
+
+**Acceptance Criteria:**
+- [x] Arricchire `pipeline.py → _build_skills_points()` con: `full_name`, `current_role`, `skill_details`, `unknown_skills`, `experiences_compact`, `years_experience_estimate`
+- [x] Il campo `description_summary` è troncato a 200 caratteri per contenere il payload size
+- [x] `_build_experience_points()` invariato (i chunk experience restano separati)
+- [x] Test unitari: verificare che il payload generato contenga i nuovi campi
+- [x] Test di regressione: i vecchi test della pipeline continuano a passare
+- [x] Re-embedding dei CV esistenti eseguibile via `embed_all_task` (operazione idempotente). **Nota:** trigger manuale; automazione discovery demandata a TD-005 (#57)
+- [x] Documentare il nuovo schema payload in docstring su `_build_skills_points()`
+
+**Story Points:** 3
+**Priority:** P1 - High
+**Status:** ✅ Completata (Sprint 7) — [#56](https://github.com/giamma80/profilebot/issues/56)
+**Ref:** LLM-study.md §5 (Hybrid Context), §9 (Context Builder)
+**Dipendenze:** nessuna (infrastrutturale, tocca solo la pipeline di ingestion)
+
+**Note tecniche:**
+- Modifica confinata a `src/core/embedding/pipeline.py → _build_skills_points()`
+- Costo storage Qdrant: pochi KB aggiuntivi per punto, trascurabile
+- Il re-embedding è idempotente grazie ai point ID deterministici (`_generate_point_id`)
+- Perché non Redis store separato: overengineering, Qdrant può ospitare i dati nel payload
+- Perché non re-parsing al volo: lento, richiede accesso filesystem, fragile
 
 ---
 
@@ -398,6 +432,59 @@
 
 ---
 
+### TD-005: Automazione Embedding nel Workflow di Ingestion
+**Come** sistema
+**Voglio** che l'embedding dei CV venga eseguito automaticamente al termine del ciclo di scraping
+**Per** eliminare la dipendenza da task manuali e garantire che Qdrant sia sempre allineato con i CV più recenti
+
+**Contesto:**
+Oggi il workflow `res_id_ingestion` (schedule `0 */4 * * *`) esegue 4 nodi: fetch res_id, fanout refresh CV, export availability CSV, export reskilling CSV. Ma l'embedding in Qdrant è un processo completamente separato, triggerabile solo via API (`POST /api/v1/embeddings/trigger`) passando manualmente la lista `{cv_path, res_id}`. Questo significa che dopo il workflow i file .docx sono aggiornati ma Qdrant resta vuoto o stale. Il gap architetturale è che **nessuno persiste la mappatura `res_id → cv_path`** dopo il refresh: `scraper_inside_refresh_item_task` ritorna `{"status": "success"}` ma non il path del file salvato.
+
+**Acceptance Criteria:**
+
+_Prerequisito: Discovery CV files_
+- [ ] Definire la convenzione di storage dei CV (es. `data/cv/{res_id}.docx`) oppure arricchire `scraper_inside_refresh_item_task` per salvare la mappatura `res_id → cv_path` in Redis (chiave `profilebot:cv:paths:{res_id}`)
+- [ ] Creare funzione `_discover_cv_files(cv_dir: str) -> list[dict]` che restituisce `[{"cv_path": ..., "res_id": ...}]` tramite glob su directory convenzionale oppure lettura da Redis
+
+_Nuovo task Celery_
+- [ ] Creare `embed_from_discovery_task` in `src/services/embedding/tasks.py` che: (a) chiama `_discover_cv_files()`, (b) delega a `embed_all_task` con la lista scoperta, (c) ritorna summary con conteggi
+- [ ] Il task deve essere idempotente: se un CV non è cambiato (stesso file), l'upsert in Qdrant sovrascrive con dati identici (costo: solo API embedding OpenAI)
+- [ ] Opzionale: check `file_hash` (md5 del .docx) vs hash salvato nel payload Qdrant per skip CV non modificati (ottimizzazione futura, non bloccante)
+
+_Integrazione nel Workflow YAML_
+- [ ] Aggiungere nodo `embed_all` in `config/workflows/res_id_workflow.yaml` con `depends_on: [inside_fanout]`
+- [ ] Il nodo deve usare `task: src.services.embedding.tasks.embed_from_discovery_task`
+- [ ] Verificare che il runner DAG produca la canvas corretta: `chain(group(fetch_res_ids, export_availability, export_reskilling), inside_fanout, embed_all)`
+
+_Configurazione_
+- [ ] Aggiungere `cv_storage_dir: str` a `Settings` (default: `data/cv`) con env var `CV_STORAGE_DIR`
+- [ ] Il task legge da `settings.cv_storage_dir`
+
+_Test_
+- [ ] Test unitario `_discover_cv_files()`: directory vuota → `[]`, directory con .docx → lista corretta, file non-.docx ignorati
+- [ ] Test unitario `embed_from_discovery_task`: mock discovery + mock `embed_all_task`, verificare che la lista venga passata correttamente
+- [ ] Test integrazione workflow: caricare il YAML aggiornato, verificare che il canvas Celery includa il nodo `embed_all` dopo `inside_fanout`
+- [ ] Test idempotenza: embeddare 2 volte lo stesso CV, verificare che Qdrant contenga 1 solo punto (non duplicati)
+
+_Target Make (opzionale)_
+- [ ] Aggiungere `make embed-all` al Makefile per trigger manuale one-shot (utile per bootstrap iniziale e re-embedding post US-009.5)
+
+**Story Points:** 3
+**Priority:** P1 - High
+**Status:** 🔜 Sprint 8 — [#57](https://github.com/giamma80/profilebot/issues/57)
+**Ref:** Analisi architetturale 01/03/2026 (workflow engine, embedding pipeline, scraper tasks)
+**Dipendenze:** US-005 ✅, US-016 ✅
+
+**Note tecniche:**
+- Il workflow engine (`src/core/workflows/`) supporta nativamente il nuovo nodo: `WorkflowNode` con `depends_on`, il runner converte in Celery `chain`/`group`
+- L'embedding pipeline usa `_generate_point_id()` deterministico (hash cv_id + section_type) → upsert idempotente, nessun duplicato
+- Il payload è già arricchito (US-009.5): `full_name`, `current_role`, `skill_details`, `experiences_compact`, `unknown_skills`, `years_experience_estimate`
+- Schedule attuale `0 */4 * * *` (ogni 4 ore) è adeguato anche per l'embedding: il costo aggiuntivo è ~$0.01/CV per embedding OpenAI
+- Per il bootstrap iniziale (prima volta o post US-009.5), usare `make embed-all` o triggerare via API; le esecuzioni successive saranno automatiche via workflow
+- Se lo scraper salva i CV con naming convention `{res_id}.docx`, la discovery è un semplice glob; se il naming è diverso, serve parsing del filename o mappatura Redis
+
+---
+
 ## Sprint Planning MVP
 
 ### Sprint 1 (2 settimane) ✅
@@ -433,8 +520,12 @@
 - TD-001: Connector Contract (3 SP) — [#47](https://github.com/giamma80/profilebot/issues/47)
 - TD-004: Resilience Base (3 SP) — [#48](https://github.com/giamma80/profilebot/issues/48)
 
-### Sprint 7 — Scenario Matching (2 settimane)
-- US-009.4: Integrazione KP Context nella Pipeline di Matching (5 SP) — [#54](https://github.com/giamma80/profilebot/issues/54)
+### Sprint 7 — Scenario Matching (2 settimane) ⏳ In Review
+- US-009.5: Arricchimento Payload Qdrant per KP (3 SP) ✅ — [#56](https://github.com/giamma80/profilebot/issues/56)
+- US-009.4: Integrazione KP Context nella Pipeline di Matching (5 SP) ⏳ — [#54](https://github.com/giamma80/profilebot/issues/54) — restano note review non bloccanti
+
+### Sprint 8 — Automazione & Stabilizzazione (2 settimane)
+- TD-005: Automazione Embedding nel Workflow (3 SP) — [#57](https://github.com/giamma80/profilebot/issues/57)
 
 ---
 
@@ -443,13 +534,14 @@
 | Priority | Stories | Total Points | Completati |
 |----------|---------|--------------|-----------|
 | P0 - Critical | 6 | 50 | 50 ✅ |
-| P1 - High | 8 | 51 | 36 ✅ |
+| P1 - High | 10 | 57 | 39 ✅ + 5 ⏳ |
 | P2 - Medium | 6 | 29 | 11 ✅ |
 | P3 - Low | 0 | 0 | 0 |
-| **Total** | **20** | **130** | **97 (75%)** |
+| **Total** | **22** | **136** | **100 ✅ + 5 ⏳ (77%)** |
 
 **Velocity effettiva:** ~22 SP/sprint (Sprint 1-4 media)
 **Sprint 4 completato:** US-008 (13 SP) + US-009 (8 SP) + US-016 (5 SP) + US-017 (3 SP)
 **Sprint 6 in corso:** US-009.1 ✅ (2) + US-009.2 (5) + US-009.3 (5) + TD-001 (3) + TD-004 (3) = 18 SP (2 completati)
-**Sprint 7 pianificato:** US-009.4 (5 SP)
-**MVP completabile in:** ~2 sprint rimanenti
+**Sprint 7 in review:** US-009.5 ✅ (3 SP) + US-009.4 ⏳ (5 SP) = 8 SP — US-009.5 completata, US-009.4 restano note review non bloccanti
+**Sprint 8 pianificato:** TD-005 (3 SP)
+**MVP completabile in:** ~1-2 sprint rimanenti

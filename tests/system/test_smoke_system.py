@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from typing import Any
 
 import pytest
@@ -52,22 +53,37 @@ def test_smoke__core_endpoints__respond_ok(
             query_time_ms=5,
         )
 
-    monkeypatch.setattr("src.api.main.get_qdrant_client", lambda: object())
-    monkeypatch.setattr("src.api.main.check_qdrant_health", lambda _client: {"status": "ok"})
+    def _get_qdrant_client():
+        return object()
+
+    def _check_qdrant_health(_client):
+        return {"status": "ok"}
+
+    monkeypatch.setattr("src.api.main.get_qdrant_client", _get_qdrant_client)
+    monkeypatch.setattr("src.api.main.check_qdrant_health", _check_qdrant_health)
     monkeypatch.setattr("src.api.v1.embeddings.celery_app.control.inspect", _inspect)
     monkeypatch.setattr("src.api.v1.availability.celery_app.control.inspect", _inspect)
     monkeypatch.setattr("src.api.v1.availability.AvailabilityCache.scan_records", _scan_records)
     monkeypatch.setattr("src.api.v1.search.search_by_skills", _search_by_skills)
 
     settings = get_settings()
-    if not settings.scraper_base_url:
-        pytest.fail("SCRAPER_BASE_URL is required for smoke tests")
+    require_scraper = os.getenv("SCRAPER_SMOKE_REQUIRED", "").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+    }
+    if require_scraper:
+        if not settings.scraper_base_url:
+            pytest.fail("SCRAPER_BASE_URL is required for smoke tests")
 
-    with ScraperClient() as scraper_client:
-        res_ids = scraper_client.fetch_inside_res_ids()
+        try:
+            with ScraperClient() as scraper_client:
+                res_ids = scraper_client.fetch_inside_res_ids()
+        except Exception as exc:
+            pytest.fail(f"Scraper service check failed: {exc}")
 
-    assert isinstance(res_ids, list)
-    assert all(isinstance(res_id, int) for res_id in res_ids)
+        assert isinstance(res_ids, list)
+        assert all(isinstance(res_id, int) for res_id in res_ids)
 
     health_response = client.get("/health")
     embeddings_response = client.get("/api/v1/embeddings/stats")

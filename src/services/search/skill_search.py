@@ -47,6 +47,7 @@ class ProfileMatch:
     missing_skills: list[str]
     skill_domain: str | None = None
     seniority: str | None = None
+    payload: dict[str, Any] | None = None
 
 
 @dataclass(frozen=True)
@@ -248,7 +249,7 @@ def _build_matches(
     matches: list[ProfileMatch] = []
 
     for point in points:
-        payload = point.payload or {}
+        payload = point.payload if isinstance(point.payload, dict) else {}
         normalized_skills = _extract_payload_list(payload, "normalized_skills")
         matched = query_set.intersection(normalized_skills)
         missing = query_set.difference(matched)
@@ -281,6 +282,7 @@ def _build_matches(
                 missing_skills=ordered_missing,
                 skill_domain=_extract_payload_str(payload, "skill_domain"),
                 seniority=_extract_payload_str(payload, "seniority_bucket"),
+                payload=payload,
             )
         )
 

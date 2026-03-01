@@ -10,8 +10,17 @@ from typing import cast
 import pytest
 from pydantic import ValidationError
 
+from src.core.config import Settings
+from src.core.knowledge_profile.schemas import (
+    AvailabilityDetail,
+    ICSubState,
+    KnowledgeProfile,
+    SkillDetail,
+)
+from src.services.availability.schemas import AvailabilityStatus
 from src.services.matching.candidate_ranker import (
-    build_candidates_context,
+    build_candidates_context_flat,
+    build_candidates_context_structured,
     search_only_rank,
 )
 from src.services.matching.explainer import parse_ranking_output
@@ -234,6 +243,7 @@ def _make_profile_match(
     cv_id: str = "cv-1",
     res_id: int = 100001,
     score: float = 0.85,
+    payload: dict[str, object] | None = None,
 ) -> ProfileMatch:
     return ProfileMatch(
         cv_id=cv_id,
@@ -243,12 +253,57 @@ def _make_profile_match(
         missing_skills=["kubernetes"],
         skill_domain="backend",
         seniority="senior",
+        payload=payload,
     )
 
 
-class TestBuildCandidatesContext:
+def _fake_profile(cv_id: str = "cv-1", res_id: int = 100001) -> KnowledgeProfile:
+    return KnowledgeProfile(
+        cv_id=cv_id,
+        res_id=res_id,
+        full_name="Mario Rossi",
+        current_role="Senior Engineer",
+        skills=[
+            SkillDetail(
+                canonical="python",
+                domain="backend",
+                confidence=1.0,
+                match_type="exact",
+                source="cv",
+                reskilling_completion_pct=None,
+                related_certifications=[],
+                last_used_hint=None,
+            )
+        ],
+        skill_domains={"backend": 1},
+        total_skills=1,
+        unknown_skills=[],
+        seniority_bucket="senior",
+        years_experience_estimate=5,
+        availability=AvailabilityDetail(
+            status=AvailabilityStatus.FREE,
+            allocation_pct=0,
+            current_project=None,
+            available_from=None,
+            available_to=None,
+            manager_name=None,
+            is_intercontratto=True,
+        ),
+        ic_sub_state=ICSubState.IC_AVAILABLE,
+        reskilling_paths=[],
+        has_active_reskilling=False,
+        experiences=[],
+        relevant_chunks=[],
+        match_score=0.9,
+        matched_skills=["python"],
+        missing_skills=[],
+        match_ratio=1.0,
+    )
+
+
+class TestBuildCandidatesContextFlat:
     def test_formats_single_candidate(self) -> None:
-        ctx = build_candidates_context([_make_profile_match()])
+        ctx = build_candidates_context_flat([_make_profile_match()])
         assert "CV_ID: cv-1" in ctx
         assert "RES_ID: 100001" in ctx
         assert "SCORE: 0.85" in ctx
@@ -260,10 +315,46 @@ class TestBuildCandidatesContext:
             _make_profile_match("cv-1", 100001, 0.90),
             _make_profile_match("cv-2", 100002, 0.75),
         ]
-        ctx = build_candidates_context(results)
+        ctx = build_candidates_context_flat(results)
         assert "Candidato 1" in ctx
         assert "Candidato 2" in ctx
         assert ctx.index("cv-1") < ctx.index("cv-2")
+
+
+class TestBuildCandidatesContextStructured:
+    def test_renders_kp_blocks(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        def _build_from_search(self, **_kwargs) -> KnowledgeProfile:
+            return _fake_profile()
+
+        monkeypatch.setattr(
+            "src.core.knowledge_profile.builder.KPBuilder.build_from_search",
+            _build_from_search,
+        )
+
+        ctx = build_candidates_context_structured(
+            jd_analysis=JDAnalysis(must_have=["python"]),
+            search_results=[_make_profile_match()],
+            settings=Settings(),
+        )
+
+        assert "═══ CANDIDATO 1/1 ═══" in ctx
+
+    def test_fallbacks_to_flat_on_builder_error(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        def _build_from_search(self, **_kwargs) -> KnowledgeProfile:
+            raise ValueError("old payload")
+
+        monkeypatch.setattr(
+            "src.core.knowledge_profile.builder.KPBuilder.build_from_search",
+            _build_from_search,
+        )
+
+        ctx = build_candidates_context_structured(
+            jd_analysis=JDAnalysis(must_have=["python"]),
+            search_results=[_make_profile_match()],
+            settings=Settings(),
+        )
+
+        assert "--- Candidato 1 ---" in ctx
 
 
 # ──────────────────────────────────────────
