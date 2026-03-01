@@ -1,4 +1,4 @@
-.PHONY: help install dev lint lint-all format format-check preflight test clean run worker beat flower docker-up docker-down api-lint
+.PHONY: help install dev lint lint-all format format-check preflight test clean run worker beat flower docker-up docker-down docker-logs system system-down api-lint
 
 # Default target
 help:
@@ -27,6 +27,9 @@ help:
 	@echo "  make flower      Start Flower dashboard"
 	@echo "  make docker-up   Start Qdrant + Redis"
 	@echo "  make docker-down Stop Docker services"
+	@echo "  make docker-logs Tail Docker logs"
+	@echo "  make system      Start full stack (docker + api + worker + beat + flower)"
+	@echo "  make system-down Stop full stack (docker + api + worker + beat + flower)"
 	@echo ""
 	@echo "Cleanup:"
 	@echo "  make clean       Remove cache and build files"
@@ -124,6 +127,25 @@ docker-up:
 docker-down:
 	@echo "🛑 Stopping Docker services..."
 	docker-compose down
+
+docker-logs:
+	@echo "📜 Tailing Docker logs..."
+	docker-compose logs -f --tail=200
+
+system: docker-up
+	@echo "🚀 Starting full ProfileBot stack (Ctrl+C to stop)..."
+	@uv run uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000 & \
+	uv run celery -A src.services.embedding.celery_app worker -l info -c 4 & \
+	uv run celery -A src.services.embedding.celery_app beat -l info & \
+	uv run celery -A src.services.embedding.celery_app flower --port=5555 & \
+	wait
+
+system-down: docker-down
+	@echo "🛑 Stopping local ProfileBot processes..."
+	@pkill -f "uvicorn src.api.main:app" || true
+	@pkill -f "celery -A src.services.embedding.celery_app worker" || true
+	@pkill -f "celery -A src.services.embedding.celery_app beat" || true
+	@pkill -f "celery -A src.services.embedding.celery_app flower" || true
 
 # ============== Cleanup ==============
 
