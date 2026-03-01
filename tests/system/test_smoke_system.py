@@ -52,8 +52,14 @@ def test_smoke__core_endpoints__respond_ok(
             query_time_ms=5,
         )
 
-    monkeypatch.setattr("src.api.main.get_qdrant_client", lambda: object())
-    monkeypatch.setattr("src.api.main.check_qdrant_health", lambda _client: {"status": "ok"})
+    def _get_qdrant_client():
+        return object()
+
+    def _check_qdrant_health(_client):
+        return {"status": "ok"}
+
+    monkeypatch.setattr("src.api.main.get_qdrant_client", _get_qdrant_client)
+    monkeypatch.setattr("src.api.main.check_qdrant_health", _check_qdrant_health)
     monkeypatch.setattr("src.api.v1.embeddings.celery_app.control.inspect", _inspect)
     monkeypatch.setattr("src.api.v1.availability.celery_app.control.inspect", _inspect)
     monkeypatch.setattr("src.api.v1.availability.AvailabilityCache.scan_records", _scan_records)

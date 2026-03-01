@@ -24,6 +24,7 @@ env/
 .env.*.local
 *.local
 auth_state.json
+.logs
 
 # Data
 data/
