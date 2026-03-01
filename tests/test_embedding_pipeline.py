@@ -6,7 +6,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from src.core.embedding.pipeline import EmbeddingPipeline
+from src.core.embedding.pipeline import EmbeddingPipeline, _generate_point_id
 from src.core.embedding.service import EmbeddingService
 from src.core.parser.schemas import CVMetadata, ExperienceItem, ParsedCV, SkillSection
 from src.core.skills.schemas import NormalizedSkill, SkillExtractionResult
@@ -347,3 +347,8 @@ def test_process_cv__experience_years_handles_current_date() -> None:
     experience_years = cv_exp_points[0].payload["experience_years"]
     assert experience_years is not None
     assert experience_years >= 0
+
+
+def test_generate_point_id__same_inputs__returns_stable_id() -> None:
+    assert _generate_point_id("cv-123", "skills") == "cv-123_skills"
+    assert _generate_point_id("cv-123", "skills") == "cv-123_skills"

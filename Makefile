@@ -1,4 +1,4 @@
-.PHONY: help install dev lint lint-all format format-check preflight test clean run worker beat flower docker-build docker-up docker-down docker-logs system system-down api-lint system-test
+.PHONY: help install dev lint lint-all format format-check preflight test clean run worker beat flower embed-all docker-build docker-up docker-down docker-logs system system-down api-lint system-test
 
 # Default target
 help:
@@ -26,6 +26,7 @@ help:
 	@echo "  make worker      Start Celery worker"
 	@echo "  make beat        Start Celery beat scheduler"
 	@echo "  make flower      Start Flower dashboard"
+	@echo "  make embed-all   Trigger embedding from scraper"
 	@echo "  make docker-up   Start Qdrant + Redis"
 	@echo "  make docker-down Stop Docker services"
 	@echo "  make docker-logs Tail Docker logs"
@@ -126,6 +127,10 @@ beat:
 flower:
 	@echo "🌸 Starting Flower dashboard..."
 	uv run celery -A src.services.embedding.celery_app flower --port=5555
+
+embed-all:
+	@echo "🧩 Triggering embedding from scraper..."
+	@uv run python -c 'from src.services.embedding.tasks import embed_from_scraper_task; print(embed_from_scraper_task.run())'
 
 docker-build:
 	@echo "🐳 Building Docker images..."

@@ -7,6 +7,7 @@ import re
 import time
 from collections.abc import Iterable
 from dataclasses import dataclass
+from io import BytesIO
 from pathlib import Path
 
 from docx import Document
@@ -75,6 +76,60 @@ class DocxParser:
 
         sections = self._extract_sections(lines, raw_text)
         metadata = self._build_metadata(path, raw_text)
+
+        parsed = ParsedCV(
+            metadata=metadata,
+            skills=self._parse_skills(sections.skills),
+            experiences=self._parse_experiences(sections.experience),
+            education=sections.education,
+            certifications=sections.certifications,
+            raw_text=sections.raw_text,
+        )
+        self._log_parse_result(parsed, sections, start_time)
+        return parsed
+
+    def parse_bytes(self, data: bytes, res_id: int, filename: str | None = None) -> ParsedCV:
+        """Parse a DOCX CV from in-memory bytes.
+
+        Args:
+            data: Raw DOCX bytes.
+            res_id: Resource identifier for the CV.
+            filename: Optional filename to include in metadata.
+
+        Returns:
+            ParsedCV with extracted sections and metadata.
+
+        Raises:
+            CVParseError: If the DOCX bytes are invalid or cannot be parsed.
+        """
+        start_time = time.perf_counter()
+
+        try:
+            document = Document(BytesIO(data))
+        except PackageNotFoundError as exc:
+            raise CVParseError(f"Invalid DOCX bytes for res_id {res_id}") from exc
+        except Exception as exc:  # pragma: no cover - defensive
+            raise CVParseError(f"Failed to read DOCX bytes for res_id {res_id}") from exc
+
+        lines = list(self._extract_lines(document))
+        raw_text = "\n".join(lines).strip()
+        resolved_filename = filename or f"{res_id}_unknown.docx"
+
+        if not raw_text:
+            metadata = self._build_metadata_from_bytes(res_id, resolved_filename, raw_text)
+            parsed = ParsedCV(
+                metadata=metadata,
+                skills=None,
+                experiences=[],
+                education=[],
+                certifications=[],
+                raw_text="",
+            )
+            self._log_parse_result(parsed, ParsedSections([], [], [], [], raw_text), start_time)
+            return parsed
+
+        sections = self._extract_sections(lines, raw_text)
+        metadata = self._build_metadata_from_bytes(res_id, resolved_filename, raw_text)
 
         parsed = ParsedCV(
             metadata=metadata,
@@ -167,6 +222,18 @@ class DocxParser:
             parsed_at=metadata.parsed_at,
         )
 
+    def _build_metadata_from_bytes(self, res_id: int, filename: str, raw_text: str) -> CVMetadata:
+        """Build metadata when res_id is provided explicitly."""
+        metadata = extract_metadata(raw_text)
+        return CVMetadata(
+            cv_id=metadata.cv_id,
+            res_id=res_id,
+            file_name=filename,
+            full_name=metadata.full_name,
+            current_role=metadata.current_role,
+            parsed_at=metadata.parsed_at,
+        )
+
     def _extract_res_id(self, filename: str) -> int:
         """Extract res_id from filename using the {res_id}_ prefix pattern."""
         match = re.match(r"^(\d+)_", filename)
@@ -232,9 +299,14 @@ class DocxParser:
         return tokens
 
 
+def parse_docx_bytes(data: bytes, res_id: int, filename: str | None = None) -> ParsedCV:
+    """Convenience function to parse a DOCX CV from bytes."""
+    return DocxParser().parse_bytes(data, res_id, filename=filename)
+
+
 def parse_docx(file_path: str | Path) -> ParsedCV:
     """Convenience function to parse a DOCX CV file."""
     return DocxParser().parse(file_path)
 
 
-__all__ = ["CVParseError", "DocxParser", "parse_docx"]
+__all__ = ["CVParseError", "DocxParser", "parse_docx", "parse_docx_bytes"]

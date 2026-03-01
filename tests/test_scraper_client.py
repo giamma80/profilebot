@@ -190,3 +190,38 @@ def test_http_status_error__propagates_httpx_status_error() -> None:
     with pytest.raises(httpx.HTTPStatusError):
         with client:
             client.export_availability_csv()
+
+
+def test_download_inside_cv__returns_bytes() -> None:
+    payload = b"docx-bytes"
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        assert request.method == "GET"
+        assert request.url.path == "/inside/cv/123"
+        return httpx.Response(200, content=payload)
+
+    transport = httpx.MockTransport(handler)
+    client = ScraperClient(
+        config=ScraperClientConfig(base_url="https://scraper"),
+        transport=transport,
+    )
+
+    with client:
+        result = client.download_inside_cv(123)
+
+    assert result == payload
+
+
+def test_download_inside_cv__http_status_error() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(404, request=request)
+
+    transport = httpx.MockTransport(handler)
+    client = ScraperClient(
+        config=ScraperClientConfig(base_url="https://scraper"),
+        transport=transport,
+    )
+
+    with pytest.raises(httpx.HTTPStatusError):
+        with client:
+            client.download_inside_cv(123)
