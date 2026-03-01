@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 import shutil
+from io import BytesIO
 from pathlib import Path
 
 import pytest
 from docx import Document
 
-from src.core.parser.docx_parser import CVParseError, parse_docx
+from src.core.parser.docx_parser import CVParseError, parse_docx, parse_docx_bytes
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures" / "sample_cvs"
 
@@ -60,6 +61,24 @@ def test_parse_invalid_docx_raises(tmp_path: Path) -> None:
 
     with pytest.raises(CVParseError):
         parse_docx(invalid_path)
+
+
+def test_parse_docx_bytes__valid_docx__returns_parsed_cv() -> None:
+    document = Document()
+    document.add_paragraph("Test CV")
+    buffer = BytesIO()
+    document.save(buffer)
+
+    parsed = parse_docx_bytes(buffer.getvalue(), 12345)
+
+    assert parsed.metadata.res_id == 12345
+    assert parsed.metadata.file_name == "12345_unknown.docx"
+    assert "Test CV" in parsed.raw_text
+
+
+def test_parse_docx_bytes__invalid_docx__raises_parse_error() -> None:
+    with pytest.raises(CVParseError):
+        parse_docx_bytes(b"not a docx file", 12345)
 
 
 def test_parse_docx__filename_with_res_id__sets_metadata_res_id(tmp_path: Path) -> None:

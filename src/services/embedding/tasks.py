@@ -9,9 +9,12 @@ from pathlib import Path
 from typing import Any
 
 from src.core.embedding.pipeline import EmbeddingPipeline
-from src.core.parser import parse_docx
+from src.core.parser import parse_docx, parse_docx_bytes
 from src.core.skills import SkillExtractor, load_skill_dictionary
 from src.services.embedding.celery_app import celery_app
+from src.services.scraper.cache import ScraperResIdCache
+from src.services.scraper.client import ScraperClient
+from src.services.scraper.tasks import _ensure_scraper_base_url
 
 logger = logging.getLogger(__name__)
 
@@ -274,4 +277,70 @@ def embed_all_task(  # noqa: PLR0913 - task signature mirrors API payload
         "errors": errors,
         "percentage": 100,
         "force": force,
+    }
+
+
+@celery_app.task(bind=True)
+def embed_from_scraper_task(self) -> dict[str, Any]:
+    """Download CVs from the scraper service and index them into Qdrant."""
+    if not _ensure_scraper_base_url():
+        return {"status": "skipped", "reason": "SCRAPER_BASE_URL not configured"}
+
+    cache = ScraperResIdCache()
+    res_ids = cache.get_res_ids()
+    if not res_ids:
+        return {
+            "status": "empty",
+            "processed": 0,
+            "failed": 0,
+            "totals": {"cv_skills": 0, "cv_experiences": 0, "total": 0},
+            "errors": [],
+            "percentage": 0,
+        }
+
+    dictionary = load_skill_dictionary(_resolve_dictionary_path(None))
+    extractor = SkillExtractor(dictionary)
+    pipeline = EmbeddingPipeline()
+
+    processed = 0
+    failed = 0
+    totals = {"cv_skills": 0, "cv_experiences": 0, "total": 0}
+    errors: list[dict[str, int | str]] = []
+    total_res_ids = len(res_ids)
+
+    with ScraperClient() as client:
+        for index, res_id in enumerate(res_ids, start=1):
+            try:
+                data = client.download_inside_cv(res_id)
+                parsed_cv = parse_docx_bytes(data, res_id)
+                skill_result = extractor.extract(parsed_cv)
+                result = pipeline.process_cv(parsed_cv, skill_result)
+                totals["cv_skills"] += result.get("cv_skills", 0)
+                totals["cv_experiences"] += result.get("cv_experiences", 0)
+                totals["total"] += result.get("total", 0)
+                processed += 1
+            except Exception as exc:
+                failed += 1
+                errors.append({"res_id": res_id, "error": str(exc)})
+                logger.exception("Failed embedding CV for res_id %s", res_id)
+            finally:
+                percentage = int(index / total_res_ids * 100)
+                if self.request.id is not None:
+                    self.update_state(
+                        state="PROGRESS",
+                        meta={
+                            "percentage": percentage,
+                            "res_id": res_id,
+                            "processed": processed,
+                            "failed": failed,
+                        },
+                    )
+
+    return {
+        "status": "completed",
+        "processed": processed,
+        "failed": failed,
+        "totals": totals,
+        "errors": errors,
+        "percentage": 100,
     }

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, cast
 
 import httpx
 
@@ -87,6 +87,10 @@ class ScraperClient:
         """Trigger refresh for a single Inside CV."""
         self.post(f"/inside/cv/{res_id}")
 
+    def download_inside_cv(self, res_id: int) -> bytes:
+        """Download the CV DOCX bytes via GET /inside/cv/{res_id}."""
+        return self._request_binary(f"/inside/cv/{res_id}")
+
     def export_availability_csv(self) -> None:
         """Trigger the availability CSV export."""
         self.post("/availability/csv")
@@ -109,6 +113,14 @@ class ScraperClient:
         if not response.content:
             return None
         return response.json()
+
+    def _request_binary(self, path: str) -> bytes:
+        """GET request returning raw bytes for binary content like DOCX."""
+        response = self._client.request("GET", path)
+        response.raise_for_status()
+        if not response.content:
+            raise ValueError(f"Empty response for {path}")
+        return cast(bytes, response.content)
 
 
 __all__ = [

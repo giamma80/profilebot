@@ -19,3 +19,7 @@ nodes:
 
   - id: export_reskilling
     task: src.services.scraper.tasks.scraper_reskilling_csv_refresh_task
+
+  - id: embed_all
+    task: src.services.embedding.tasks.embed_from_scraper_task
+    depends_on: [inside_fanout]
