@@ -167,6 +167,7 @@ services:
     profiles: ["monitoring"]
     image: danihodovic/celery-exporter:latest
     container_name: profilebot-celery-exporter
+    command: ["--broker-url=redis://redis:6379/0"]
     ports:
       - "9808:9808"
     environment:
