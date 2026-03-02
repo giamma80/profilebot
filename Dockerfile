@@ -17,6 +17,7 @@ RUN pip install --no-cache-dir uv \
 COPY src /app/src
 COPY scripts /app/scripts
 COPY data /app/data
+COPY config /app/config
 COPY docs /app/docs
 
 EXPOSE 8000

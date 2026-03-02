@@ -15,7 +15,7 @@ class ScraperClientConfig:
     """Configuration for the scraper client."""
 
     base_url: str
-    timeout_seconds: float = 30.0
+    timeout_seconds: float = 120.0
 
 
 class ScraperClient:
@@ -29,7 +29,10 @@ class ScraperClient:
         transport: httpx.BaseTransport | None = None,
     ) -> None:
         settings = get_settings()
-        resolved_config = config or ScraperClientConfig(base_url=settings.scraper_base_url)
+        resolved_config = config or ScraperClientConfig(
+            base_url=settings.scraper_base_url,
+            timeout_seconds=settings.scraper_timeout,
+        )
         base_url = resolved_config.base_url.strip()
         if not base_url:
             raise ValueError("Scraper base URL is required")

@@ -231,16 +231,16 @@
 **Per** includerli nel Knowledge Profile e nelle decisioni LLM
 
 **Acceptance Criteria:**
-- [ ] Schema Pydantic `ReskillingRecord` + `ReskillingStatus`
-- [ ] JSON row normalizer (mapping campi SharePoint raw → Pydantic)
-- [ ] `ScraperClient.fetch_reskilling_row(res_id)` integrato
-- [ ] Redis cache con TTL configurabile
-- [ ] Service con get/get_bulk/filter
-- [ ] Integrazione Celery task per refresh (REST → normalize → cache)
+- [x] Schema Pydantic `ReskillingRecord` + `ReskillingStatus`
+- [x] JSON row normalizer (mapping campi SharePoint raw → Pydantic)
+- [x] `ScraperClient.fetch_reskilling_row(res_id)` integrato
+- [x] Redis cache con TTL configurabile
+- [x] Service con get/get_bulk/filter
+- [x] Integrazione Celery task per refresh (REST → normalize → cache)
 
 **Story Points:** 5
 **Priority:** P1 - High
-**Status:** 🔜 Sprint 6 — [#45](https://github.com/giamma80/profilebot/issues/45)
+**Status:** ✅ Completata (Sprint 6) — [#45](https://github.com/giamma80/profilebot/issues/45)
 **Ref:** LLM-study.md §8
 
 ---
@@ -251,15 +251,15 @@
 **Per** fornire contesto ricco all'LLM per decisioni multi-scenario
 
 **Acceptance Criteria:**
-- [ ] Schema KnowledgeProfile (Pydantic v2)
-- [ ] IC sub-state calculator
-- [ ] KP Builder service (assembly da Qdrant + Redis availability + Redis reskilling + dictionary)
-- [ ] KP Context serializer strutturato
-- [ ] Test con dati di esempio
+- [x] Schema KnowledgeProfile (Pydantic v2)
+- [x] IC sub-state calculator
+- [x] KP Builder service (assembly da Qdrant + Redis availability + Redis reskilling + dictionary)
+- [x] KP Context serializer strutturato
+- [x] Test con dati di esempio
 
 **Story Points:** 5
 **Priority:** P1 - High
-**Status:** 🔜 Sprint 6 — [#46](https://github.com/giamma80/profilebot/issues/46)
+**Status:** ✅ Completata (Sprint 6) — [#46](https://github.com/giamma80/profilebot/issues/46)
 **Ref:** LLM-study.md §3, §7, §9
 
 ---
@@ -529,12 +529,12 @@ _6. Target Make (opzionale)_
 - US-011: Chat Interface (8 SP) — [#16](https://github.com/giamma80/profilebot/issues/16)
 - US-012: Visualizzazione Profili (5 SP) — [#17](https://github.com/giamma80/profilebot/issues/17)
 
-### Sprint 6 — KP Foundation (2 settimane) ⬅️ IN CORSO
+### Sprint 6 — KP Foundation (2 settimane) ✅
 - US-009.1: Seniority Calculator (2 SP) ✅ — [#44](https://github.com/giamma80/profilebot/issues/44)
-- US-009.2: Reskilling Infrastructure (5 SP) — [#45](https://github.com/giamma80/profilebot/issues/45)
-- US-009.3: KP Schema e Builder Base (5 SP) — [#46](https://github.com/giamma80/profilebot/issues/46)
-- TD-001: Connector Contract (3 SP) — [#47](https://github.com/giamma80/profilebot/issues/47)
-- TD-004: Resilience Base (3 SP) — [#48](https://github.com/giamma80/profilebot/issues/48)
+- US-009.2: Reskilling Infrastructure (5 SP) ✅ — [#45](https://github.com/giamma80/profilebot/issues/45)
+- US-009.3: KP Schema e Builder Base (5 SP) ✅ — [#46](https://github.com/giamma80/profilebot/issues/46)
+- TD-001: Connector Contract (3 SP) ✅ — [#47](https://github.com/giamma80/profilebot/issues/47)
+- TD-004: Resilience Base (3 SP) ✅ — [#48](https://github.com/giamma80/profilebot/issues/48)
 
 ### Sprint 7 — Scenario Matching (2 settimane) ⏳ In Review
 - US-009.5: Arricchimento Payload Qdrant per KP (3 SP) ✅ — [#56](https://github.com/giamma80/profilebot/issues/56)
@@ -550,14 +550,14 @@ _6. Target Make (opzionale)_
 | Priority | Stories | Total Points | Completati |
 |----------|---------|--------------|-----------|
 | P0 - Critical | 6 | 50 | 50 ✅ |
-| P1 - High | 10 | 59 | 44 ✅ + 5 ⏳ |
-| P2 - Medium | 6 | 29 | 11 ✅ |
+| P1 - High | 10 | 59 | 54 ✅ + 5 ⏳ |
+| P2 - Medium | 6 | 29 | 17 ✅ |
 | P3 - Low | 0 | 0 | 0 |
-| **Total** | **22** | **138** | **105 ✅ + 5 ⏳ (80%)** |
+| **Total** | **22** | **138** | **121 ✅ + 5 ⏳ (91%)** |
 
 **Velocity effettiva:** ~22 SP/sprint (Sprint 1-4 media)
 **Sprint 4 completato:** US-008 (13 SP) + US-009 (8 SP) + US-016 (5 SP) + US-017 (3 SP)
-**Sprint 6 in corso:** US-009.1 ✅ (2) + US-009.2 (5) + US-009.3 (5) + TD-001 (3) + TD-004 (3) = 18 SP (2 completati)
+**Sprint 6 completato:** US-009.1 ✅ (2) + US-009.2 ✅ (5) + US-009.3 ✅ (5) + TD-001 ✅ (3) + TD-004 ✅ (3) = 18 SP
 **Sprint 7 in review:** US-009.5 ✅ (3 SP) + US-009.4 ⏳ (5 SP) = 8 SP — US-009.5 completata, US-009.4 restano note review non bloccanti
 **Sprint 8 completato:** TD-005 ✅ (5 SP)
 **MVP completabile in:** ~1-2 sprint rimanenti
