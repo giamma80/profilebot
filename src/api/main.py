@@ -5,6 +5,7 @@ from __future__ import annotations
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
+from prometheus_fastapi_instrumentator import Instrumentator
 
 from src.api.v1.router import router as v1_router
 from src.services.qdrant import check_qdrant_health, get_qdrant_client
@@ -36,6 +37,8 @@ app = FastAPI(
         },
     ],
 )
+
+Instrumentator().instrument(app).expose(app)
 
 app.include_router(v1_router)
 

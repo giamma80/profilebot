@@ -1,0 +1,10 @@
+apiVersion: 1
+
+providers:
+  - name: ProfileBot
+    folder: ProfileBot
+    type: file
+    disableDeletion: false
+    editable: false
+    options:
+      path: /var/lib/grafana/dashboards

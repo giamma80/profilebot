@@ -1,4 +1,4 @@
-.PHONY: help install dev lint lint-all format format-check preflight test clean run worker beat flower embed-all docker-build docker-up docker-down docker-full docker-full-down docker-logs system system-down api-lint system-test
+.PHONY: help install dev lint lint-all format format-check preflight test clean run worker beat flower embed-all monitoring-up monitoring-down system-and-monitoring system-and-monitoring-down docker-build docker-up docker-down docker-full docker-full-down docker-logs system system-down api-lint system-test
 
 # Default target
 help:
@@ -22,19 +22,23 @@ help:
 	@echo "  make system-test Run system test scenario (e.g., SCENARIO=smoke)"
 	@echo ""
 	@echo "Run:"
-	@echo "  make run         Start the API server"
-	@echo "  make worker      Start Celery worker"
-	@echo "  make beat        Start Celery beat scheduler"
-	@echo "  make flower      Start Flower dashboard"
-	@echo "  make embed-all   Trigger embedding from scraper"
-	@echo "  make docker-up        Start infra only (Qdrant + Redis)"
-	@echo "  make docker-down      Stop infra"
-	@echo "  make docker-full      Start ALL in Docker (infra + app + celery)"
-	@echo "  make docker-full-down Stop ALL Docker services"
-	@echo "  make docker-logs      Tail Docker logs"
-	@echo "  make docker-build     Build Docker images"
-	@echo "  make system           Dev mode: infra in Docker + app local (uv run)"
-	@echo "  make system-down      Stop dev mode (infra + local processes)"
+	@echo "  make run                     Start the API server"
+	@echo "  make worker                  Start Celery worker"
+	@echo "  make beat                    Start Celery beat scheduler"
+	@echo "  make flower                  Start Flower dashboard"
+	@echo "  make embed-all               Trigger embedding from scraper"
+	@echo "  make monitoring-up           Start monitoring stack (Prometheus + Grafana + exporters)"
+	@echo "  make monitoring-down         Stop monitoring stack"
+	@echo "  make system-and-monitoring   Dev mode + monitoring stack"
+	@echo "  make system-and-monitoring-down Stop dev mode + monitoring stack"
+	@echo "  make docker-up               Start infra only (Qdrant + Redis)"
+	@echo "  make docker-down             Stop infra"
+	@echo "  make docker-full             Start ALL in Docker (infra + app + celery)"
+	@echo "  make docker-full-down        Stop ALL Docker services"
+	@echo "  make docker-logs             Tail Docker logs"
+	@echo "  make docker-build            Build Docker images"
+	@echo "  make system                  Dev mode: infra in Docker + app local (uv run)"
+	@echo "  make system-down             Stop dev mode (infra + local processes)"
 	@echo ""
 	@echo "Cleanup:"
 	@echo "  make clean       Remove cache and build files"
@@ -133,6 +137,23 @@ flower:
 embed-all:
 	@echo "🧩 Triggering embedding from scraper..."
 	@uv run python -c 'from src.services.embedding.tasks import embed_from_scraper_task; print(embed_from_scraper_task.run())'
+
+monitoring-up:
+	@echo "📈 Starting monitoring stack..."
+	docker-compose --profile monitoring up -d
+
+monitoring-down:
+	@echo "🛑 Stopping monitoring stack..."
+	docker-compose --profile monitoring stop
+	docker-compose --profile monitoring rm -f
+
+system-and-monitoring:
+	@$(MAKE) system
+	@$(MAKE) monitoring-up
+
+system-and-monitoring-down:
+	@$(MAKE) monitoring-down
+	@$(MAKE) system-down
 
 docker-build:
 	@echo "🐳 Building Docker images..."
