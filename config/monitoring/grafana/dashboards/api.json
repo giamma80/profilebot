@@ -10,6 +10,7 @@
   },
   "panels": [
     {
+      "id": 1,
       "type": "timeseries",
       "title": "API up",
       "datasource": "Prometheus",
@@ -19,10 +20,78 @@
         }
       ],
       "gridPos": {
-        "h": 8,
-        "w": 24,
+        "h": 6,
+        "w": 12,
         "x": 0,
         "y": 0
+      }
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "Request rate (req/s)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(rate(http_requests_total[5m]))"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      }
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "Error rate (non-2xx)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(rate(http_requests_total{status!~\"2..\"}[5m]))"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 0,
+        "y": 6
+      }
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "Latency p95 (s)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 12,
+        "y": 6
+      }
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Latency p99 (s)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 12
       }
     }
   ]

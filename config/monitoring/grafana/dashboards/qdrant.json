@@ -10,6 +10,7 @@
   },
   "panels": [
     {
+      "id": 1,
       "type": "timeseries",
       "title": "Qdrant up",
       "datasource": "Prometheus",
@@ -19,10 +20,78 @@
         }
       ],
       "gridPos": {
-        "h": 8,
-        "w": 24,
+        "h": 6,
+        "w": 12,
         "x": 0,
         "y": 0
+      }
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "Collections total",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "collections_total"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      }
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "Vectors total",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "collections_vector_total"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 0,
+        "y": 6
+      }
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "Resident memory (bytes)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "memory_resident_bytes"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 12,
+        "y": 6
+      }
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Open file descriptors",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "process_open_fds"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 12
       }
     }
   ]

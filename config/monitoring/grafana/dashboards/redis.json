@@ -10,6 +10,7 @@
   },
   "panels": [
     {
+      "id": 1,
       "type": "timeseries",
       "title": "Redis up",
       "datasource": "Prometheus",
@@ -19,10 +20,78 @@
         }
       ],
       "gridPos": {
-        "h": 8,
-        "w": 24,
+        "h": 6,
+        "w": 12,
         "x": 0,
         "y": 0
+      }
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "Memory used (bytes)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "redis_memory_used_bytes"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      }
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "Connected clients",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "redis_connected_clients"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 0,
+        "y": 6
+      }
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "Commands/sec",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "rate(redis_commands_processed_total[1m])"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 12,
+        "y": 6
+      }
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Cache hit ratio",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "rate(redis_keyspace_hits_total[5m]) / (rate(redis_keyspace_hits_total[5m]) + rate(redis_keyspace_misses_total[5m]))"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 12
       }
     }
   ]
