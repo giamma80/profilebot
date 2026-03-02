@@ -38,8 +38,9 @@ def create_llm_client(settings: Settings) -> OpenAI | AzureOpenAI:
         OpenAI-compatible client instance.
     """
     provider = settings.llm_provider.strip().lower()
+
     if provider == "azure":
-        api_version = getattr(settings, "llm_api_version", None) or os.getenv(
+        api_version = settings.llm_api_version or os.getenv(
             "AZURE_OPENAI_API_VERSION",
             "2024-02-01",
         )
@@ -49,9 +50,15 @@ def create_llm_client(settings: Settings) -> OpenAI | AzureOpenAI:
             api_version=api_version,
         )
 
+    if provider == "ollama":
+        return OpenAI(
+            base_url=settings.llm_base_url or "http://localhost:11434/v1",
+            api_key="ollama",
+        )
+
+    # provider == "openai" (default)
     return OpenAI(
-        base_url=settings.llm_base_url,
-        api_key=settings.llm_api_key or "ollama",
+        api_key=os.getenv("OPENAI_API_KEY"),
     )
 
 

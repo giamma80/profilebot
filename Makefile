@@ -1,4 +1,4 @@
-.PHONY: help install dev lint lint-all format format-check preflight test clean run worker beat flower embed-all docker-build docker-up docker-down docker-logs system system-down api-lint system-test
+.PHONY: help install dev lint lint-all format format-check preflight test clean run worker beat flower embed-all docker-build docker-up docker-down docker-full docker-full-down docker-logs system system-down api-lint system-test
 
 # Default target
 help:
@@ -27,12 +27,14 @@ help:
 	@echo "  make beat        Start Celery beat scheduler"
 	@echo "  make flower      Start Flower dashboard"
 	@echo "  make embed-all   Trigger embedding from scraper"
-	@echo "  make docker-up   Start Qdrant + Redis"
-	@echo "  make docker-down Stop Docker services"
-	@echo "  make docker-logs Tail Docker logs"
-	@echo "  make docker-build Build Docker images"
-	@echo "  make system      Start full stack in background (docker + api + worker + beat + flower)"
-	@echo "  make system-down Stop full stack (docker + api + worker + beat + flower)"
+	@echo "  make docker-up        Start infra only (Qdrant + Redis)"
+	@echo "  make docker-down      Stop infra"
+	@echo "  make docker-full      Start ALL in Docker (infra + app + celery)"
+	@echo "  make docker-full-down Stop ALL Docker services"
+	@echo "  make docker-logs      Tail Docker logs"
+	@echo "  make docker-build     Build Docker images"
+	@echo "  make system           Dev mode: infra in Docker + app local (uv run)"
+	@echo "  make system-down      Stop dev mode (infra + local processes)"
 	@echo ""
 	@echo "Cleanup:"
 	@echo "  make clean       Remove cache and build files"
@@ -144,8 +146,21 @@ docker-up:
 	@echo "   Redis:  localhost:6379"
 
 docker-down:
-	@echo "🛑 Stopping Docker services..."
+	@echo "🛑 Stopping Docker infra (Qdrant + Redis)..."
 	docker-compose down
+
+docker-full:
+	@echo "🐳 Starting FULL Docker stack (infra + app)..."
+	docker-compose --profile full up -d --build
+	@echo "✅ All services running in Docker:"
+	@echo "   API:     http://localhost:8000"
+	@echo "   Qdrant:  http://localhost:6333"
+	@echo "   Redis:   localhost:6379"
+	@echo "   Flower:  http://localhost:5555"
+
+docker-full-down:
+	@echo "🛑 Stopping full Docker stack..."
+	docker-compose --profile full down
 
 docker-logs:
 	@echo "📜 Tailing Docker logs..."

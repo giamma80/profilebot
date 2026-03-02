@@ -59,6 +59,10 @@ class Settings(BaseSettings):
         default="",
         validation_alias="SCRAPER_BASE_URL",
     )
+    scraper_timeout: float = Field(
+        default=300.0,
+        validation_alias="SCRAPER_TIMEOUT",
+    )
     scraper_workflow_path: str = Field(
         default="config/workflows/res_id_workflow.yaml",
         validation_alias="SCRAPER_WORKFLOW_PATH",
