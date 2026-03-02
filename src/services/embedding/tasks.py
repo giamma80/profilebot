@@ -57,7 +57,7 @@ def _chunked(
         yield items[index : index + batch_size]
 
 
-@celery_app.task(bind=True, max_retries=3)
+@celery_app.task(bind=True, max_retries=3, name="embedding.embed_cv")
 def embed_cv_task(
     self,
     cv_path: str,
@@ -108,7 +108,7 @@ def embed_cv_task(
         raise self.retry(exc=exc, countdown=60) from exc
 
 
-@celery_app.task(bind=True)
+@celery_app.task(bind=True, name="embedding.embed_batch")
 def embed_batch_task(
     self,
     items: list[dict[str, Any]],
@@ -187,7 +187,7 @@ def embed_batch_task(
     }
 
 
-@celery_app.task(bind=True)
+@celery_app.task(bind=True, name="embedding.embed_all")
 def embed_all_task(  # noqa: PLR0913 - task signature mirrors API payload
     self,
     items: list[dict[str, Any]],
@@ -280,8 +280,8 @@ def embed_all_task(  # noqa: PLR0913 - task signature mirrors API payload
     }
 
 
-@celery_app.task(bind=True)
-def embed_from_scraper_task(self) -> dict[str, Any]:
+@celery_app.task(bind=True, name="embedding.embed_from_scraper")
+def embed_from_scraper_task(self, _results: list[Any] | None = None) -> dict[str, Any]:
     """Download CVs from the scraper service and index them into Qdrant."""
     if not _ensure_scraper_base_url():
         return {"status": "skipped", "reason": "SCRAPER_BASE_URL not configured"}

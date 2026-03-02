@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 RETRY_COUNTDOWN = 60
 
 
-@celery_app.task(bind=True, max_retries=3)
+@celery_app.task(bind=True, max_retries=3, name="availability.refresh")
 def availability_refresh_task(self) -> dict[str, Any]:
     """Refresh availability cache via scraper service.
 

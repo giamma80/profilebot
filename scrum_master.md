@@ -259,3 +259,7 @@ Inizia clonando il repository di **Antfarm**, poiché è quello che gestisce nat
 
 
 ora crea una cartella nel progetto dove creiamo una semplicissima gui di frontend in react, questa gui deve permettere di monitorare tutto e di eseguire smoke test, integrando le API esposte. è possibile? deve essere molto semplice e aggiornarsi in tempo reale.
+
+
+
+docker exec profilebot-celery-worker celery -A src.services.embedding.celery_app call workflow.run_scraper

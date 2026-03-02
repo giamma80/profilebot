@@ -1,0 +1,479 @@
+{
+  "uid": "profilebot-overview",
+  "title": "ProfileBot - Overview",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "10s",
+  "time": {
+    "from": "now-15m",
+    "to": "now"
+  },
+
+  "panels": [
+    {
+      "id": 1,
+      "type": "gauge",
+      "title": "API up",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "up{job=\"api\"}"
+        }
+      ],
+
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 0,
+        "y": 0
+      },
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 1
+        }
+      }
+    },
+    {
+      "id": 2,
+      "type": "gauge",
+      "title": "Celery up",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "up{job=\"celery\"}"
+        }
+      ],
+
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 6,
+        "y": 0
+      },
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 1
+        }
+      }
+    },
+    {
+      "id": 3,
+      "type": "gauge",
+      "title": "Redis up",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "up{job=\"redis\"}"
+        }
+      ],
+
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 12,
+        "y": 0
+      },
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 1
+        }
+      }
+    },
+    {
+      "id": 4,
+      "type": "gauge",
+      "title": "Qdrant up",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "up{job=\"qdrant\"}"
+        }
+      ],
+
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 18,
+        "y": 0
+      },
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 1
+        }
+      }
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "API request rate (req/s)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(rate(http_requests_total[5m]))"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 0,
+        "y": 6
+      }
+    },
+    {
+      "id": 6,
+      "type": "stat",
+      "title": "API error rate (req/s)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(rate(http_requests_total{status!~\"2..\"}[5m]))"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 6,
+        "y": 6
+      }
+    },
+    {
+      "id": 7,
+      "type": "stat",
+      "title": "API latency p95 (s)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 12,
+        "y": 6
+      }
+    },
+    {
+      "id": 8,
+      "type": "stat",
+      "title": "API latency p99 (s)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 18,
+        "y": 6
+      }
+    },
+    {
+      "id": 9,
+      "type": "bargauge",
+      "title": "API request rate by endpoint",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(rate(http_requests_total[5m])) by (handler)",
+          "legendFormat": "{{handler}}"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 0,
+        "y": 12
+      }
+    },
+    {
+      "id": 10,
+      "type": "gauge",
+      "title": "Celery queue length",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "celery_queue_length{queue_name=\"celery\"}"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 12,
+        "y": 12
+      },
+      "fieldConfig": {
+        "defaults": {
+          "min": 0
+        }
+      }
+    },
+    {
+      "id": 11,
+      "type": "gauge",
+      "title": "Celery active tasks",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(celery_worker_tasks_active)"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 18,
+        "y": 12
+      },
+      "fieldConfig": {
+        "defaults": {
+          "min": 0
+        }
+      }
+    },
+    {
+      "id": 12,
+      "type": "stat",
+      "title": "Celery success rate (req/s)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(rate(celery_task_succeeded_total[5m]))"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 0,
+        "y": 18
+      }
+    },
+    {
+      "id": 13,
+      "type": "stat",
+      "title": "Celery failure rate (req/s)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(rate(celery_task_failed_total[5m]))"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 6,
+        "y": 18
+      }
+    },
+    {
+      "id": 14,
+      "type": "stat",
+      "title": "Celery runtime p95 (s)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(celery_task_runtime_bucket[5m])) by (le))"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 12,
+        "y": 18
+      }
+    },
+    {
+      "id": 15,
+      "type": "bargauge",
+      "title": "Active tasks by worker",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(celery_worker_tasks_active) by (worker)",
+          "legendFormat": "{{worker}}"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 18,
+        "y": 18
+      }
+    },
+    {
+      "id": 16,
+      "type": "stat",
+      "title": "Redis memory used (bytes)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "redis_memory_used_bytes"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 0,
+        "y": 24
+      }
+    },
+    {
+      "id": 17,
+      "type": "stat",
+      "title": "Redis hit ratio",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "rate(redis_keyspace_hits_total[5m]) / (rate(redis_keyspace_hits_total[5m]) + rate(redis_keyspace_misses_total[5m]))"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 6,
+        "y": 24
+      }
+    },
+    {
+      "id": 18,
+      "type": "stat",
+      "title": "Redis commands/sec",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "rate(redis_commands_processed_total[1m])"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 12,
+        "y": 24
+      }
+    },
+    {
+      "id": 19,
+      "type": "bargauge",
+      "title": "Redis keys by collection",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "redis_keyspace_keys",
+          "legendFormat": "{{db}}"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 18,
+        "y": 24
+      }
+    },
+    {
+      "id": 20,
+      "type": "bargauge",
+      "title": "Redis expires by collection",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "redis_keyspace_expires",
+          "legendFormat": "{{db}}"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 0,
+        "y": 30
+      }
+    },
+    {
+      "id": 21,
+      "type": "stat",
+      "title": "Qdrant collections total",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "collections_total"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 12,
+        "y": 30
+      }
+    },
+    {
+      "id": 22,
+      "type": "stat",
+      "title": "Qdrant vectors total",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "collections_vector_total"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 18,
+        "y": 30
+      }
+    },
+    {
+      "id": 23,
+      "type": "stat",
+      "title": "Qdrant resident memory (bytes)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "memory_resident_bytes"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 0,
+        "y": 36
+      }
+    },
+    {
+      "id": 24,
+      "type": "stat",
+      "title": "Qdrant open file descriptors",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "process_open_fds"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 6,
+        "y": 36
+      }
+    },
+    {
+      "id": 25,
+      "type": "text",
+      "title": "Detail dashboards",
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 42
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "### Detail dashboards\n- [API](/d/profilebot-api/profilebot-api)\n- [Celery](/d/profilebot-celery/profilebot-celery)\n- [Redis](/d/profilebot-redis/profilebot-redis)\n- [Qdrant](/d/profilebot-qdrant/profilebot-qdrant)\n"
+      }
+    }
+  ]
+}

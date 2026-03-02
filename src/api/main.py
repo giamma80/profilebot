@@ -38,7 +38,7 @@ app = FastAPI(
     ],
 )
 
-Instrumentator().instrument(app).expose(app)
+Instrumentator(excluded_handlers=["/metrics"]).instrument(app).expose(app)
 
 app.include_router(v1_router)
 

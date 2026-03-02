@@ -1,4 +1,5 @@
-.PHONY: help install dev lint lint-all format format-check preflight test clean run worker beat flower embed-all monitoring-up monitoring-down system-and-monitoring system-and-monitoring-down docker-build docker-up docker-down docker-full docker-full-down docker-logs system system-down api-lint system-test
+.PHONY: help install dev lint lint-all format format-check preflight test clean run worker beat flower embed-all monitoring-up monitoring-down monitoring-create monitoring-build monitoring-rebuild monitoring-logs all-up all-down all-create all-build all-rebuild all-logs qdrant-up qdrant-down qdrant-create qdrant-build qdrant-rebuild qdrant-logs redis-up redis-down redis-create redis-build redis-rebuild redis-logs api-up api-down api-create api-build api-rebuild api-logs celery-worker-up celery-worker-down celery-worker-create celery-worker-build celery-worker-rebuild celery-worker-logs celery-beat-up celery-beat-down celery-beat-create celery-beat-build celery-beat-rebuild celery-beat-logs flower-up flower-down flower-create flower-build flower-rebuild flower-logs prometheus-up prometheus-down prometheus-create prometheus-build prometheus-rebuild prometheus-logs grafana-up grafana-down grafana-create grafana-build grafana-rebuild grafana-logs redis-exporter-up redis-exporter-down redis-exporter-create redis-exporter-build redis-exporter-rebuild redis-exporter-logs celery-exporter-up celery-exporter-down celery-exporter-create celery-exporter-build celery-exporter-rebuild celery-exporter-logs queues-clean queues-clean-all system system-down api-lint system-test
+COMPOSE ?= $(shell docker compose version >/dev/null 2>&1 && echo "docker compose" || echo "docker-compose")
 
 # Default target
 help:
@@ -27,16 +28,27 @@ help:
 	@echo "  make beat                    Start Celery beat scheduler"
 	@echo "  make flower                  Start Flower dashboard"
 	@echo "  make embed-all               Trigger embedding from scraper"
-	@echo "  make monitoring-up           Start monitoring stack (Prometheus + Grafana + exporters)"
-	@echo "  make monitoring-down         Stop monitoring stack"
-	@echo "  make system-and-monitoring   Dev mode + monitoring stack"
-	@echo "  make system-and-monitoring-down Stop dev mode + monitoring stack"
-	@echo "  make docker-up               Start infra only (Qdrant + Redis)"
-	@echo "  make docker-down             Stop infra"
-	@echo "  make docker-full             Start ALL in Docker (infra + app + celery)"
-	@echo "  make docker-full-down        Stop ALL Docker services"
-	@echo "  make docker-logs             Tail Docker logs"
-	@echo "  make docker-build            Build Docker images"
+	@echo "  make monitoring-build        Build monitoring images (no start)"
+	@echo "  make monitoring-create       Create monitoring containers (no start)"
+	@echo "  make monitoring-up           Start monitoring containers"
+	@echo "  make monitoring-down         Stop + remove monitoring containers"
+	@echo "  make monitoring-rebuild      Build + recreate monitoring containers"
+	@echo "  make monitoring-logs         Tail monitoring logs (follow)"
+	@echo "  make all-build               Build all images (ALL, no start)"
+	@echo "  make all-create              Create all containers (ALL, no start)"
+	@echo "  make all-up                  Start all containers (ALL)"
+	@echo "  make all-down                Stop + remove all containers (ALL)"
+	@echo "  make all-rebuild             Build + recreate all containers (ALL)"
+	@echo "  make all-logs                Tail ALL logs (follow)"
+	@echo "  make queues-clean            Revoke active Celery tasks, purge queues, flush Redis"
+	@echo "  make queues-clean-all        Deep cleanup (revoke, purge, FLUSHALL)"
+	@echo "  make <service>-up            Start a single service container"
+	@echo "  make <service>-down          Stop + remove a single service container"
+	@echo "  make <service>-create        Create a single service container (no start)"
+	@echo "  make <service>-build         Build a single service image (no start)"
+	@echo "  make <service>-rebuild       Build + recreate a single service"
+	@echo "  make <service>-logs          Tail logs for a single service (follow)"
+	@echo "  services: qdrant redis api celery-worker celery-beat flower prometheus grafana redis-exporter celery-exporter"
 	@echo "  make system                  Dev mode: infra in Docker + app local (uv run)"
 	@echo "  make system-down             Stop dev mode (infra + local processes)"
 	@echo ""
@@ -138,56 +150,260 @@ embed-all:
 	@echo "🧩 Triggering embedding from scraper..."
 	@uv run python -c 'from src.services.embedding.tasks import embed_from_scraper_task; print(embed_from_scraper_task.run())'
 
+monitoring-build:
+	@echo "🐳 Building monitoring images..."
+	$(COMPOSE) --profile monitoring build
+
+monitoring-create:
+	@echo "🐳 Creating monitoring containers..."
+	$(COMPOSE) --profile monitoring create
+
 monitoring-up:
 	@echo "📈 Starting monitoring stack..."
-	docker-compose --profile monitoring up -d
+	$(COMPOSE) --profile monitoring up -d
 
 monitoring-down:
 	@echo "🛑 Stopping monitoring stack..."
-	docker-compose --profile monitoring stop
-	docker-compose --profile monitoring rm -f
+	$(COMPOSE) --profile monitoring down
 
-system-and-monitoring:
-	@$(MAKE) system
-	@$(MAKE) monitoring-up
+monitoring-logs:
+	@echo "📄 Tailing monitoring logs..."
+	$(COMPOSE) --profile monitoring logs -f --tail=200
 
-system-and-monitoring-down:
-	@$(MAKE) monitoring-down
-	@$(MAKE) system-down
+monitoring-rebuild:
+	@echo "♻️ Rebuilding monitoring stack..."
+	$(COMPOSE) --profile monitoring up -d --build --force-recreate
 
-docker-build:
-	@echo "🐳 Building Docker images..."
-	docker-compose build
+all-build:
+	@echo "🐳 Building ALL images..."
+	$(COMPOSE) --profile full --profile monitoring build
 
-docker-up:
-	@echo "🐳 Starting Qdrant + Redis..."
-	docker-compose up -d
-	@echo "✅ Services running:"
-	@echo "   Qdrant: http://localhost:6333"
-	@echo "   Redis:  localhost:6379"
+all-create:
+	@echo "🐳 Creating ALL containers..."
+	$(COMPOSE) --profile full --profile monitoring create
 
-docker-down:
-	@echo "🛑 Stopping Docker infra (Qdrant + Redis)..."
-	docker-compose down
+all-up:
+	@echo "🐳 Starting ALL containers..."
+	$(COMPOSE) --profile full --profile monitoring up -d
 
-docker-full:
-	@echo "🐳 Starting FULL Docker stack (infra + app)..."
-	docker-compose --profile full up -d --build
-	@echo "✅ All services running in Docker:"
-	@echo "   API:     http://localhost:8000"
-	@echo "   Qdrant:  http://localhost:6333"
-	@echo "   Redis:   localhost:6379"
-	@echo "   Flower:  http://localhost:5555"
+all-down:
+	@echo "🛑 Stopping ALL containers..."
+	$(COMPOSE) --profile full --profile monitoring down
 
-docker-full-down:
-	@echo "🛑 Stopping full Docker stack..."
-	docker-compose --profile full down
+all-logs:
+	@echo "📄 Tailing ALL logs..."
+	$(COMPOSE) --profile full --profile monitoring logs -f --tail=200
 
-docker-logs:
-	@echo "📜 Tailing Docker logs..."
-	docker-compose logs -f --tail=200
+all-rebuild:
+	@echo "♻️ Rebuilding ALL containers..."
+	$(COMPOSE) --profile full --profile monitoring up -d --build --force-recreate
 
-system: docker-up
+qdrant-build:
+	$(COMPOSE) build qdrant
+
+qdrant-create:
+	$(COMPOSE) create qdrant
+
+qdrant-up:
+	$(COMPOSE) up -d qdrant
+
+qdrant-down:
+	$(COMPOSE) stop qdrant
+	$(COMPOSE) rm -f qdrant
+
+qdrant-rebuild:
+	$(COMPOSE) up -d --build --force-recreate qdrant
+
+qdrant-logs:
+	$(COMPOSE) logs -f --tail=200 qdrant
+
+redis-build:
+	$(COMPOSE) build redis
+
+redis-create:
+	$(COMPOSE) create redis
+
+redis-up:
+	$(COMPOSE) up -d redis
+
+redis-down:
+	$(COMPOSE) stop redis
+	$(COMPOSE) rm -f redis
+
+redis-rebuild:
+	$(COMPOSE) up -d --build --force-recreate redis
+
+redis-logs:
+	$(COMPOSE) logs -f --tail=200 redis
+
+api-build:
+	$(COMPOSE) --profile full build api
+
+api-create:
+	$(COMPOSE) --profile full create api
+
+api-up:
+	$(COMPOSE) --profile full up -d api
+
+api-down:
+	$(COMPOSE) --profile full stop api
+	$(COMPOSE) --profile full rm -f api
+
+api-rebuild:
+	$(COMPOSE) --profile full up -d --build --force-recreate api
+
+api-logs:
+	$(COMPOSE) --profile full logs -f --tail=200 api
+
+celery-worker-build:
+	$(COMPOSE) --profile full build celery-worker
+
+celery-worker-create:
+	$(COMPOSE) --profile full create celery-worker
+
+celery-worker-up:
+	$(COMPOSE) --profile full up -d celery-worker
+
+celery-worker-down:
+	$(COMPOSE) --profile full stop celery-worker
+	$(COMPOSE) --profile full rm -f celery-worker
+
+celery-worker-rebuild:
+	$(COMPOSE) --profile full up -d --build --force-recreate celery-worker
+
+celery-worker-logs:
+	$(COMPOSE) --profile full logs -f --tail=200 celery-worker
+
+celery-beat-build:
+	$(COMPOSE) --profile full build celery-beat
+
+celery-beat-create:
+	$(COMPOSE) --profile full create celery-beat
+
+celery-beat-up:
+	$(COMPOSE) --profile full up -d celery-beat
+
+celery-beat-down:
+	$(COMPOSE) --profile full stop celery-beat
+	$(COMPOSE) --profile full rm -f celery-beat
+
+celery-beat-rebuild:
+	$(COMPOSE) --profile full up -d --build --force-recreate celery-beat
+
+celery-beat-logs:
+	$(COMPOSE) --profile full logs -f --tail=200 celery-beat
+
+flower-build:
+	$(COMPOSE) --profile full build flower
+
+flower-create:
+	$(COMPOSE) --profile full create flower
+
+flower-up:
+	$(COMPOSE) --profile full up -d flower
+
+flower-down:
+	$(COMPOSE) --profile full stop flower
+	$(COMPOSE) --profile full rm -f flower
+
+flower-rebuild:
+	$(COMPOSE) --profile full up -d --build --force-recreate flower
+
+flower-logs:
+	$(COMPOSE) --profile full logs -f --tail=200 flower
+
+prometheus-build:
+	$(COMPOSE) --profile monitoring build prometheus
+
+prometheus-create:
+	$(COMPOSE) --profile monitoring create prometheus
+
+prometheus-up:
+	$(COMPOSE) --profile monitoring up -d prometheus
+
+prometheus-down:
+	$(COMPOSE) --profile monitoring stop prometheus
+	$(COMPOSE) --profile monitoring rm -f prometheus
+
+prometheus-rebuild:
+	$(COMPOSE) --profile monitoring up -d --build --force-recreate prometheus
+
+prometheus-logs:
+	$(COMPOSE) --profile monitoring logs -f --tail=200 prometheus
+
+grafana-build:
+	$(COMPOSE) --profile monitoring build grafana
+
+grafana-create:
+	$(COMPOSE) --profile monitoring create grafana
+
+grafana-up:
+	$(COMPOSE) --profile monitoring up -d grafana
+
+grafana-down:
+	$(COMPOSE) --profile monitoring stop grafana
+	$(COMPOSE) --profile monitoring rm -f grafana
+
+grafana-rebuild:
+	$(COMPOSE) --profile monitoring up -d --build --force-recreate grafana
+
+grafana-logs:
+	$(COMPOSE) --profile monitoring logs -f --tail=200 grafana
+
+redis-exporter-build:
+	$(COMPOSE) --profile monitoring build redis-exporter
+
+redis-exporter-create:
+	$(COMPOSE) --profile monitoring create redis-exporter
+
+redis-exporter-up:
+	$(COMPOSE) --profile monitoring up -d redis-exporter
+
+redis-exporter-down:
+	$(COMPOSE) --profile monitoring stop redis-exporter
+	$(COMPOSE) --profile monitoring rm -f redis-exporter
+
+redis-exporter-rebuild:
+	$(COMPOSE) --profile monitoring up -d --build --force-recreate redis-exporter
+
+redis-exporter-logs:
+	$(COMPOSE) --profile monitoring logs -f --tail=200 redis-exporter
+
+celery-exporter-build:
+	$(COMPOSE) --profile monitoring build celery-exporter
+
+celery-exporter-create:
+	$(COMPOSE) --profile monitoring create celery-exporter
+
+celery-exporter-up:
+	$(COMPOSE) --profile monitoring up -d celery-exporter
+
+celery-exporter-down:
+	$(COMPOSE) --profile monitoring stop celery-exporter
+	$(COMPOSE) --profile monitoring rm -f celery-exporter
+
+celery-exporter-rebuild:
+	$(COMPOSE) --profile monitoring up -d --build --force-recreate celery-exporter
+
+celery-exporter-logs:
+	$(COMPOSE) --profile monitoring logs -f --tail=200 celery-exporter
+
+queues-clean:
+	@echo "🧹 Cleaning Redis + Celery queues..."
+	@ACTIVE_IDS=$$(docker exec profilebot-celery-worker celery -A src.services.embedding.celery_app inspect active --json | python -c 'import json,sys; data=json.load(sys.stdin); ids=[]; [ids.extend([t.get("id") for t in tasks if t.get("id")]) for tasks in data.values() if isinstance(tasks, list)]; print(" ".join(ids))'); \
+	if [ -n "$$ACTIVE_IDS" ]; then \
+		docker exec profilebot-celery-worker celery -A src.services.embedding.celery_app control revoke $$ACTIVE_IDS; \
+		docker exec profilebot-celery-worker celery -A src.services.embedding.celery_app control terminate SIGTERM $$ACTIVE_IDS; \
+	else \
+		echo "No active tasks to revoke"; \
+	fi
+	@docker exec profilebot-celery-worker celery -A src.services.embedding.celery_app purge -f
+	@docker exec profilebot-redis redis-cli FLUSHALL
+	@echo "✅ Done"
+
+queues-clean-all: queues-clean
+
+system: qdrant-up redis-up
 	@echo "🚀 Starting full ProfileBot stack in background..."
 	@mkdir -p .logs
 	@sh -c 'nohup uv run uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000 > .logs/api.log 2>&1 & echo $$! > .logs/api.pid'
@@ -196,7 +412,7 @@ system: docker-up
 	@sh -c 'nohup uv run celery -A src.services.embedding.celery_app flower --port=5555 > .logs/flower.log 2>&1 & echo $$! > .logs/flower.pid'
 	@echo "✅ Started. Logs in .logs/*.log, PIDs in .logs/*.pid"
 
-system-down: docker-down
+system-down: qdrant-down redis-down
 	@echo "🛑 Stopping local ProfileBot processes..."
 	@if [ -f .logs/api.pid ]; then kill $$(cat .logs/api.pid) || true; rm -f .logs/api.pid; fi
 	@if [ -f .logs/worker.pid ]; then kill $$(cat .logs/worker.pid) || true; rm -f .logs/worker.pid; fi
@@ -207,6 +423,10 @@ system-down: docker-down
 
 clean:
 	@echo "🧹 Cleaning up..."
+	@echo "🧹 Removing Qdrant data volume..."
+	@$(COMPOSE) stop qdrant
+	@$(COMPOSE) rm -f qdrant
+	@docker volume rm -f profilebot_qdrant_storage qdrant_storage 2>/dev/null || true
 	rm -rf .venv/
 	rm -rf __pycache__/
 	rm -rf .pytest_cache/

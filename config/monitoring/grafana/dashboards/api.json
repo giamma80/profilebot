@@ -8,6 +8,31 @@
     "from": "now-15m",
     "to": "now"
   },
+  "templating": {
+    "list": [
+      {
+        "name": "endpoint",
+        "type": "custom",
+        "query": "POST /api/v1/embeddings/trigger, POST /api/v1/embeddings/trigger/batch, POST /api/v1/embeddings/trigger/{res_id}, GET /api/v1/embeddings/status/{task_id}, GET /api/v1/embeddings/stats, POST /api/v1/search/skills, POST /api/v1/availability/load, GET /api/v1/availability/{res_id}, GET /api/v1/availability/stats, POST /api/v1/availability/refresh, GET /api/v1/availability/refresh/{task_id}, GET /api/v1/availability/tasks, GET /health",
+        "refresh": 1,
+        "includeAll": true,
+        "multi": true,
+        "allValue": ".*",
+        "sort": 1
+      },
+      {
+        "name": "scraper_endpoint",
+        "type": "query",
+        "datasource": "Prometheus",
+        "query": "label_values(http_requests_total{job=\"scraper-service\"}, handler)",
+        "refresh": 1,
+        "includeAll": true,
+        "multi": true,
+        "allValue": ".*",
+        "sort": 1
+      }
+    ]
+  },
   "panels": [
     {
       "id": 1,
@@ -29,11 +54,12 @@
     {
       "id": 2,
       "type": "timeseries",
-      "title": "Request rate (req/s)",
+      "title": "Request rate by endpoint (req/s)",
       "datasource": "Prometheus",
       "targets": [
         {
-          "expr": "sum(rate(http_requests_total[5m]))"
+          "expr": "sum(rate(http_requests_total{handler=~\"$endpoint\"}[5m])) by (handler)",
+          "legendFormat": "{{handler}}"
         }
       ],
       "gridPos": {
@@ -46,11 +72,12 @@
     {
       "id": 3,
       "type": "timeseries",
-      "title": "Error rate (non-2xx)",
+      "title": "Error rate by endpoint (non-2xx)",
       "datasource": "Prometheus",
       "targets": [
         {
-          "expr": "sum(rate(http_requests_total{status!~\"2..\"}[5m]))"
+          "expr": "sum(rate(http_requests_total{status!~\"2..\", handler=~\"$endpoint\"}[5m])) by (handler)",
+          "legendFormat": "{{handler}}"
         }
       ],
       "gridPos": {
@@ -63,11 +90,12 @@
     {
       "id": 4,
       "type": "timeseries",
-      "title": "Latency p95 (s)",
+      "title": "Latency p95 by endpoint (s)",
       "datasource": "Prometheus",
       "targets": [
         {
-          "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))"
+          "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{handler=~\"$endpoint\"}[5m])) by (le, handler))",
+          "legendFormat": "{{handler}}"
         }
       ],
       "gridPos": {
@@ -80,11 +108,12 @@
     {
       "id": 5,
       "type": "timeseries",
-      "title": "Latency p99 (s)",
+      "title": "Latency p99 by endpoint (s)",
       "datasource": "Prometheus",
       "targets": [
         {
-          "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))"
+          "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{handler=~\"$endpoint\"}[5m])) by (le, handler))",
+          "legendFormat": "{{handler}}"
         }
       ],
       "gridPos": {
@@ -92,6 +121,123 @@
         "w": 24,
         "x": 0,
         "y": 12
+      }
+    },
+    {
+      "id": 6,
+      "type": "row",
+      "title": "API esterne (scraper-service)",
+      "collapsed": false,
+      "panels": [],
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 18
+      }
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "Scraper-service up",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "up{job=\"scraper-service\"}"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 0,
+        "y": 19
+      }
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "Scraper request rate by endpoint (req/s)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(rate(http_requests_total{job=\"scraper-service\", handler=~\"$scraper_endpoint\"}[5m])) by (handler)",
+          "legendFormat": "{{handler}}"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 12,
+        "y": 19
+      }
+    },
+    {
+      "id": 9,
+      "type": "timeseries",
+      "title": "Scraper error rate by endpoint (non-2xx)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(rate(http_requests_total{job=\"scraper-service\", status!~\"2..\", handler=~\"$scraper_endpoint\"}[5m])) by (handler)",
+          "legendFormat": "{{handler}}"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 0,
+        "y": 25
+      }
+    },
+    {
+      "id": 10,
+      "type": "timeseries",
+      "title": "Scraper latency p95 by endpoint (s)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job=\"scraper-service\", handler=~\"$scraper_endpoint\"}[5m])) by (le, handler))",
+          "legendFormat": "{{handler}}"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 12,
+        "y": 25
+      }
+    },
+    {
+      "id": 11,
+      "type": "timeseries",
+      "title": "Scraper latency p99 by endpoint (s)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{job=\"scraper-service\", handler=~\"$scraper_endpoint\"}[5m])) by (le, handler))",
+          "legendFormat": "{{handler}}"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 31
+      }
+    },
+    {
+      "id": 12,
+      "type": "text",
+      "title": "Endpoints scraper-service",
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 37
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "### API esterne (scraper-service)\n- GET /health\n- GET /inside/res-ids\n- GET /inside/cv/{res_id}\n- POST /inside/cv/{res_id}\n- GET /availability/csv\n- POST /availability/csv\n- GET /availability/csv/{res_id}\n- GET /reskilling/csv\n- POST /reskilling/csv\n- GET /reskilling/csv/{res_id}\n"
       }
     }
   ]

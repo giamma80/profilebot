@@ -58,16 +58,17 @@ class SkillExtractor:
         unknown: list[str] = []
 
         for raw in raw_skills:
-            cleaned = self._clean(raw)
-            if not cleaned:
-                continue
+            for token in _split_text_to_skills(raw):
+                cleaned = self._clean(token)
+                if not cleaned:
+                    continue
 
-            normalized_skill = self._normalizer.normalize(raw)
-            if normalized_skill is None:
-                unknown.append(cleaned)
-                logger.warning("Unknown skill: '%s' from CV '%s'", cleaned, cv_id)
-            else:
-                normalized.append(normalized_skill)
+                normalized_skill = self._normalizer.normalize(token)
+                if normalized_skill is None:
+                    unknown.append(cleaned)
+                    logger.warning("Unknown skill: '%s' from CV '%s'", cleaned, cv_id)
+                else:
+                    normalized.append(normalized_skill)
 
         return SkillExtractionResult(
             cv_id=cv_id,

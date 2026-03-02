@@ -2,9 +2,19 @@
 
 from __future__ import annotations
 
+from enum import StrEnum
 from typing import Literal
 
 from pydantic import BaseModel, Field
+
+
+class AvailabilityFilter(StrEnum):
+    """Supported availability filters for job matching."""
+
+    ANY = "any"
+    ONLY_FREE = "only_free"
+    FREE_OR_PARTIAL = "free_or_partial"
+    UNAVAILABLE = "unavailable"
 
 
 class SkillRequirement(BaseModel):
@@ -41,6 +51,7 @@ class CandidateMatch(BaseModel):
 
     cv_id: str
     res_id: int
+    full_name: str | None = None
     overall_score: float = Field(ge=0.0, le=1.0)
     matched_skills: list[str]
     missing_skills: list[str]
@@ -56,7 +67,7 @@ class JobMatchRequest(BaseModel):
 
     job_description: str = Field(..., min_length=10)
     max_candidates: int = Field(default=5, ge=1, le=20)
-    availability_filter: str = Field(default="free_or_partial")
+    availability_filter: AvailabilityFilter = Field(default=AvailabilityFilter.FREE_OR_PARTIAL)
     include_explanation: bool = True
 
     model_config = {"extra": "forbid"}
@@ -74,6 +85,7 @@ class JobMatchResponse(BaseModel):
 
 
 __all__ = [
+    "AvailabilityFilter",
     "CandidateMatch",
     "JDAnalysis",
     "JobMatchRequest",

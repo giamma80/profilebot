@@ -57,7 +57,8 @@ services:
     build: .
     container_name: profilebot-celery-worker
     working_dir: /app
-    command: celery -A src.services.embedding.celery_app worker -l info -c 4
+    user: "1000:1000"
+    command: celery -A src.services.embedding.celery_app worker -l info -c 4 -E
     volumes:
       - ./:/app
     env_file: .env

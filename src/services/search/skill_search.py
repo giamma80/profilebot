@@ -106,13 +106,23 @@ def search_by_skills(
     query_filter = _build_filter(filters)
 
     fetch_limit = max(0, limit) + max(0, offset)
-    scored_points = client.search(
-        collection_name="cv_skills",
-        query_vector=query_vector,
-        query_filter=query_filter,
-        limit=fetch_limit or 1,
-        with_payload=True,
-    )
+    if hasattr(client, "search"):
+        scored_points = client.search(
+            collection_name="cv_skills",
+            query_vector=query_vector,
+            query_filter=query_filter,
+            limit=fetch_limit or 1,
+            with_payload=True,
+        )
+    else:
+        response = client.query_points(
+            collection_name="cv_skills",
+            query=query_vector,
+            query_filter=query_filter,
+            limit=fetch_limit or 1,
+            with_payload=True,
+        )
+        scored_points = response.points
 
     results = _build_matches(scored_points, normalized_skills)
     paged = results[offset : offset + limit] if limit > 0 else []

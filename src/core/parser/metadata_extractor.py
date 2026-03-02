@@ -28,7 +28,9 @@ class ParsedMetadata:
 
 NAME_PATTERNS = [
     re.compile(r"(?i)^(?:nome\s*e\s*cognome|nome|cognome)\s*[:\-]\s*(.+)$"),
-    re.compile(r"(?i)^([A-Z][a-zà-ù]+)\s+([A-Z][a-zà-ù]+)$"),
+    re.compile(r"^([A-Z][a-zà-ù]+\s+[A-Z][a-zà-ù]+)$"),
+    re.compile(r"^([A-Z][a-zà-ù]+\s+[A-ZÀ-Ù'-]{2,})$"),
+    re.compile(r"^([A-ZÀ-Ù'-]{2,}\s+[A-ZÀ-Ù'-]{2,})$"),
 ]
 
 ROLE_PATTERNS = [
@@ -36,11 +38,43 @@ ROLE_PATTERNS = [
     re.compile(r"(?i)^(?:current\s*role|current\s*position)\s*[:\-]\s*(.+)$"),
 ]
 
+ROLE_KEYWORDS = [
+    "developer",
+    "engineer",
+    "analyst",
+    "consultant",
+    "manager",
+    "architect",
+    "scientist",
+    "designer",
+    "devops",
+    "data",
+    "backend",
+    "frontend",
+    "full stack",
+    "full-stack",
+    "fullstack",
+    "qa",
+    "test",
+    "tester",
+    "lead",
+    "specialist",
+]
+
+ROLE_EXCLUDE_PATTERNS = [
+    re.compile(r"(?i)anni\s+di\s+esperienza"),
+    re.compile(r"(?i)ultimo\s+aggiornamento"),
+    re.compile(r"(?i)^competenze$"),
+    re.compile(r"(?i)^sommario$"),
+]
+
 EMAIL_PATTERN = re.compile(r"(?i)\b[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}\b")
 
 MIN_NAME_PARTS = 2
 MIN_PART_LENGTH = 2
 MAX_UPPERCASE_PART_LENGTH = 3
+FULL_UPPERCASE_NAME_PARTS = 2
+MAX_ROLE_LENGTH = 80
 
 
 def extract_metadata_candidates(lines: Iterable[str]) -> MetadataCandidates:
@@ -73,6 +107,8 @@ def extract_metadata_candidates(lines: Iterable[str]) -> MetadataCandidates:
             match = _match_first(ROLE_PATTERNS, line)
             if match:
                 current_role = match.strip()
+            elif full_name and _is_probable_role(line):
+                current_role = line
 
         if full_name and current_role:
             break
@@ -94,11 +130,42 @@ def _is_probable_name(candidate: str) -> bool:
     parts = candidate.split()
     if len(parts) < MIN_NAME_PARTS:
         return False
+
+    valid = True
     if any(len(p) < MIN_PART_LENGTH for p in parts):
+        valid = False
+    elif any(any(ch.isdigit() for ch in p) for p in parts):
+        valid = False
+    elif _is_probable_role(candidate):
+        valid = False
+    else:
+        uppercase_indices = [i for i, p in enumerate(parts) if p.isupper()]
+        if uppercase_indices:
+            if uppercase_indices == list(range(len(parts))):
+                valid = len(parts) == FULL_UPPERCASE_NAME_PARTS
+            elif uppercase_indices != [len(parts) - 1]:
+                valid = False
+
+        if valid:
+            for index, part in enumerate(parts):
+                if (
+                    part.isupper()
+                    and len(part) > MAX_UPPERCASE_PART_LENGTH
+                    and index != len(parts) - 1
+                ):
+                    valid = False
+                    break
+
+    return valid
+
+
+def _is_probable_role(candidate: str) -> bool:
+    lowered = candidate.lower()
+    if len(candidate) > MAX_ROLE_LENGTH:
         return False
-    if any(p.isupper() and len(p) > MAX_UPPERCASE_PART_LENGTH for p in parts):
+    if any(pattern.search(candidate) for pattern in ROLE_EXCLUDE_PATTERNS):
         return False
-    return True
+    return any(keyword in lowered for keyword in ROLE_KEYWORDS)
 
 
 def extract_metadata(text: str) -> ParsedMetadata:

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import uuid
 from collections.abc import Iterable
 from datetime import date, datetime
 from unittest.mock import MagicMock
@@ -350,5 +351,6 @@ def test_process_cv__experience_years_handles_current_date() -> None:
 
 
 def test_generate_point_id__same_inputs__returns_stable_id() -> None:
-    assert _generate_point_id("cv-123", "skills") == "cv-123_skills"
-    assert _generate_point_id("cv-123", "skills") == "cv-123_skills"
+    expected = str(uuid.uuid5(uuid.NAMESPACE_URL, "cv-123:skills"))
+    assert _generate_point_id("cv-123", "skills") == expected
+    assert _generate_point_id("cv-123", "skills") == expected

@@ -17,7 +17,7 @@ from src.services.scraper.cache import ScraperResIdCache
 logger = logging.getLogger(__name__)
 
 
-@celery_app.task
+@celery_app.task(name="workflow.run_scraper")
 def run_scraper_workflow_task(*, workflow_path: str | None = None) -> dict[str, Any]:
     """Trigger the scraper ingestion workflow."""
     settings = get_settings()
@@ -38,8 +38,9 @@ def run_scraper_workflow_task(*, workflow_path: str | None = None) -> dict[str, 
     }
 
 
-@celery_app.task
+@celery_app.task(name="workflow.fanout")
 def run_workflow_fanout_task(
+    _results: list[Any] | None = None,
     *,
     fanout_source: str,
     fanout_task: str,

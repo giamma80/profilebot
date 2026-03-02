@@ -73,12 +73,22 @@ def match_job(
     # Step 2: Vector search for candidates
     logger.info("Step 2/3: Searching candidates for skills: %s", jd_analysis.all_skills)
     search_filters = SearchFilters(availability=request.availability_filter)
-    search_response = search_by_skills(
-        skills=jd_analysis.all_skills,
-        filters=search_filters,
-        limit=_LLM_SHORTLIST_SIZE,
-        dependencies=search_deps,
-    )
+    try:
+        search_response = search_by_skills(
+            skills=jd_analysis.all_skills,
+            filters=search_filters,
+            limit=_LLM_SHORTLIST_SIZE,
+            dependencies=search_deps,
+        )
+    except ValueError as exc:
+        logger.warning("Search skipped due to invalid skills: %s", exc)
+        elapsed = int((time.perf_counter() - start) * 1000)
+        return JobMatchResponse(
+            extracted_requirements=jd_analysis.to_requirements(),
+            candidates=[],
+            no_match_reason="Nessuna skill valida riconosciuta nella job description.",
+            query_time_ms=elapsed,
+        )
 
     if not search_response.results:
         elapsed = int((time.perf_counter() - start) * 1000)

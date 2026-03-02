@@ -8,6 +8,21 @@
     "from": "now-15m",
     "to": "now"
   },
+  "templating": {
+    "list": [
+      {
+        "name": "collection",
+        "type": "query",
+        "datasource": "Prometheus",
+        "query": "label_values(redis_keyspace_keys, db)",
+        "refresh": 1,
+        "includeAll": true,
+        "multi": true,
+        "allValue": ".*",
+        "sort": 1
+      }
+    ]
+  },
   "panels": [
     {
       "id": 1,
@@ -92,6 +107,42 @@
         "w": 24,
         "x": 0,
         "y": 12
+      }
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Keys by collection",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "redis_keyspace_keys{db=~\"$collection\"}",
+          "legendFormat": "{{db}}"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 0,
+        "y": 18
+      }
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "Expires by collection",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "redis_keyspace_expires{db=~\"$collection\"}",
+          "legendFormat": "{{db}}"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 12,
+        "y": 18
       }
     }
   ]

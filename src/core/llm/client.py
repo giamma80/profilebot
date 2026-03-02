@@ -11,6 +11,7 @@ from openai import (
     APIError,
     APITimeoutError,
     AzureOpenAI,
+    BadRequestError,
     OpenAI,
     RateLimitError,
 )
@@ -79,6 +80,7 @@ class LLMDecisionClient:
         """
         self._settings = settings or get_settings()
         self._client = client or create_llm_client(self._settings)
+        self._supports_response_format: dict[str, bool] = {}
 
     @retry(
         retry=retry_if_exception_type(
@@ -135,6 +137,24 @@ class LLMDecisionClient:
         )
         return cast(DecisionOutput, self.complete(request, valid_cv_ids=valid_cv_ids))
 
+    def chat_completion_raw(self, request: LLMRequest) -> str:
+        """Execute a completion request and return raw content.
+
+        Args:
+            request: LLM request with prompts and parameters.
+
+        Returns:
+            Raw LLM content string.
+        """
+        model = self._settings.llm_model
+        return self._chat_completion(
+            model=model,
+            system_prompt=request.system_prompt,
+            user_prompt=_merge_context_and_prompt(request.context, request.user_prompt),
+            temperature=request.temperature,
+            max_tokens=request.max_tokens,
+        )
+
     def _chat_completion(
         self,
         *,
@@ -144,16 +164,46 @@ class LLMDecisionClient:
         temperature: float,
         max_tokens: int,
     ) -> str:
-        response = self._client.chat.completions.create(
-            model=model,
-            temperature=temperature,
-            max_tokens=max_tokens,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt},
-            ],
-            response_format={"type": "json_object"},
-        )
+        response_format: Any = {"type": "json_object"}
+        if self._supports_response_format.get(model, True):
+            try:
+                response = self._client.chat.completions.create(
+                    model=model,
+                    temperature=temperature,
+                    max_tokens=max_tokens,
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_prompt},
+                    ],
+                    response_format=response_format,
+                )
+            except BadRequestError as exc:
+                if not _should_retry_without_response_format(exc):
+                    raise
+                logger.warning(
+                    "LLM model '%s' does not support response_format json_object, retrying without it",
+                    model,
+                )
+                self._supports_response_format[model] = False
+                response = self._client.chat.completions.create(
+                    model=model,
+                    temperature=temperature,
+                    max_tokens=max_tokens,
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_prompt},
+                    ],
+                )
+        else:
+            response = self._client.chat.completions.create(
+                model=model,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt},
+                ],
+            )
         return _extract_message_content(response)
 
 
@@ -167,6 +217,11 @@ def _extract_message_content(response: Any) -> str:
     if not content:
         raise ValueError("LLM response content is empty")
     return str(content)
+
+
+def _should_retry_without_response_format(exc: BadRequestError) -> bool:
+    message = str(exc).lower()
+    return "response_format" in message and "json_object" in message and "not supported" in message
 
 
 __all__ = ["LLMDecisionClient", "create_llm_client"]
