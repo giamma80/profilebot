@@ -58,7 +58,7 @@ services:
     container_name: profilebot-celery-worker
     working_dir: /app
     user: "1000:1000"
-    command: celery -A src.services.embedding.celery_app worker -l info -c 4 -E
+    command: celery -A src.services.embedding.celery_app worker -l info -c ${CELERY_WORKER_CONCURRENCY:-4} -E
     volumes:
       - ./:/app
     env_file: .env
@@ -187,3 +187,4 @@ volumes:
   qdrant_storage:
   redis_data:
   grafana_data:
+  prometheus_multiproc:
