@@ -57,7 +57,8 @@ services:
     build: .
     container_name: profilebot-celery-worker
     working_dir: /app
-    command: celery -A src.services.embedding.celery_app worker -l info -c 4
+    user: "1000:1000"
+    command: celery -A src.services.embedding.celery_app worker -l info -c ${CELERY_WORKER_CONCURRENCY:-4} -E
     volumes:
       - ./:/app
     env_file: .env
@@ -118,6 +119,66 @@ services:
       - profilebot
     restart: unless-stopped
 
+  prometheus:
+    profiles: ["monitoring"]
+    image: prom/prometheus:latest
+    container_name: profilebot-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./config/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    networks:
+      - profilebot
+    restart: unless-stopped
+
+  grafana:
+    profiles: ["monitoring"]
+    image: grafana/grafana:latest
+    container_name: profilebot-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./config/monitoring/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./config/monitoring/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./config/monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    networks:
+      - profilebot
+    restart: unless-stopped
+
+  redis-exporter:
+    profiles: ["monitoring"]
+    image: oliver006/redis_exporter:latest
+    container_name: profilebot-redis-exporter
+    ports:
+      - "9121:9121"
+    environment:
+      - REDIS_ADDR=redis://redis:6379
+    depends_on:
+      - redis
+    networks:
+      - profilebot
+    restart: unless-stopped
+
+  celery-exporter:
+    profiles: ["monitoring"]
+    image: danihodovic/celery-exporter:latest
+    container_name: profilebot-celery-exporter
+    command: ["--broker-url=redis://redis:6379/0"]
+    ports:
+      - "9808:9808"
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+    depends_on:
+      - redis
+    networks:
+      - profilebot
+    restart: unless-stopped
+
 networks:
   profilebot:
     driver: bridge
@@ -125,3 +186,5 @@ networks:
 volumes:
   qdrant_storage:
   redis_data:
+  grafana_data:
+  prometheus_multiproc:

@@ -84,6 +84,6 @@ def test_build_canvas__workflow_includes_embed_all_after_fanout() -> None:
     body = getattr(canvas, "body", None)
     assert body is not None
     task_names = _collect_task_names(body)
-    fanout_index = task_names.index("src.services.workflows.tasks.run_workflow_fanout_task")
-    embed_index = task_names.index("src.services.embedding.tasks.embed_from_scraper_task")
+    fanout_index = task_names.index("workflow.fanout")
+    embed_index = task_names.index("embedding.embed_from_scraper")
     assert embed_index > fanout_index

@@ -14,6 +14,10 @@ COPY pyproject.toml uv.lock README.md /app/
 RUN pip install --no-cache-dir uv \
     && uv pip install --system -r pyproject.toml
 
+# Create Prometheus MultiProcess Directory
+RUN mkdir -p /var/lib/prometheus/multiproc \
+    && chmod -R 777 /var/lib/prometheus/multiproc
+
 COPY src /app/src
 COPY scripts /app/scripts
 COPY data /app/data

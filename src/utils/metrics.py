@@ -10,6 +10,8 @@ from functools import wraps
 from typing import ParamSpec, TypeVar
 
 import redis
+from prometheus_client import CollectorRegistry
+from prometheus_client.core import GaugeMetricFamily
 
 from src.core.config import get_settings
 
@@ -58,6 +60,7 @@ class IngestionMetrics:
 
     def record_success(self, source_type: str, latency_ms: float) -> None:
         """Record a successful ingestion."""
+
         pipe = self._redis.pipeline(transaction=False)
         pipe.incr(self._key(source_type, "success"))
         pipe.incr(self._key(source_type, "total"))
@@ -67,6 +70,7 @@ class IngestionMetrics:
 
     def record_failure(self, source_type: str, latency_ms: float) -> None:
         """Record a failed ingestion."""
+
         pipe = self._redis.pipeline(transaction=False)
         pipe.incr(self._key(source_type, "failure"))
         pipe.incr(self._key(source_type, "total"))
@@ -124,6 +128,41 @@ class IngestionMetrics:
         self._redis.delete(*keys)
 
 
+class RedisMetricsCollector:
+    """Prometheus Custom Collector to scrape metrics from Redis directly."""
+
+    def __init__(self) -> None:
+        self.metrics = IngestionMetrics()
+
+    def collect(self) -> list:
+        snapshots = self.metrics.get_all_snapshots()
+
+        total_processed = GaugeMetricFamily(
+            "profilebot_profiles_processed_total",
+            "Total number of profiles processed",
+            labels=["source_type", "status"],
+        )
+        avg_latency = GaugeMetricFamily(
+            "profilebot_profiles_avg_latency_ms",
+            "Average latency in MS processing a profile",
+            labels=["source_type"],
+        )
+
+        for s in snapshots:
+            total_processed.add_metric([s.source_type, "success"], s.success_count)
+            total_processed.add_metric([s.source_type, "error"], s.failure_count)
+            avg_latency.add_metric([s.source_type], s.avg_latency_ms)
+
+        return [total_processed, avg_latency]
+
+
+def get_metrics_registry() -> CollectorRegistry:
+    """Return a custom CollectorRegistry exposing our Redis-backed metrics."""
+    registry = CollectorRegistry()
+    registry.register(RedisMetricsCollector())
+    return registry
+
+
 def track_ingestion(
     source_type: str,
     metrics: IngestionMetrics | None = None,
@@ -175,5 +214,6 @@ def track_ingestion(
 __all__ = [
     "IngestionMetrics",
     "MetricSnapshot",
+    "get_metrics_registry",
     "track_ingestion",
 ]

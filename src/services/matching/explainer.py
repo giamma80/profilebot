@@ -30,21 +30,23 @@ def parse_ranking_output(
     payload = json.loads(raw)
     rankings = payload.get("rankings", [])
 
-    cv_to_res: dict[str, int] = {match.cv_id: match.res_id for match in search_results}
+    cv_to_match: dict[str, ProfileMatch] = {match.cv_id: match for match in search_results}
     candidates: list[CandidateMatch] = []
 
     for entry in rankings[:max_candidates]:
         cv_id = str(entry.get("cv_id", ""))
-        if cv_id not in cv_to_res:
+        if cv_id not in cv_to_match:
             logger.warning("LLM returned unknown cv_id '%s', skipping", cv_id)
             continue
 
+        match = cv_to_match[cv_id]
         score = _normalize_score(entry.get("score", 0.0))
 
         candidates.append(
             CandidateMatch(
                 cv_id=cv_id,
-                res_id=cv_to_res[cv_id],
+                res_id=match.res_id,
+                full_name=_extract_full_name(match),
                 overall_score=score,
                 matched_skills=_safe_str_list(
                     entry.get("matched_skills", entry.get("matched", []))
@@ -59,6 +61,15 @@ def parse_ranking_output(
         )
 
     return candidates
+
+
+def _extract_full_name(match: ProfileMatch) -> str | None:
+    payload = match.payload or {}
+    full_name = payload.get("full_name")
+    if isinstance(full_name, str):
+        text = full_name.strip()
+        return text or None
+    return None
 
 
 def _normalize_score(value: Any) -> float:

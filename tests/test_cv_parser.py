@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 import shutil
 from io import BytesIO
 from pathlib import Path
@@ -10,8 +11,10 @@ import pytest
 from docx import Document
 
 from src.core.parser.docx_parser import CVParseError, parse_docx, parse_docx_bytes
+from src.core.parser.schemas import ParsedCV
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures" / "sample_cvs"
+CAMPIONE_DIR = FIXTURES_DIR / "campione"
 
 
 def _list_docx_fixtures() -> list[Path]:
@@ -22,6 +25,17 @@ def _copy_fixture_with_res_id(tmp_path: Path, fixture_path: Path, res_id: int) -
     destination = tmp_path / f"{res_id}_{fixture_path.name}"
     shutil.copy(fixture_path, destination)
     return destination
+
+
+def _parse_campione_docx(file_name: str) -> ParsedCV:
+    path = CAMPIONE_DIR / file_name
+    if not path.exists():
+        pytest.skip(f"Campione fixture not available: {path}")
+    match = re.search(r"\d+", file_name)
+    if not match:
+        raise ValueError(f"Missing res_id in filename: {file_name}")
+    res_id = int(match.group(0))
+    return parse_docx_bytes(path.read_bytes(), res_id)
 
 
 def test_fixtures_exist() -> None:
@@ -154,3 +168,15 @@ def test_parse_minimal_cv_skills(tmp_path: Path) -> None:
     parsed = parse_docx(docx_path)
     assert parsed.skills is not None
     assert parsed.skills.skill_keywords
+
+
+def test_parse_campione_cv__uppercase_surname__extracts_name_and_role() -> None:
+    parsed = _parse_campione_docx("curriculum_12369.docx")
+    assert parsed.metadata.full_name == "Andrea AMOROSO"
+    assert parsed.metadata.current_role == "CAD ENGINEER - CATIA"
+
+
+def test_parse_campione_cv__uppercase_role_line__extracts_role() -> None:
+    parsed = _parse_campione_docx("curriculum_218087.docx")
+    assert parsed.metadata.full_name == "Luca GANDOLFI"
+    assert parsed.metadata.current_role == "SOFTWARE ENGINEER - C, C++ (OBJECT ORIENTED)"

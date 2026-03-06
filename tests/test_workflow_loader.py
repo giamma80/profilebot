@@ -16,7 +16,7 @@ schedule: "0 */4 * * *"
 
 nodes:
   - id: fetch_res_ids
-    task: src.services.scraper.tasks.scraper_inside_refresh_task
+    task: scraper.inside_refresh
 """,
         encoding="utf-8",
     )

@@ -26,6 +26,7 @@ from src.services.matching.candidate_ranker import (
 from src.services.matching.explainer import parse_ranking_output
 from src.services.matching.job_analyzer import _parse_jd_analysis, analyze_job_description
 from src.services.matching.schemas import (
+    AvailabilityFilter,
     JDAnalysis,
     JobMatchRequest,
     SkillRequirement,
@@ -61,7 +62,7 @@ class TestJobMatchRequest:
             job_description="Cerchiamo un backend developer Python con 3 anni di esperienza"
         )
         assert req.max_candidates == 5
-        assert req.availability_filter == "free_or_partial"
+        assert req.availability_filter == AvailabilityFilter.FREE_OR_PARTIAL
         assert req.include_explanation is True
 
     def test_rejects_short_jd(self) -> None:
@@ -76,6 +77,7 @@ class TestJobMatchRequest:
             include_explanation=False,
         )
         assert req.max_candidates == 3
+        assert req.availability_filter == AvailabilityFilter.ONLY_FREE
         assert req.include_explanation is False
 
 
@@ -379,10 +381,11 @@ class TestParseRankingOutput:
                 ]
             }
         )
-        results = [_make_profile_match("cv-1")]
+        results = [_make_profile_match("cv-1", payload={"full_name": "Mario Rossi"})]
         candidates = parse_ranking_output(raw, results, max_candidates=5)
         assert len(candidates) == 1
         assert candidates[0].cv_id == "cv-1"
+        assert candidates[0].full_name == "Mario Rossi"
         assert candidates[0].overall_score == 0.92
         assert "Python expert" in candidates[0].strengths
 
@@ -453,12 +456,13 @@ class TestParseRankingOutput:
 class TestSearchOnlyRank:
     def test_converts_matches_to_candidates(self) -> None:
         results = [
-            _make_profile_match("cv-1", 100001, 0.90),
+            _make_profile_match("cv-1", 100001, 0.90, payload={"full_name": "Mario Rossi"}),
             _make_profile_match("cv-2", 100002, 0.75),
         ]
         candidates = search_only_rank(results, max_candidates=5)
         assert len(candidates) == 2
         assert candidates[0].cv_id == "cv-1"
+        assert candidates[0].full_name == "Mario Rossi"
         assert candidates[0].explanation == ""
 
     def test_respects_max(self) -> None:

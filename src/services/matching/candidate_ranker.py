@@ -62,7 +62,7 @@ RANKING_USER_PROMPT = (
     "5. strengths: punti di forza (max 3)\n"
     "6. gaps: lacune (max 3)\n\n"
     "Ordina dal migliore al peggiore.\n"
-    'Rispondi in JSON: {"rankings": [{...}, ...]}'
+    'Rispondi in JSON: {{"rankings": [{{"cv_id": "...", "score": 0.0, "matched_skills": [], "missing_skills": [], "explanation": "", "strengths": [], "gaps": []}}, ...]}}'
 )
 
 
@@ -113,7 +113,11 @@ def rank_candidates(
 
     try:
         raw = _call_llm_for_ranking(llm, request)
-        return parse_ranking_output(raw, search_results, max_candidates)
+        candidates = parse_ranking_output(raw, search_results, max_candidates)
+        if not candidates:
+            logger.warning("LLM ranking returned no valid candidates, falling back to search-only")
+            return search_only_rank(search_results, max_candidates)
+        return candidates
     except (ValueError, KeyError) as exc:
         logger.warning("LLM ranking failed, falling back to search-only: %s", exc)
         return search_only_rank(search_results, max_candidates)
@@ -211,6 +215,15 @@ def _build_flat_block(match: ProfileMatch, *, index: int) -> str:
     )
 
 
+def _extract_full_name(match: ProfileMatch) -> str | None:
+    payload = match.payload or {}
+    full_name = payload.get("full_name")
+    if isinstance(full_name, str):
+        text = full_name.strip()
+        return text or None
+    return None
+
+
 def search_only_rank(
     results: list[ProfileMatch],
     max_candidates: int,
@@ -220,6 +233,7 @@ def search_only_rank(
         CandidateMatch(
             cv_id=match.cv_id,
             res_id=match.res_id,
+            full_name=_extract_full_name(match),
             overall_score=match.score,
             matched_skills=match.matched_skills,
             missing_skills=match.missing_skills,
@@ -230,21 +244,7 @@ def search_only_rank(
 
 def _call_llm_for_ranking(llm: LLMDecisionClient, request: LLMRequest) -> str:
     """Call LLM for ranking and return raw JSON string."""
-    model = llm._settings.llm_model
-    response = llm._client.chat.completions.create(
-        model=model,
-        temperature=request.temperature,
-        max_tokens=request.max_tokens,
-        messages=[
-            {"role": "system", "content": request.system_prompt},
-            {"role": "user", "content": request.user_prompt},
-        ],
-        response_format={"type": "json_object"},
-    )
-    message = response.choices[0].message
-    if not message or not message.content:
-        raise ValueError("LLM ranking response is empty")
-    return str(message.content)
+    return llm.chat_completion_raw(request)
 
 
 __all__ = [

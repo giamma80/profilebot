@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import os
+import uuid
 from collections import Counter
 from collections.abc import Iterable
 from dataclasses import dataclass
@@ -323,9 +324,9 @@ def _collect_experience_texts(experiences: list[ExperienceItem]) -> list[Experie
 
 def _generate_point_id(cv_id: str, section: str) -> str:
     """Generate deterministic point IDs for idempotency."""
-    return f"{cv_id}_{section}"
+    return str(uuid.uuid5(uuid.NAMESPACE_URL, f"{cv_id}:{section}"))
 
 
 def _generate_experience_id(cv_id: str, index: int) -> str:
     """Generate deterministic experience IDs for idempotency."""
-    return f"{cv_id}_exp_{index}"
+    return str(uuid.uuid5(uuid.NAMESPACE_URL, f"{cv_id}:exp:{index}"))

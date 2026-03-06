@@ -76,21 +76,7 @@ def analyze_job_description(
 
 def _call_llm_raw(llm_client: LLMDecisionClient, request: LLMRequest) -> str:
     """Call LLM and return raw content string (bypass DecisionOutput parsing)."""
-    model = llm_client._settings.llm_model
-    content = llm_client._client.chat.completions.create(
-        model=model,
-        temperature=request.temperature,
-        max_tokens=request.max_tokens,
-        messages=[
-            {"role": "system", "content": request.system_prompt},
-            {"role": "user", "content": request.user_prompt},
-        ],
-        response_format={"type": "json_object"},
-    )
-    message = content.choices[0].message
-    if not message or not message.content:
-        raise ValueError("LLM response content is empty")
-    return str(message.content)
+    return llm_client.chat_completion_raw(request)
 
 
 def _parse_jd_analysis(raw_content: str) -> JDAnalysis:
