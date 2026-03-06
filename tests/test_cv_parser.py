@@ -29,6 +29,8 @@ def _copy_fixture_with_res_id(tmp_path: Path, fixture_path: Path, res_id: int) -
 
 def _parse_campione_docx(file_name: str) -> ParsedCV:
     path = CAMPIONE_DIR / file_name
+    if not path.exists():
+        pytest.skip(f"Campione fixture not available: {path}")
     match = re.search(r"\d+", file_name)
     if not match:
         raise ValueError(f"Missing res_id in filename: {file_name}")
