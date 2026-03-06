@@ -67,9 +67,14 @@ dev: install
 	uv pip install -e ".[dev]"
 	@echo "🪝 Setting up pre-commit hooks..."
 	uv run pre-commit install --install-hooks
-	@echo "📡 Installing Spectral (API linting)..."
-	@command -v npm >/dev/null
-	npm install -g @stoplight/spectral-cli
+	@echo "📡 Spectral setup..."
+	@if command -v spectral >/dev/null 2>&1; then \
+		echo "✅ Spectral CLI found in PATH."; \
+	elif command -v docker >/dev/null 2>&1; then \
+		echo "ℹ️ Spectral will run via Docker in api-lint."; \
+	else \
+		echo "⚠️ Spectral not found. Install @stoplight/spectral-cli or Docker."; \
+	fi
 	@echo "✅ Dev environment ready!"
 
 # ============== Code Quality ==============
@@ -103,7 +108,14 @@ check: lint format-check
 api-lint:
 	@echo "📡 Linting OpenAPI spec with Spectral..."
 	@if [ -f "docs/openapi.yaml" ]; then \
-		spectral lint docs/openapi.yaml; \
+		if command -v spectral >/dev/null 2>&1; then \
+			spectral lint docs/openapi.yaml; \
+		elif command -v docker >/dev/null 2>&1; then \
+			docker run --rm -v "$(PWD)":/work -w /work stoplight/spectral:latest lint docs/openapi.yaml; \
+		else \
+			echo "❌ Spectral not found. Install @stoplight/spectral-cli or Docker."; \
+			exit 1; \
+		fi; \
 	else \
 		echo "❌ Missing OpenAPI spec at docs/openapi.yaml"; \
 		exit 1; \
