@@ -39,6 +39,8 @@ class WorkflowDefinition(BaseModel):
     version: int = 1
     workflow_id: str
     schedule: str | None = None
+    best_effort_chord: bool = False
+    min_success_ratio: float = Field(default=0.8, ge=0.0, le=1.0)
     nodes: list[WorkflowNode]
 
     @model_validator(mode="after")

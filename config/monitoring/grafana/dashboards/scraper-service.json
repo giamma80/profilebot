@@ -1,0 +1,469 @@
+{
+  "uid": "profilebot-scraper-service",
+  "title": "ProfileBot - Scraper Service",
+  "schemaVersion": 38,
+  "version": 2,
+  "refresh": "10s",
+  "time": {
+    "from": "now-15m",
+    "to": "now"
+  },
+  "templating": {
+    "list": [
+      {
+        "name": "scraper",
+        "type": "query",
+        "datasource": "Prometheus",
+        "query": "label_values(scraper_runs_total, scraper)",
+        "refresh": 1,
+        "includeAll": true,
+        "multi": true,
+        "allValue": ".*",
+        "sort": 1
+      },
+      {
+        "name": "stage",
+        "type": "query",
+        "datasource": "Prometheus",
+        "query": "label_values(scraper_stage_duration_seconds{scraper=~\"$scraper\"}, stage)",
+        "refresh": 1,
+        "includeAll": true,
+        "multi": true,
+        "allValue": ".*",
+        "sort": 1
+      },
+      {
+        "name": "http_handler",
+        "type": "query",
+        "datasource": "Prometheus",
+        "query": "label_values(http_requests_total{job=\"scraper-service\"}, handler)",
+        "refresh": 1,
+        "includeAll": true,
+        "multi": true,
+        "allValue": ".*",
+        "sort": 1
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "gauge",
+      "title": "Scraper service up",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "up{job=\"scraper-service\"}"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 0,
+        "y": 0
+      },
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 1
+        }
+      }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Runs total",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(scraper_runs_total{scraper=~\"$scraper\"})"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 6,
+        "y": 0
+      }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Rows total",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(scraper_rows_total{scraper=~\"$scraper\"})"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 12,
+        "y": 0
+      }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Errors total",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(scraper_errors_total{scraper=~\"$scraper\"})"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 18,
+        "y": 0
+      }
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "Cache hit rate (req/s)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(rate(scraper_cache_hit_total{scraper=~\"$scraper\"}[5m]))"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 0,
+        "y": 6
+      }
+    },
+    {
+      "id": 6,
+      "type": "stat",
+      "title": "Cache miss rate (req/s)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(rate(scraper_cache_miss_total{scraper=~\"$scraper\"}[5m]))"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 6,
+        "y": 6
+      }
+    },
+    {
+      "id": 7,
+      "type": "stat",
+      "title": "Last run timestamp",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "max(scraper_last_run_timestamp_seconds{scraper=~\"$scraper\"})"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 12,
+        "y": 6
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "dateTimeAsIso"
+        }
+      }
+    },
+    {
+      "id": 8,
+      "type": "stat",
+      "title": "Last success timestamp",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "max(scraper_last_success_timestamp_seconds{scraper=~\"$scraper\"})"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 18,
+        "y": 6
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "dateTimeAsIso"
+        }
+      }
+    },
+    {
+      "id": 9,
+      "type": "timeseries",
+      "title": "Run duration p95 (s)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(scraper_run_duration_seconds_bucket{scraper=~\"$scraper\"}[5m])) by (le, scraper))",
+          "legendFormat": "{{scraper}}"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 0,
+        "y": 12
+      }
+    },
+    {
+      "id": 10,
+      "type": "timeseries",
+      "title": "Run duration p99 (s)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.99, sum(rate(scraper_run_duration_seconds_bucket{scraper=~\"$scraper\"}[5m])) by (le, scraper))",
+          "legendFormat": "{{scraper}}"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 12,
+        "y": 12
+      }
+    },
+    {
+      "id": 11,
+      "type": "timeseries",
+      "title": "Run duration avg (s)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(rate(scraper_run_duration_seconds_sum{scraper=~\"$scraper\"}[5m])) / sum(rate(scraper_run_duration_seconds_count{scraper=~\"$scraper\"}[5m]))",
+          "legendFormat": "{{scraper}}"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 0,
+        "y": 18
+      }
+    },
+    {
+      "id": 12,
+      "type": "timeseries",
+      "title": "Rows rate (rows/s)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(rate(scraper_rows_total{scraper=~\"$scraper\"}[5m])) by (scraper)",
+          "legendFormat": "{{scraper}}"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 12,
+        "y": 18
+      }
+    },
+    {
+      "id": 13,
+      "type": "timeseries",
+      "title": "Stage duration p95 (s)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(scraper_stage_duration_seconds_bucket{scraper=~\"$scraper\", stage=~\"$stage\"}[5m])) by (le, scraper, stage))",
+          "legendFormat": "{{scraper}} - {{stage}}"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 24
+      }
+    },
+    {
+      "id": 14,
+      "type": "timeseries",
+      "title": "Stage duration p99 (s)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.99, sum(rate(scraper_stage_duration_seconds_bucket{scraper=~\"$scraper\", stage=~\"$stage\"}[5m])) by (le, scraper, stage))",
+          "legendFormat": "{{scraper}} - {{stage}}"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 30
+      }
+    },
+    {
+      "id": 15,
+      "type": "timeseries",
+      "title": "Stage errors rate (err/s)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(rate(scraper_errors_total{scraper=~\"$scraper\", stage=~\"$stage\"}[5m])) by (scraper, stage)",
+          "legendFormat": "{{scraper}} - {{stage}}"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 0,
+        "y": 36
+      }
+    },
+    {
+      "id": 16,
+      "type": "timeseries",
+      "title": "Cache age p95 (s)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(scraper_cache_age_seconds_bucket{scraper=~\"$scraper\"}[5m])) by (le, scraper))",
+          "legendFormat": "{{scraper}}"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 12,
+        "y": 36
+      }
+    },
+    {
+      "id": 17,
+      "type": "timeseries",
+      "title": "Cache age p99 (s)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.99, sum(rate(scraper_cache_age_seconds_bucket{scraper=~\"$scraper\"}[5m])) by (le, scraper))",
+          "legendFormat": "{{scraper}}"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 0,
+        "y": 42
+      }
+    },
+    {
+      "id": 18,
+      "type": "timeseries",
+      "title": "Login detected rate (events/s)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(rate(scraper_login_detected_total{scraper=~\"$scraper\"}[5m])) by (scraper)",
+          "legendFormat": "{{scraper}}"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 12,
+        "y": 42
+      }
+    },
+    {
+      "id": 19,
+      "type": "timeseries",
+      "title": "HTTP request rate by endpoint (req/s)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(rate(http_requests_total{job=\"scraper-service\", handler=~\"$http_handler\"}[5m])) by (handler)",
+          "legendFormat": "{{handler}}"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 0,
+        "y": 48
+      }
+    },
+    {
+      "id": 20,
+      "type": "timeseries",
+      "title": "HTTP error rate by endpoint (non-2xx)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(rate(http_requests_total{job=\"scraper-service\", status!~\"2..\", handler=~\"$http_handler\"}[5m])) by (handler)",
+          "legendFormat": "{{handler}}"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 12,
+        "y": 48
+      }
+    },
+    {
+      "id": 21,
+      "type": "timeseries",
+      "title": "HTTP latency p95 by endpoint (s)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job=\"scraper-service\", handler=~\"$http_handler\"}[5m])) by (le, handler))",
+          "legendFormat": "{{handler}}"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 0,
+        "y": 54
+      }
+    },
+    {
+      "id": 22,
+      "type": "timeseries",
+      "title": "HTTP latency p99 by endpoint (s)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{job=\"scraper-service\", handler=~\"$http_handler\"}[5m])) by (le, handler))",
+          "legendFormat": "{{handler}}"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 12,
+        "y": 54
+      }
+    },
+    {
+      "id": 23,
+      "type": "text",
+      "title": "Scraper service endpoints",
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 60
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "### API\\n- GET /health\\n- GET /inside/res-ids\\n- POST /inside/cv/{res_id}\\n- GET /inside/cv/{res_id}\\n- POST /availability/csv\\n- GET /availability/csv\\n- GET /availability/csv/{res_id}\\n- POST /reskilling/csv\\n- GET /reskilling/csv\\n- GET /reskilling/csv/{res_id}\\n\\n### Metrics\\nPrometheus endpoint: /metrics\\n"
+      }
+    }
+  ]
+}

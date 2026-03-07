@@ -197,6 +197,44 @@ erDiagram
 
 ---
 
+## Celery Task Naming Reference
+
+| Task | Description |
+|------|-------------|
+| workflow.run_ingestion | Runs the ingestion workflow defined in the workflow YAML. |
+| workflow.best_effort_group | Best-effort group runner that proceeds with partial results based on success ratio. |
+| workflow.fanout_by_res_id | Fanout controller that spawns one task per res_id from Redis. |
+| scraper.fetch_inside_res_ids | Fetches res_id list from scraper and stores it in Redis. |
+| scraper.refresh_inside_profile | Refreshes a single Inside profile by res_id. |
+| scraper.export_availability_csv | Triggers availability CSV export in scraper. |
+| scraper.export_reskilling_csv | Triggers reskilling CSV export in scraper. |
+| scraper.refresh_reskilling_cache | Loads reskilling data into cache from scraper CSV. |
+| availability.refresh_cache | Refreshes availability cache via scraper export. |
+| embedding.index_cv | Indexes a single local CV file into Qdrant. |
+| embedding.index_cv_batch | Indexes a batch of local CV files in one task. |
+| embedding.index_all_cvs | Indexes all provided CV items with internal batching. |
+| embedding.index_from_scraper | Downloads CVs by res_id from scraper and indexes them. |
+
+## Workflow Hierarchy (res_id_ingestion)
+
+- Parallel header tasks:
+  - scraper.fetch_inside_res_ids
+  - scraper.export_availability_csv
+  - scraper.export_reskilling_csv
+- Then queued in order:
+  - workflow.fanout_by_res_id
+    - Parallel fanout tasks (one per res_id):
+      - scraper.refresh_inside_profile
+  - embedding.index_from_scraper
+
+### Embedding tasks not included in the ingestion workflow
+
+- embedding.index_cv
+- embedding.index_cv_batch
+- embedding.index_all_cvs
+
+---
+
 ## RAG Strategy
 
 Il sistema usa una strategia RAG **custom** basata su Qdrant + OpenAI + retrieval + prompt.  

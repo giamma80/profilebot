@@ -8,6 +8,7 @@ from celery import Celery, chain, group, signature
 from celery.canvas import Signature
 from celery.result import AsyncResult
 
+from src.core.workflows.patterns import BestEffortChord
 from src.core.workflows.schemas import WorkflowDefinition, WorkflowNode
 
 
@@ -19,7 +20,12 @@ class WorkflowRunner:
 
     def build_canvas(self, definition: WorkflowDefinition) -> Signature:
         """Build a Celery canvas from a workflow definition."""
-        return _build_canvas(definition, app=self.app)
+        return _build_canvas(
+            definition,
+            app=self.app,
+            best_effort_chord=definition.best_effort_chord,
+            min_success_ratio=definition.min_success_ratio,
+        )
 
     def run(self, definition: WorkflowDefinition) -> AsyncResult:
         """Build and trigger the workflow canvas."""
@@ -27,7 +33,13 @@ class WorkflowRunner:
         return canvas.apply_async()
 
 
-def _build_canvas(definition: WorkflowDefinition, *, app: Celery | None) -> Signature:
+def _build_canvas(
+    definition: WorkflowDefinition,
+    *,
+    app: Celery | None,
+    best_effort_chord: bool,
+    min_success_ratio: float,
+) -> Signature:
     levels = _topological_levels(definition)
     stages: list[Signature] = []
     for level in levels:
@@ -38,7 +50,34 @@ def _build_canvas(definition: WorkflowDefinition, *, app: Celery | None) -> Sign
             stages.append(group(signatures))
     if len(stages) == 1:
         return stages[0]
+    if best_effort_chord:
+        return _build_best_effort_canvas(
+            stages,
+            app=app,
+            min_success_ratio=min_success_ratio,
+        )
     return chain(*stages)
+
+
+def _build_best_effort_canvas(
+    stages: list[Signature],
+    *,
+    app: Celery | None,
+    min_success_ratio: float,
+) -> Signature:
+    canvas = stages[-1]
+    builder = BestEffortChord(app=app, min_success_ratio=min_success_ratio)
+    for stage in reversed(stages[:-1]):
+        if _is_group_signature(stage):
+            canvas = builder.build(stage, canvas)
+        else:
+            canvas = chain(stage, canvas)
+    return canvas
+
+
+def _is_group_signature(signature: Signature) -> bool:
+    tasks = getattr(signature, "tasks", None)
+    return isinstance(tasks, list)
 
 
 def _topological_levels(definition: WorkflowDefinition) -> list[list[WorkflowNode]]:

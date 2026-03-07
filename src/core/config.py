@@ -55,6 +55,10 @@ class Settings(BaseSettings):
         default=300,
         validation_alias="CELERY_TASK_TIME_LIMIT",
     )
+    best_effort_chord_max_wait_seconds: int = Field(
+        default=300,
+        validation_alias="BEST_EFFORT_CHORD_MAX_WAIT_SECONDS",
+    )
     scraper_base_url: str = Field(
         default="",
         validation_alias="SCRAPER_BASE_URL",

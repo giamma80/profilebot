@@ -1,25 +1,27 @@
 version: 1
 workflow_id: res_id_ingestion
 schedule: "0 */4 * * *"
+best_effort_chord: true
+min_success_ratio: 0.8
 
 nodes:
   - id: fetch_res_ids
-    task: scraper.inside_refresh
+    task: scraper.fetch_inside_res_ids
 
   - id: inside_fanout
-    task: workflow.fanout
+    task: workflow.fanout_by_res_id
     depends_on: [fetch_res_ids]
     fanout:
       source: redis:profilebot:scraper:inside:res_ids
-      task: scraper.inside_refresh_item
+      task: scraper.refresh_inside_profile
       parameter_name: res_id
 
   - id: export_availability
-    task: scraper.availability_csv_refresh
+    task: scraper.export_availability_csv
 
   - id: export_reskilling
-    task: scraper.reskilling_csv_refresh
+    task: scraper.export_reskilling_csv
 
   - id: embed_all
-    task: embedding.embed_from_scraper
+    task: embedding.index_from_scraper
     depends_on: [inside_fanout]

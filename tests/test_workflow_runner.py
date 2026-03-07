@@ -17,6 +17,17 @@ def _collect_task_names(signature: Any) -> list[str]:
         for task in tasks:
             names.extend(_collect_task_names(task))
         return names
+    if isinstance(signature, dict):
+        nested_tasks = signature.get("tasks")
+        if isinstance(nested_tasks, list):
+            nested_names: list[str] = []
+            for task in nested_tasks:
+                nested_names.extend(_collect_task_names(task))
+            return nested_names
+        task_name = signature.get("task")
+        if isinstance(task_name, str):
+            return [task_name]
+        return []
     task_name = getattr(signature, "task", None)
     if isinstance(task_name, str):
         return [task_name]
@@ -81,9 +92,12 @@ def test_build_canvas__workflow_includes_embed_all_after_fanout() -> None:
 
     canvas = WorkflowRunner().build_canvas(definition)
 
-    body = getattr(canvas, "body", None)
+    assert canvas.task == "workflow.best_effort_group"
+    payload = canvas.kwargs.get("payload")
+    assert payload is not None
+    body = payload.get("body")
     assert body is not None
     task_names = _collect_task_names(body)
-    fanout_index = task_names.index("workflow.fanout")
-    embed_index = task_names.index("embedding.embed_from_scraper")
+    fanout_index = task_names.index("workflow.fanout_by_res_id")
+    embed_index = task_names.index("embedding.index_from_scraper")
     assert embed_index > fanout_index

@@ -28,7 +28,7 @@ def _ensure_scraper_base_url() -> str | None:
     return base_url
 
 
-@celery_app.task(bind=True, max_retries=3, name="scraper.inside_refresh")
+@celery_app.task(bind=True, max_retries=3, name="scraper.fetch_inside_res_ids")
 def scraper_inside_refresh_task(self) -> dict[str, Any]:
     """Refresh Inside CVs and store res IDs in Redis."""
     cache = ScraperResIdCache()
@@ -73,7 +73,7 @@ def scraper_inside_refresh_task(self) -> dict[str, Any]:
         return {"status": "failed", "reason": str(exc)}
 
 
-@celery_app.task(bind=True, max_retries=3, name="scraper.inside_refresh_item")
+@celery_app.task(bind=True, max_retries=3, name="scraper.refresh_inside_profile")
 def scraper_inside_refresh_item_task(self, *, res_id: int) -> dict[str, Any]:
     """Refresh a single Inside CV by res_id."""
     if not _ensure_scraper_base_url():
@@ -94,7 +94,7 @@ def scraper_inside_refresh_item_task(self, *, res_id: int) -> dict[str, Any]:
         return {"status": "failed", "reason": str(exc), "res_id": res_id}
 
 
-@celery_app.task(bind=True, max_retries=3, name="scraper.availability_csv_refresh")
+@celery_app.task(bind=True, max_retries=3, name="scraper.export_availability_csv")
 def scraper_availability_csv_refresh_task(self) -> dict[str, Any]:
     """Trigger the availability CSV export."""
     if not _ensure_scraper_base_url():
@@ -112,7 +112,7 @@ def scraper_availability_csv_refresh_task(self) -> dict[str, Any]:
         return {"status": "failed", "reason": str(exc)}
 
 
-@celery_app.task(bind=True, max_retries=3, name="scraper.reskilling_csv_refresh")
+@celery_app.task(bind=True, max_retries=3, name="scraper.export_reskilling_csv")
 def scraper_reskilling_csv_refresh_task(self) -> dict[str, Any]:
     """Trigger the reskilling CSV export."""
     if not _ensure_scraper_base_url():
@@ -130,7 +130,7 @@ def scraper_reskilling_csv_refresh_task(self) -> dict[str, Any]:
         return {"status": "failed", "reason": str(exc)}
 
 
-@celery_app.task(bind=True, max_retries=3, name="scraper.reskilling_refresh")
+@celery_app.task(bind=True, max_retries=3, name="scraper.refresh_reskilling_cache")
 def reskilling_refresh_task(self) -> dict[str, Any]:
     """Refresh reskilling cache from the scraper service."""
     if not _ensure_scraper_base_url():

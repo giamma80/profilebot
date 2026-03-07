@@ -10,7 +10,7 @@ from functools import wraps
 from typing import ParamSpec, TypeVar
 
 import redis
-from prometheus_client import CollectorRegistry
+from prometheus_client import CollectorRegistry, Counter
 from prometheus_client.core import GaugeMetricFamily
 
 from src.core.config import get_settings
@@ -21,6 +21,11 @@ P = ParamSpec("P")
 R = TypeVar("R")
 
 METRICS_KEY_PREFIX = "profilebot:metrics:ingestion"
+
+CHORD_PARTIAL_FAILURES = Counter(
+    "profilebot_chord_partial_failures_total",
+    "Total partial failures in best-effort chords",
+)
 
 
 @dataclass(frozen=True)
@@ -212,6 +217,7 @@ def track_ingestion(
 
 
 __all__ = [
+    "CHORD_PARTIAL_FAILURES",
     "IngestionMetrics",
     "MetricSnapshot",
     "get_metrics_registry",
