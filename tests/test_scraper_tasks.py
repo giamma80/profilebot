@@ -5,6 +5,7 @@ from typing import Any
 
 import httpx
 import pytest
+from celery.exceptions import MaxRetriesExceededError
 
 from src.services.scraper import tasks as scraper_tasks
 from src.services.scraper.client import ScraperClient, ScraperClientConfig
@@ -51,14 +52,10 @@ def test_scraper_inside_refresh_task__stores_res_ids_and_returns_success(
     _set_base_url(monkeypatch, "https://scraper")
 
     fake_cache = FakeCache()
-    refreshed: list[int] = []
 
     def handler(request: httpx.Request) -> httpx.Response:
         if request.method == "GET" and request.url.path == "/inside/res-ids":
             return httpx.Response(200, json=[10, 20])
-        if request.method == "POST" and request.url.path.startswith("/inside/cv/"):
-            refreshed.append(int(request.url.path.split("/")[-1]))
-            return httpx.Response(204)
         return httpx.Response(404)
 
     transport = httpx.MockTransport(handler)
@@ -77,10 +74,8 @@ def test_scraper_inside_refresh_task__stores_res_ids_and_returns_success(
 
     assert result["status"] == "success"
     assert result["res_ids_count"] == 2
-    assert result["failed_res_ids"] == []
     assert result["cache_key"] == scraper_tasks.DEFAULT_RES_IDS_KEY
     assert fake_cache.stored == [10, 20]
-    assert refreshed == [10, 20]
 
 
 def test_scraper_inside_refresh_task__request_error_retries(
@@ -92,8 +87,6 @@ def test_scraper_inside_refresh_task__request_error_retries(
 
     def handler(request: httpx.Request) -> httpx.Response:
         if request.method == "GET" and request.url.path == "/inside/res-ids":
-            return httpx.Response(200, json=[10])
-        if request.method == "POST" and request.url.path == "/inside/cv/10":
             raise httpx.ConnectError("boom", request=request)
         return httpx.Response(404)
 
@@ -117,6 +110,92 @@ def test_scraper_inside_refresh_task__request_error_retries(
 
     with pytest.raises(RetryCalled):
         scraper_tasks.scraper_inside_refresh_task.run()
+
+
+def test_scraper_inside_refresh_item_task__success(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _set_base_url(monkeypatch, "https://scraper")
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.method == "POST" and request.url.path == "/inside/cv/10":
+            return httpx.Response(204)
+        return httpx.Response(404)
+
+    transport = httpx.MockTransport(handler)
+
+    monkeypatch.setattr(
+        scraper_tasks, "ScraperClient", lambda: _mock_client(transport), raising=True
+    )
+
+    result = scraper_tasks.scraper_inside_refresh_item_task.run(res_id=10)
+
+    assert result == {"status": "success", "res_id": 10}
+
+
+def test_scraper_inside_refresh_item_task__status_error_returns_failed(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _set_base_url(monkeypatch, "https://scraper")
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.method == "POST" and request.url.path == "/inside/cv/10":
+            return httpx.Response(500, request=request)
+        return httpx.Response(404)
+
+    transport = httpx.MockTransport(handler)
+
+    monkeypatch.setattr(
+        scraper_tasks, "ScraperClient", lambda: _mock_client(transport), raising=True
+    )
+
+    result = scraper_tasks.scraper_inside_refresh_item_task.run(res_id=10)
+
+    assert result["status"] == "failed"
+    assert result["res_id"] == 10
+    assert "500" in result["reason"]
+
+
+def test_scraper_inside_refresh_item_task__request_error_sends_to_dlq(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _set_base_url(monkeypatch, "https://scraper")
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.method == "POST" and request.url.path == "/inside/cv/10":
+            raise httpx.ConnectError("boom", request=request)
+        return httpx.Response(404)
+
+    transport = httpx.MockTransport(handler)
+    captured: dict[str, Any] = {}
+
+    def _send_task(name: str, *args: Any, **options: Any) -> None:
+        captured["name"] = name
+        captured["kwargs"] = options.get("kwargs", {})
+        captured["queue"] = options.get("queue")
+
+    def _retry(*, exc: Exception, **_: Any) -> None:
+        raise MaxRetriesExceededError()
+
+    monkeypatch.setattr(
+        scraper_tasks, "ScraperClient", lambda: _mock_client(transport), raising=True
+    )
+    monkeypatch.setattr(scraper_tasks.celery_app, "send_task", _send_task, raising=True)
+    monkeypatch.setattr(
+        scraper_tasks.scraper_inside_refresh_item_task,
+        "retry",
+        _retry,
+        raising=True,
+    )
+
+    with pytest.raises(MaxRetriesExceededError):
+        scraper_tasks.scraper_inside_refresh_item_task.run(res_id=10)
+
+    assert captured["name"] == "scraper.refresh_inside_profile_dlq"
+    assert captured["queue"] == scraper_tasks.SCRAPER_DLQ_QUEUE
+    assert captured["kwargs"]["res_id"] == 10
+    assert captured["kwargs"]["error_type"] == "ConnectError"
+    assert "boom" in captured["kwargs"]["error"]
 
 
 def test_scraper_availability_csv_refresh_task__calls_export(

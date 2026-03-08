@@ -1,0 +1,119 @@
+groups:
+  - name: profilebot.pipeline.p1
+    rules:
+      - alert: ProfileBotTaskStalled
+        expr: |
+          sum(celery_task_started_total)
+          - sum(celery_task_succeeded_total)
+          - sum(celery_task_failed_total) > 0
+        for: 10m
+        labels:
+          severity: critical
+          priority: P1
+          team: profilebot
+        annotations:
+          summary: "Celery tasks stalled in pipeline"
+          description: "Detected tasks started but not completed for over 10 minutes."
+
+      - alert: ProfileBotErrorRateSpike
+        expr: |
+          (rate(celery_task_failed_total[5m]) / rate(celery_task_received_total[5m])) > 0.05
+          and rate(celery_task_received_total[5m]) > 0
+        for: 2m
+        labels:
+          severity: critical
+          priority: P1
+          team: profilebot
+        annotations:
+          summary: "Celery error rate spike"
+          description: "Failure rate over 5% in the last 5 minutes."
+
+      - alert: ProfileBotRedisQueueOverflow
+        expr: redis_db_keys{db="db0"} > 1000
+        for: 2m
+        labels:
+          severity: critical
+          priority: P1
+          team: profilebot
+        annotations:
+          summary: "Redis queue overflow"
+          description: "Redis DB0 key count exceeded 1000."
+
+  - name: profilebot.pipeline.p2
+    rules:
+      - alert: ProfileBotTaskLatencyHigh
+        expr: |
+          histogram_quantile(
+            0.95,
+            sum by (le) (rate(celery_task_runtime_seconds_bucket[5m]))
+          ) > 300
+        for: 15m
+        labels:
+          severity: warning
+          priority: P2
+          team: profilebot
+        annotations:
+          summary: "High Celery task latency (p95)"
+          description: "95th percentile task runtime exceeds 300 seconds."
+
+      - alert: ProfileBotQdrantVectorDrift
+        expr: |
+          abs(
+            (collections_vector_total - collections_vector_total offset 1h)
+            / (collections_vector_total offset 1h)
+          ) > 0.1
+          and (collections_vector_total offset 1h) > 0
+        for: 15m
+        labels:
+          severity: warning
+          priority: P2
+          team: profilebot
+        annotations:
+          summary: "Qdrant vectors drift detected"
+          description: "Vector count changed by more than 10% in 1 hour."
+
+      - alert: ProfileBotRetryStorm
+        expr: rate(celery_task_retried_total[5m]) > 0.1
+        for: 15m
+        labels:
+          severity: warning
+          priority: P2
+          team: profilebot
+        annotations:
+          summary: "Celery retry storm"
+          description: "Retry rate exceeds 0.1 retries/sec over 5 minutes."
+
+      - alert: ProfileBotScraperDLQ
+        expr: increase(celery_task_received_total{name="scraper.refresh_inside_profile_dlq"}[5m]) > 0
+        for: 2m
+        labels:
+          severity: warning
+          priority: P2
+          team: profilebot
+        annotations:
+          summary: "Scraper DLQ events detected"
+          description: "DLQ task received events in the last 5 minutes."
+
+  - name: profilebot.pipeline.p3
+    rules:
+      - alert: ProfileBotPipelineCompletion
+        expr: increase(celery_task_succeeded_total{name="workflow.run_ingestion"}[10m]) > 0
+        for: 1m
+        labels:
+          severity: info
+          priority: P3
+          team: profilebot
+        annotations:
+          summary: "Pipeline completed successfully"
+          description: "Ingestion workflow succeeded within the last 10 minutes."
+
+      - alert: ProfileBotPartialChord
+        expr: increase(celery_chord_partial_success_total[10m]) > 0
+        for: 1m
+        labels:
+          severity: info
+          priority: P3
+          team: profilebot
+        annotations:
+          summary: "Best-effort chord partial success"
+          description: "Chord completed with partial failures."

@@ -17,21 +17,28 @@ class BestEffortChord:
     min_success_ratio: float = 0.8
     poll_interval: int = 5
 
-    def build(self, header: Signature | list[Signature], body: Signature) -> Signature:
+    def build(
+        self,
+        header: Signature | list[Signature],
+        body: Signature,
+        *,
+        on_error: Signature | None = None,
+    ) -> Signature:
         """Create the best-effort chord signature."""
         header_tasks = _extract_header_tasks(header)
         task_metadata = [_extract_task_metadata(sig) for sig in header_tasks]
+        payload = {
+            "header": header_tasks,
+            "body": body,
+            "min_success_ratio": self.min_success_ratio,
+            "poll_interval": self.poll_interval,
+            "task_metadata": task_metadata,
+        }
+        if on_error is not None:
+            payload["on_error"] = on_error
         return signature(
             "workflow.best_effort_group",
-            kwargs={
-                "payload": {
-                    "header": header_tasks,
-                    "body": body,
-                    "min_success_ratio": self.min_success_ratio,
-                    "poll_interval": self.poll_interval,
-                    "task_metadata": task_metadata,
-                }
-            },
+            kwargs={"payload": payload},
             app=self.app,
         )
 

@@ -49,7 +49,11 @@
         "graphMode": "none",
         "justifyMode": "auto",
         "orientation": "auto",
-        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
         "textMode": "auto"
       },
       "targets": [
@@ -87,7 +91,11 @@
         "graphMode": "area",
         "justifyMode": "auto",
         "orientation": "auto",
-        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
         "textMode": "auto"
       },
       "targets": [
@@ -109,9 +117,7 @@
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
-            "steps": [
-              { "color": "blue", "value": null }
-            ]
+            "steps": [{ "color": "blue", "value": null }]
           }
         },
         "overrides": []
@@ -123,7 +129,11 @@
         "graphMode": "none",
         "justifyMode": "auto",
         "orientation": "auto",
-        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
         "textMode": "auto"
       },
       "targets": [
@@ -145,9 +155,7 @@
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
-            "steps": [
-              { "color": "green", "value": null }
-            ]
+            "steps": [{ "color": "green", "value": null }]
           }
         },
         "overrides": []
@@ -159,7 +167,11 @@
         "graphMode": "area",
         "justifyMode": "auto",
         "orientation": "auto",
-        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
         "textMode": "auto"
       },
       "targets": [
@@ -196,7 +208,11 @@
         "graphMode": "area",
         "justifyMode": "auto",
         "orientation": "auto",
-        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
         "textMode": "auto"
       },
       "targets": [
@@ -235,7 +251,11 @@
         "graphMode": "area",
         "justifyMode": "auto",
         "orientation": "auto",
-        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
         "textMode": "auto"
       },
       "targets": [
@@ -286,36 +306,66 @@
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
-            "steps": [ { "color": "green", "value": null } ]
+            "steps": [{ "color": "green", "value": null }]
           }
         },
         "overrides": [
           {
             "matcher": { "id": "byRegexp", "options": ".*Scraping.*" },
-            "properties": [ { "id": "color", "value": { "fixedColor": "#5794F2", "mode": "fixed" } } ]
+            "properties": [
+              {
+                "id": "color",
+                "value": { "fixedColor": "#5794F2", "mode": "fixed" }
+              }
+            ]
           },
           {
             "matcher": { "id": "byRegexp", "options": ".*Availability.*" },
-            "properties": [ { "id": "color", "value": { "fixedColor": "#73BF69", "mode": "fixed" } } ]
+            "properties": [
+              {
+                "id": "color",
+                "value": { "fixedColor": "#73BF69", "mode": "fixed" }
+              }
+            ]
           },
           {
             "matcher": { "id": "byRegexp", "options": ".*Reskilling.*" },
-            "properties": [ { "id": "color", "value": { "fixedColor": "#FADE2A", "mode": "fixed" } } ]
+            "properties": [
+              {
+                "id": "color",
+                "value": { "fixedColor": "#FADE2A", "mode": "fixed" }
+              }
+            ]
           },
           {
             "matcher": { "id": "byRegexp", "options": ".*Embedding.*" },
-            "properties": [ { "id": "color", "value": { "fixedColor": "#FF9830", "mode": "fixed" } } ]
+            "properties": [
+              {
+                "id": "color",
+                "value": { "fixedColor": "#FF9830", "mode": "fixed" }
+              }
+            ]
           },
           {
             "matcher": { "id": "byRegexp", "options": ".*Workflow.*" },
-            "properties": [ { "id": "color", "value": { "fixedColor": "#B877D9", "mode": "fixed" } } ]
+            "properties": [
+              {
+                "id": "color",
+                "value": { "fixedColor": "#B877D9", "mode": "fixed" }
+              }
+            ]
           }
         ]
       },
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 6 },
       "id": 10,
       "options": {
-        "legend": { "calcs": ["sum"], "displayMode": "table", "placement": "right", "showLegend": true },
+        "legend": {
+          "calcs": ["sum"],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
         "tooltip": { "mode": "multi", "sort": "desc" }
       },
       "targets": [
@@ -388,7 +438,7 @@
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
-            "steps": [ { "color": "green", "value": null } ]
+            "steps": [{ "color": "green", "value": null }]
           }
         },
         "overrides": []
@@ -396,7 +446,12 @@
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 6 },
       "id": 11,
       "options": {
-        "legend": { "calcs": ["lastNotNull"], "displayMode": "table", "placement": "right", "showLegend": true },
+        "legend": {
+          "calcs": ["lastNotNull"],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
         "tooltip": { "mode": "multi", "sort": "desc" }
       },
       "targets": [
@@ -464,22 +519,42 @@
         "overrides": [
           {
             "matcher": { "id": "byRegexp", "options": ".*Scraping.*" },
-            "properties": [ { "id": "color", "value": { "fixedColor": "#F2495C", "mode": "fixed" } } ]
+            "properties": [
+              {
+                "id": "color",
+                "value": { "fixedColor": "#F2495C", "mode": "fixed" }
+              }
+            ]
           },
           {
             "matcher": { "id": "byRegexp", "options": ".*Reskilling.*" },
-            "properties": [ { "id": "color", "value": { "fixedColor": "#FF9830", "mode": "fixed" } } ]
+            "properties": [
+              {
+                "id": "color",
+                "value": { "fixedColor": "#FF9830", "mode": "fixed" }
+              }
+            ]
           },
           {
             "matcher": { "id": "byRegexp", "options": ".*Embedding.*" },
-            "properties": [ { "id": "color", "value": { "fixedColor": "#B877D9", "mode": "fixed" } } ]
+            "properties": [
+              {
+                "id": "color",
+                "value": { "fixedColor": "#B877D9", "mode": "fixed" }
+              }
+            ]
           }
         ]
       },
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 15 },
       "id": 12,
       "options": {
-        "legend": { "calcs": ["sum"], "displayMode": "table", "placement": "bottom", "showLegend": true },
+        "legend": {
+          "calcs": ["sum"],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
         "tooltip": { "mode": "multi", "sort": "desc" }
       },
       "targets": [
@@ -558,7 +633,12 @@
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 15 },
       "id": 13,
       "options": {
-        "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true },
+        "legend": {
+          "calcs": ["mean", "max"],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
         "tooltip": { "mode": "multi", "sort": "desc" }
       },
       "targets": [
@@ -614,23 +694,38 @@
             "matcher": { "id": "byName", "options": "Value #Succeeded" },
             "properties": [
               { "id": "displayName", "value": "Completed" },
-              { "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } },
-              { "id": "custom.cellOptions", "value": { "mode": "gradient", "type": "color-background" } }
+              {
+                "id": "color",
+                "value": { "fixedColor": "green", "mode": "fixed" }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": { "mode": "gradient", "type": "color-background" }
+              }
             ]
           },
           {
             "matcher": { "id": "byName", "options": "Value #Failed" },
             "properties": [
               { "id": "displayName", "value": "Failed" },
-              { "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } },
-              { "id": "custom.cellOptions", "value": { "mode": "gradient", "type": "color-background" } },
-              { "id": "thresholds", "value": {
-                "mode": "absolute",
-                "steps": [
-                  { "color": "transparent", "value": null },
-                  { "color": "red", "value": 1 }
-                ]
-              }}
+              {
+                "id": "color",
+                "value": { "fixedColor": "red", "mode": "fixed" }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": { "mode": "gradient", "type": "color-background" }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    { "color": "transparent", "value": null },
+                    { "color": "red", "value": 1 }
+                  ]
+                }
+              }
             ]
           }
         ]
@@ -646,9 +741,7 @@
           "show": true
         },
         "showHeader": true,
-        "sortBy": [
-          { "desc": true, "displayName": "Completed" }
-        ]
+        "sortBy": [{ "desc": true, "displayName": "Completed" }]
       },
       "targets": [
         {
@@ -707,9 +800,7 @@
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
-            "steps": [
-              { "color": "green", "value": null }
-            ]
+            "steps": [{ "color": "green", "value": null }]
           }
         },
         "overrides": [
@@ -725,61 +816,100 @@
             "matcher": { "id": "byName", "options": "Value #Received" },
             "properties": [
               { "id": "displayName", "value": "Received" },
-              { "id": "color", "value": { "fixedColor": "#5794F2", "mode": "fixed" } },
-              { "id": "custom.cellOptions", "value": { "mode": "basic", "type": "color-text" } }
+              {
+                "id": "color",
+                "value": { "fixedColor": "#5794F2", "mode": "fixed" }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": { "mode": "basic", "type": "color-text" }
+              }
             ]
           },
           {
             "matcher": { "id": "byName", "options": "Value #Succeeded" },
             "properties": [
               { "id": "displayName", "value": "Succeeded" },
-              { "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } },
-              { "id": "custom.cellOptions", "value": { "mode": "gradient", "type": "color-background" } }
+              {
+                "id": "color",
+                "value": { "fixedColor": "green", "mode": "fixed" }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": { "mode": "gradient", "type": "color-background" }
+              }
             ]
           },
           {
             "matcher": { "id": "byName", "options": "Value #Failed" },
             "properties": [
               { "id": "displayName", "value": "Failed" },
-              { "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } },
-              { "id": "custom.cellOptions", "value": { "mode": "gradient", "type": "color-background" } },
-              { "id": "thresholds", "value": {
-                "mode": "absolute",
-                "steps": [
-                  { "color": "transparent", "value": null },
-                  { "color": "red", "value": 1 }
-                ]
-              }}
+              {
+                "id": "color",
+                "value": { "fixedColor": "red", "mode": "fixed" }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": { "mode": "gradient", "type": "color-background" }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    { "color": "transparent", "value": null },
+                    { "color": "red", "value": 1 }
+                  ]
+                }
+              }
             ]
           },
           {
             "matcher": { "id": "byName", "options": "Value #Retried" },
             "properties": [
               { "id": "displayName", "value": "Retried" },
-              { "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } },
-              { "id": "custom.cellOptions", "value": { "mode": "gradient", "type": "color-background" } },
-              { "id": "thresholds", "value": {
-                "mode": "absolute",
-                "steps": [
-                  { "color": "transparent", "value": null },
-                  { "color": "yellow", "value": 1 }
-                ]
-              }}
+              {
+                "id": "color",
+                "value": { "fixedColor": "yellow", "mode": "fixed" }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": { "mode": "gradient", "type": "color-background" }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    { "color": "transparent", "value": null },
+                    { "color": "yellow", "value": 1 }
+                  ]
+                }
+              }
             ]
           },
           {
             "matcher": { "id": "byName", "options": "Value #Pending" },
             "properties": [
               { "id": "displayName", "value": "Pending / Lost" },
-              { "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } },
-              { "id": "custom.cellOptions", "value": { "mode": "gradient", "type": "color-background" } },
-              { "id": "thresholds", "value": {
-                "mode": "absolute",
-                "steps": [
-                  { "color": "transparent", "value": null },
-                  { "color": "orange", "value": 1 }
-                ]
-              }}
+              {
+                "id": "color",
+                "value": { "fixedColor": "orange", "mode": "fixed" }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": { "mode": "gradient", "type": "color-background" }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    { "color": "transparent", "value": null },
+                    { "color": "orange", "value": 1 }
+                  ]
+                }
+              }
             ]
           }
         ]
@@ -795,9 +925,7 @@
           "show": true
         },
         "showHeader": true,
-        "sortBy": [
-          { "desc": true, "displayName": "Received" }
-        ]
+        "sortBy": [{ "desc": true, "displayName": "Received" }]
       },
       "targets": [
         {
@@ -912,8 +1040,14 @@
               { "id": "custom.width", "value": 300 },
               { "id": "custom.align", "value": "left" },
               { "id": "displayName", "value": "Exception" },
-              { "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } },
-              { "id": "custom.cellOptions", "value": { "mode": "basic", "type": "color-text" } }
+              {
+                "id": "color",
+                "value": { "fixedColor": "red", "mode": "fixed" }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": { "mode": "basic", "type": "color-text" }
+              }
             ]
           },
           {
@@ -921,14 +1055,15 @@
             "properties": [
               { "id": "displayName", "value": "Count" },
               { "id": "custom.width", "value": 100 },
-              { "id": "custom.cellOptions", "value": { "mode": "gradient", "type": "color-background" } }
+              {
+                "id": "custom.cellOptions",
+                "value": { "mode": "gradient", "type": "color-background" }
+              }
             ]
           },
           {
             "matcher": { "id": "byName", "options": "Time" },
-            "properties": [
-              { "id": "custom.hidden", "value": true }
-            ]
+            "properties": [{ "id": "custom.hidden", "value": true }]
           }
         ]
       },
@@ -943,9 +1078,7 @@
           "show": true
         },
         "showHeader": true,
-        "sortBy": [
-          { "desc": true, "displayName": "Count" }
-        ]
+        "sortBy": [{ "desc": true, "displayName": "Count" }]
       },
       "targets": [
         {
@@ -991,7 +1124,7 @@
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
-            "steps": [ { "color": "red", "value": null } ]
+            "steps": [{ "color": "red", "value": null }]
           }
         },
         "overrides": []
@@ -999,7 +1132,12 @@
       "gridPos": { "h": 10, "w": 12, "x": 12, "y": 37 },
       "id": 17,
       "options": {
-        "legend": { "calcs": ["sum"], "displayMode": "table", "placement": "bottom", "showLegend": true },
+        "legend": {
+          "calcs": ["sum"],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
         "tooltip": { "mode": "multi", "sort": "desc" }
       },
       "targets": [
@@ -1044,7 +1182,7 @@
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
-            "steps": [ { "color": "red", "value": null } ]
+            "steps": [{ "color": "red", "value": null }]
           }
         },
         "overrides": []
@@ -1052,7 +1190,12 @@
       "gridPos": { "h": 8, "w": 24, "x": 0, "y": 47 },
       "id": 18,
       "options": {
-        "legend": { "calcs": ["sum", "lastNotNull"], "displayMode": "table", "placement": "right", "showLegend": true },
+        "legend": {
+          "calcs": ["sum", "lastNotNull"],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
         "tooltip": { "mode": "multi", "sort": "desc" }
       },
       "targets": [
@@ -1101,14 +1244,15 @@
             "matcher": { "id": "byName", "options": "Value" },
             "properties": [
               { "id": "displayName", "value": "Retries" },
-              { "id": "custom.cellOptions", "value": { "mode": "gradient", "type": "color-background" } }
+              {
+                "id": "custom.cellOptions",
+                "value": { "mode": "gradient", "type": "color-background" }
+              }
             ]
           },
           {
             "matcher": { "id": "byName", "options": "Time" },
-            "properties": [
-              { "id": "custom.hidden", "value": true }
-            ]
+            "properties": [{ "id": "custom.hidden", "value": true }]
           }
         ]
       },
@@ -1123,9 +1267,7 @@
           "show": true
         },
         "showHeader": true,
-        "sortBy": [
-          { "desc": true, "displayName": "Retries" }
-        ]
+        "sortBy": [{ "desc": true, "displayName": "Retries" }]
       },
       "targets": [
         {
@@ -1171,7 +1313,7 @@
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
-            "steps": [ { "color": "green", "value": null } ]
+            "steps": [{ "color": "green", "value": null }]
           }
         },
         "overrides": []
@@ -1179,7 +1321,12 @@
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 55 },
       "id": 20,
       "options": {
-        "legend": { "calcs": ["sum"], "displayMode": "table", "placement": "bottom", "showLegend": true },
+        "legend": {
+          "calcs": ["sum"],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
         "tooltip": { "mode": "multi", "sort": "desc" }
       },
       "targets": [
@@ -1200,6 +1347,22 @@
       ],
       "title": "Retries vs Failures Over Time",
       "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "grafana", "uid": "-- Grafana --" },
+      "gridPos": { "h": 6, "w": 24, "x": 0, "y": 63 },
+      "id": 21,
+      "options": {
+        "alertInstanceLabelFilter": "",
+        "alertName": "",
+        "dashboardAlerts": false,
+        "groupBy": ["alertname"],
+        "maxItems": 20,
+        "show": "current",
+        "sortOrder": 1
+      },
+      "title": "Active Alerts",
+      "type": "alertlist"
     }
   ],
   "refresh": "10s",
@@ -1212,6 +1375,6 @@
   "timezone": "",
   "title": "ProfileBot / Processing Pipeline",
   "uid": "profilebot-processing",
-  "version": 2,
+  "version": 3,
   "weekStart": ""
 }

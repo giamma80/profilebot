@@ -185,6 +185,72 @@ def test_embed_from_scraper_task__processes_res_ids(
     assert states[-1]["meta"]["failed"] == 0
 
 
+def test_embed_from_scraper_task__uses_best_effort_results(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def _base_url() -> str:
+        return "https://scraper"
+
+    monkeypatch.setattr(tasks, "_ensure_scraper_base_url", _base_url, raising=True)
+    tasks.embed_from_scraper_task.request.id = "task-embed-results"
+
+    class FakeCache:
+        def get_res_ids(self) -> list[int]:
+            raise AssertionError("cache should not be used")
+
+    downloaded: list[int] = []
+
+    class DummyClient:
+        def __enter__(self) -> DummyClient:
+            return self
+
+        def __exit__(self, exc_type, exc, traceback) -> None:
+            return None
+
+        def download_inside_cv(self, res_id: int) -> bytes:
+            downloaded.append(res_id)
+            return f"docx-{res_id}".encode()
+
+    class DummyExtractor:
+        def __init__(self, dictionary: object) -> None:
+            return None
+
+        def extract(self, parsed_cv: object) -> str:
+            return "skill-result"
+
+    class DummyPipeline:
+        def process_cv(self, parsed_cv: object, skill_result: str) -> dict[str, int]:
+            return {"cv_skills": 1, "cv_experiences": 0, "total": 1}
+
+    def _load_dict(*_: object) -> dict:
+        return {}
+
+    def _make_extractor(_: object) -> DummyExtractor:
+        return DummyExtractor({})
+
+    def _parse_docx_bytes(data: bytes, res_id: int) -> tuple[bytes, int]:
+        return data, res_id
+
+    monkeypatch.setattr(tasks, "ScraperResIdCache", FakeCache, raising=True)
+    monkeypatch.setattr(tasks, "ScraperClient", DummyClient, raising=True)
+    monkeypatch.setattr(tasks, "load_skill_dictionary", _load_dict, raising=True)
+    monkeypatch.setattr(tasks, "SkillExtractor", _make_extractor, raising=True)
+    monkeypatch.setattr(tasks, "EmbeddingPipeline", DummyPipeline, raising=True)
+    monkeypatch.setattr(tasks, "parse_docx_bytes", _parse_docx_bytes, raising=True)
+
+    results = [
+        {"res_id": 10, "status": "success"},
+        {"res_id": 20, "status": "failed"},
+        {"res_id": 30},
+    ]
+
+    result = tasks.embed_from_scraper_task.run(_results=results)
+
+    assert result["processed"] == 2
+    assert result["failed"] == 0
+    assert downloaded == [10, 30]
+
+
 def test_embed_from_scraper_task__continues_on_failure(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

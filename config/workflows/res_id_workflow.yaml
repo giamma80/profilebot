@@ -11,6 +11,11 @@ nodes:
   - id: inside_fanout
     task: workflow.fanout_by_res_id
     depends_on: [fetch_res_ids]
+    params:
+      options:
+        callback_task: embedding.index_from_scraper
+        on_error_task: workflow.log_failed_profiles
+        min_success_ratio: 0.8
     fanout:
       source: redis:profilebot:scraper:inside:res_ids
       task: scraper.refresh_inside_profile
@@ -21,7 +26,3 @@ nodes:
 
   - id: export_reskilling
     task: scraper.export_reskilling_csv
-
-  - id: embed_all
-    task: embedding.index_from_scraper
-    depends_on: [inside_fanout]

@@ -1,0 +1,43 @@
+global:
+  resolve_timeout: 5m
+
+route:
+  group_by: ["alertname", "priority"]
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+  receiver: "log-only"
+  routes:
+    - matchers:
+        - priority="P1"
+      receiver: "slack-p1"
+      group_wait: 10s
+      group_interval: 2m
+      repeat_interval: 1h
+    - matchers:
+        - priority="P2"
+      receiver: "slack-p2"
+      group_wait: 1m
+      group_interval: 15m
+      repeat_interval: 2h
+    - matchers:
+        - priority="P3"
+      receiver: "log-only"
+
+receivers:
+  - name: "slack-p1"
+    slack_configs:
+      - channel: "#profilebot-alerts"
+        send_resolved: true
+        api_url: ${SLACK_WEBHOOK_URL}
+        title: "[P1] {{ .CommonLabels.alertname }}"
+        text: "{{ .CommonAnnotations.summary }}\n{{ .CommonAnnotations.description }}"
+  - name: "slack-p2"
+    slack_configs:
+      - channel: "#profilebot-alerts"
+        send_resolved: true
+        api_url: ${SLACK_WEBHOOK_URL}
+        title: "[P2] {{ .CommonLabels.alertname }}"
+        text: "{{ .CommonAnnotations.summary }}\n{{ .CommonAnnotations.description }}"
+  - name: "log-only"
+    webhook_configs: []

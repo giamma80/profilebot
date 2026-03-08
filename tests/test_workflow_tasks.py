@@ -72,6 +72,42 @@ class DummyGroup:
         return DummyGroupResult("group-123", children)
 
 
+class DummyChordSignature:
+    def __init__(self) -> None:
+        self.called = False
+
+    def apply_async(self) -> DummyResult:
+        self.called = True
+        return DummyResult("chord-123")
+
+
+class DummyBestEffortChord:
+    last_instance: DummyBestEffortChord | None = None
+
+    def __init__(
+        self,
+        *,
+        app: object | None = None,
+        min_success_ratio: float = 0.8,
+        poll_interval: int = 5,
+    ) -> None:
+        self.app = app
+        self.min_success_ratio = min_success_ratio
+        self.poll_interval = poll_interval
+        self.called_with: dict[str, Any] | None = None
+        DummyBestEffortChord.last_instance = self
+
+    def build(
+        self,
+        header: list[DummySignature],
+        body: DummySignature,
+        *,
+        on_error: DummySignature | None = None,
+    ) -> DummyChordSignature:
+        self.called_with = {"header": header, "body": body, "on_error": on_error}
+        return DummyChordSignature()
+
+
 def _make_signature(task_name: str, kwargs: dict[str, object]) -> DummySignature:
     return DummySignature(task_name, kwargs)
 
@@ -143,6 +179,56 @@ def test_run_workflow_fanout_task__empty_source_key_raises_value_error() -> None
         )
 
 
+def test_run_workflow_fanout_task__best_effort_chord_triggers_callback(
+    monkeypatch,
+) -> None:
+    monkeypatch.setattr(
+        workflow_tasks,
+        "_load_fanout_res_ids",
+        lambda _: [101, 202],
+        raising=True,
+    )
+    monkeypatch.setattr(workflow_tasks, "signature", _make_signature, raising=True)
+    monkeypatch.setattr(workflow_tasks, "BestEffortChord", DummyBestEffortChord, raising=True)
+
+    result = workflow_tasks.run_workflow_fanout_task(
+        fanout_source="redis:profilebot:scraper:inside:res_ids",
+        fanout_task="tasks.child",
+        fanout_parameter_name="res_id",
+        options={
+            "callback_task": "embedding.index_from_scraper",
+            "on_error_task": "workflow.log_failed_profiles",
+            "min_success_ratio": 0.8,
+        },
+    )
+
+    assert result["status"] == "triggered"
+    assert result["res_ids_count"] == 2
+    assert result["chord_task_id"] == "chord-123"
+
+    instance = DummyBestEffortChord.last_instance
+    assert instance is not None
+    assert instance.min_success_ratio == 0.8
+    assert instance.called_with is not None
+    assert instance.called_with["body"].task == "embedding.index_from_scraper"
+    assert instance.called_with["on_error"].task == "workflow.log_failed_profiles"
+    assert len(instance.called_with["header"]) == 2
+
+
+def test_log_failed_profiles_task__returns_failed_res_ids() -> None:
+    result = workflow_tasks.log_failed_profiles_task(
+        errors=[
+            {"res_id": 10, "error_type": "RuntimeError", "error": "boom"},
+            {"res_id": 20, "error_type": "ValueError", "error": "bad"},
+            {"res_id": None, "error_type": "ValueError", "error": "skip"},
+        ]
+    )
+
+    assert result["status"] == "logged"
+    assert result["failed_count"] == 2
+    assert result["failed_res_ids"] == [10, 20]
+
+
 class DummyBestEffortChild:
     def __init__(self, value: Any) -> None:
         self._value = value
@@ -185,7 +271,14 @@ def test_collect_best_effort_results__with_failure__returns_errors() -> None:
     )
 
     assert len(results) == 1
-    assert errors == [{"task_name": "tasks.a", "res_id": 10, "error": "boom"}]
+    assert errors == [
+        {
+            "task_name": "tasks.a",
+            "res_id": 10,
+            "error": "boom",
+            "error_type": "RuntimeError",
+        }
+    ]
 
 
 def test_compute_success_ratio__below_threshold__returns_expected_ratio() -> None:
@@ -243,15 +336,17 @@ def test_best_effort_chord_task__partial_failure_above_threshold__triggers_callb
     monkeypatch.setattr(workflow_tasks, "CHORD_PARTIAL_FAILURES", counter, raising=True)
 
     result = workflow_tasks.best_effort_chord_task.run(
-        header=[],
-        body={"task": "tasks.body"},
-        min_success_ratio=0.5,
-        poll_interval=1,
-        task_metadata=[
-            {"task_name": "tasks.a", "res_id": 10},
-            {"task_name": "tasks.b", "res_id": 20},
-        ],
-        group_id="group-123",
+        payload={
+            "header": [],
+            "body": {"task": "tasks.body"},
+            "min_success_ratio": 0.5,
+            "poll_interval": 1,
+            "task_metadata": [
+                {"task_name": "tasks.a", "res_id": 10},
+                {"task_name": "tasks.b", "res_id": 20},
+            ],
+            "group_id": "group-123",
+        }
     )
 
     assert result["status"] == "triggered"
@@ -277,16 +372,64 @@ def test_best_effort_chord_task__below_threshold__raises(monkeypatch) -> None:
 
     with pytest.raises(ValueError, match="success ratio below threshold"):
         workflow_tasks.best_effort_chord_task.run(
-            header=[],
-            body={"task": "tasks.body"},
-            min_success_ratio=0.9,
-            poll_interval=1,
-            task_metadata=[
-                {"task_name": "tasks.a", "res_id": 10},
-                {"task_name": "tasks.b", "res_id": 20},
-            ],
-            group_id="group-123",
+            payload={
+                "header": [],
+                "body": {"task": "tasks.body"},
+                "min_success_ratio": 0.9,
+                "poll_interval": 1,
+                "task_metadata": [
+                    {"task_name": "tasks.a", "res_id": 10},
+                    {"task_name": "tasks.b", "res_id": 20},
+                ],
+                "group_id": "group-123",
+            }
         )
+
+
+def test_best_effort_chord_task__below_threshold__triggers_on_error(monkeypatch) -> None:
+    group_result = DummyBestEffortReadyGroup(
+        [DummyBestEffortChild(RuntimeError("boom")), DummyBestEffortChild({"ok": True})]
+    )
+    callback = DummyCallbackSignature()
+    error_callback = DummyCallbackSignature()
+    counter = DummyCounter()
+    on_error = {"task": "tasks.on_error"}
+
+    monkeypatch.setattr(
+        workflow_tasks.GroupResult,
+        "restore",
+        lambda group_id, app=None: group_result,
+        raising=True,
+    )
+    monkeypatch.setattr(
+        workflow_tasks,
+        "_coerce_signature",
+        lambda value: error_callback if value == on_error else callback,
+        raising=True,
+    )
+    monkeypatch.setattr(workflow_tasks, "CHORD_PARTIAL_FAILURES", counter, raising=True)
+
+    with pytest.raises(ValueError, match="success ratio below threshold"):
+        workflow_tasks.best_effort_chord_task.run(
+            payload={
+                "header": [],
+                "body": {"task": "tasks.body"},
+                "on_error": on_error,
+                "min_success_ratio": 0.9,
+                "poll_interval": 1,
+                "task_metadata": [
+                    {"task_name": "tasks.a", "res_id": 10},
+                    {"task_name": "tasks.b", "res_id": 20},
+                ],
+                "group_id": "group-123",
+            }
+        )
+
+    assert error_callback.called_with is not None
+    assert callback.called_with is None
+    args = error_callback.called_with["args"]
+    assert args is not None
+    assert args[1][0]["error_type"] == "RuntimeError"
 
 
 def test_best_effort_chord_task__all_failed__raises(monkeypatch) -> None:
@@ -310,13 +453,15 @@ def test_best_effort_chord_task__all_failed__raises(monkeypatch) -> None:
 
     with pytest.raises(ValueError, match="success ratio below threshold"):
         workflow_tasks.best_effort_chord_task.run(
-            header=[],
-            body={"task": "tasks.body"},
-            min_success_ratio=0.1,
-            poll_interval=1,
-            task_metadata=[
-                {"task_name": "tasks.a", "res_id": 10},
-                {"task_name": "tasks.b", "res_id": 20},
-            ],
-            group_id="group-123",
+            payload={
+                "header": [],
+                "body": {"task": "tasks.body"},
+                "min_success_ratio": 0.1,
+                "poll_interval": 1,
+                "task_metadata": [
+                    {"task_name": "tasks.a", "res_id": 10},
+                    {"task_name": "tasks.b", "res_id": 20},
+                ],
+                "group_id": "group-123",
+            }
         )
