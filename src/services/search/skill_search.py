@@ -119,12 +119,11 @@ def search_by_skills(
     normalized_skills = _normalize_query_skills(skills, dictionary_instance)
     if not normalized_skills:
         if settings.search_fallback_enabled:
-            from src.core.search.fallback import recover_skills_from_dictionary
+            from src.core.search.fallback import FallbackOptions, recover_skills_from_dictionary
 
             recovered = recover_skills_from_dictionary(
                 query_text=" ".join(skills),
-                top_k=5,
-                score_threshold=0.7,
+                options=FallbackOptions(top_k=5, score_threshold=0.7),
             )
             fallback_activated = True
             FALLBACK_ACTIVATED.inc()
