@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 import logging
+from typing import Any, cast
 
 from fastapi import APIRouter, HTTPException, status
 
-from src.api.v1.schemas import ProfileMatch, SkillSearchRequest, SkillSearchResponse
+from src.api.v1.schemas import ProfileMatch, SearchMetadata, SkillSearchRequest, SkillSearchResponse
 from src.services.search.skill_search import ProfileMatch as ServiceProfileMatch
 from src.services.search.skill_search import SearchFilters as ServiceSearchFilters
 from src.services.search.skill_search import search_by_skills
@@ -47,6 +48,11 @@ def search_profiles_by_skills(request: SkillSearchRequest) -> SkillSearchRespons
             for match in matches
         ]
 
+    def _map_metadata(metadata: dict[str, Any] | None) -> SearchMetadata | None:
+        if metadata is None:
+            return None
+        return cast(SearchMetadata, SearchMetadata.model_validate(metadata))
+
     try:
         response = search_by_skills(
             skills=request.skills,
@@ -74,5 +80,5 @@ def search_profiles_by_skills(request: SkillSearchRequest) -> SkillSearchRespons
         recovered_skills=response.recovered_skills,
         no_match_reason=response.no_match_reason,
         fusion_strategy=response.fusion_strategy,
-        search_metadata=response.search_metadata,
+        search_metadata=_map_metadata(response.search_metadata),
     )

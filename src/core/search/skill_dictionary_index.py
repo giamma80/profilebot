@@ -74,7 +74,7 @@ def _chunked(
     batch_size: int,
 ) -> Iterable[list[tuple[str, SkillEntry]]]:
     if batch_size <= 0:
-        return []
+        return
     for i in range(0, len(items), batch_size):
         yield items[i : i + batch_size]
 

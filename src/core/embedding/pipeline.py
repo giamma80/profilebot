@@ -171,6 +171,9 @@ class EmbeddingPipeline:
                 level="intermediate",
                 certified=False,
                 from_experience=True,
+                years_factor=0.0,
+                cert_bonus=0.0,
+                weight=0.0,
             ).model_dump()
             for skill in skill_result.normalized_skills
         ]
