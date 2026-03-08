@@ -183,6 +183,7 @@ def test_process_cv__upsert_payloads__include_expected_fields() -> None:
     assert cv_skills_payload["dictionary_version"] == "1.0.0"
     assert cv_skills_payload["skill_domain"] == "backend"
     assert cv_skills_payload["seniority_bucket"] in {"junior", "mid", "senior", "lead"}
+    assert cv_skills_payload["seniority"] in {"junior", "mid", "senior", "lead"}
     assert isinstance(cv_skills_payload["created_at"], datetime)
     assert cv_skills_payload["full_name"] == "Mario Rossi"
     assert cv_skills_payload["current_role"] == "Senior Engineer"
@@ -190,6 +191,14 @@ def test_process_cv__upsert_payloads__include_expected_fields() -> None:
     assert cv_skills_payload["unknown_skills"] == []
     assert isinstance(cv_skills_payload["experiences_compact"], list)
     assert cv_skills_payload["years_experience_estimate"] is not None
+    weighted_skills = cv_skills_payload["weighted_skills"]
+    assert isinstance(weighted_skills, list)
+    assert weighted_skills
+    sample_weight = weighted_skills[0]
+    assert "weight" in sample_weight
+    assert "years_factor" in sample_weight
+    assert "cert_bonus" in sample_weight
+    assert "skill_name" in sample_weight or "name" in sample_weight
 
     cv_exp_points = cv_experiences_call.kwargs["points"]
     assert len(cv_exp_points) == 2

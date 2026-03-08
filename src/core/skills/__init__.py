@@ -17,6 +17,7 @@ from src.core.skills.normalizer import (
     SkillNormalizer,
 )
 from src.core.skills.schemas import NormalizedSkill, SkillExtractionResult
+from src.core.skills.weight import SkillLevel, SkillWeight, calculate_skill_weight
 
 __all__ = [
     "FUZZY_THRESHOLD",
@@ -29,6 +30,9 @@ __all__ = [
     "SkillEntry",
     "SkillExtractionResult",
     "SkillExtractor",
+    "SkillLevel",
     "SkillNormalizer",
+    "SkillWeight",
+    "calculate_skill_weight",
     "load_skill_dictionary",
 ]

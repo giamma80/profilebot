@@ -100,6 +100,7 @@ class KPBuilder:
             years_experience,
             skill_result.skill_count,
             role_titles,
+            summary_text=parsed_cv.raw_text,
         )
 
         matched_skills, missing_skills, match_ratio = self._build_match_stats(
