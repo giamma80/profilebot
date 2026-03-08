@@ -209,11 +209,11 @@ def test_search_by_skills__unknown_skills_raise_value_error(
         qdrant_client=DummyQdrantClient([]),
         dictionary=_make_dictionary(),
     )
-    monkeypatch.setattr(
-        skill_search,
-        "get_settings",
-        lambda: type("SettingsStub", (), {"search_fallback_enabled": False})(),
-    )
+
+    def _settings_stub() -> object:
+        return type("SettingsStub", (), {"search_fallback_enabled": False})()
+
+    monkeypatch.setattr(skill_search, "get_settings", _settings_stub)
 
     with pytest.raises(ValueError, match="At least one valid skill is required"):
         search_by_skills(

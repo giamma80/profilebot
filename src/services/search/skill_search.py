@@ -15,6 +15,7 @@ from qdrant_client import QdrantClient, models
 
 from src.core.config import get_settings
 from src.core.embedding.service import EmbeddingService, OpenAIEmbeddingService
+from src.core.search.fallback import FallbackOptions, recover_skills_from_dictionary
 from src.core.skills.dictionary import SkillDictionary, load_skill_dictionary
 from src.core.skills.normalizer import SkillNormalizer
 from src.services.availability.cache import AvailabilityCache
@@ -119,8 +120,6 @@ def search_by_skills(
     normalized_skills = _normalize_query_skills(skills, dictionary_instance)
     if not normalized_skills:
         if settings.search_fallback_enabled:
-            from src.core.search.fallback import FallbackOptions, recover_skills_from_dictionary
-
             recovered = recover_skills_from_dictionary(
                 query_text=" ".join(skills),
                 options=FallbackOptions(top_k=5, score_threshold=0.7),
