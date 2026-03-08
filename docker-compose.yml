@@ -127,6 +127,24 @@ services:
       - "9090:9090"
     volumes:
       - ./config/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./config/monitoring/alerts:/etc/prometheus/alerts:ro
+    networks:
+      - profilebot
+    restart: unless-stopped
+
+  alertmanager:
+    profiles: ["monitoring"]
+    image: prom/alertmanager:latest
+    container_name: profilebot-alertmanager
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./config/monitoring/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+    env_file: .env
+    command:
+      - --config.file=/etc/alertmanager/alertmanager.yml
+      - --config.expand-env
+      - --log.level=info
     networks:
       - profilebot
     restart: unless-stopped

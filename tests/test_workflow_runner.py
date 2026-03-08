@@ -87,7 +87,7 @@ def test_build_canvas__fanout_node__adds_fanout_kwargs() -> None:
     assert canvas.kwargs["fanout_parameter_name"] == "res_id"
 
 
-def test_build_canvas__workflow_includes_embed_all_after_fanout() -> None:
+def test_build_canvas__workflow_includes_fanout_callback_params() -> None:
     definition = load_workflow(Path("config/workflows/res_id_workflow.yaml"))
 
     canvas = WorkflowRunner().build_canvas(definition)
@@ -97,7 +97,31 @@ def test_build_canvas__workflow_includes_embed_all_after_fanout() -> None:
     assert payload is not None
     body = payload.get("body")
     assert body is not None
-    task_names = _collect_task_names(body)
-    fanout_index = task_names.index("workflow.fanout_by_res_id")
-    embed_index = task_names.index("embedding.index_from_scraper")
-    assert embed_index > fanout_index
+
+    fanout_signature = None
+    tasks = getattr(body, "tasks", None)
+    if isinstance(tasks, list):
+        for task in tasks:
+            if getattr(task, "task", None) == "workflow.fanout_by_res_id":
+                fanout_signature = task
+                break
+    if fanout_signature is None and isinstance(body, dict):
+        if body.get("task") == "workflow.fanout_by_res_id":
+            fanout_signature = body
+        else:
+            nested_tasks = body.get("tasks")
+            if isinstance(nested_tasks, list):
+                for task in nested_tasks:
+                    if isinstance(task, dict) and task.get("task") == "workflow.fanout_by_res_id":
+                        fanout_signature = task
+                        break
+
+    assert fanout_signature is not None
+    fanout_kwargs = getattr(fanout_signature, "kwargs", None)
+    if fanout_kwargs is None and isinstance(fanout_signature, dict):
+        fanout_kwargs = fanout_signature.get("kwargs", {})
+    if fanout_kwargs is None:
+        fanout_kwargs = {}
+    options = fanout_kwargs.get("options", {})
+    assert options["callback_task"] == "embedding.index_from_scraper"
+    assert options["on_error_task"] == "workflow.log_failed_profiles"

@@ -281,22 +281,44 @@ def embed_all_task(  # noqa: PLR0913 - task signature mirrors API payload
 
 
 @celery_app.task(bind=True, name="embedding.index_from_scraper")
-def embed_from_scraper_task(self, _results: list[Any] | None = None) -> dict[str, Any]:
+def embed_from_scraper_task(
+    self,
+    _results: list[Any] | None = None,
+    _errors: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
     """Download CVs from the scraper service and index them into Qdrant."""
     if not _ensure_scraper_base_url():
         return {"status": "skipped", "reason": "SCRAPER_BASE_URL not configured"}
 
-    cache = ScraperResIdCache()
-    res_ids = cache.get_res_ids()
-    if not res_ids:
-        return {
-            "status": "empty",
-            "processed": 0,
-            "failed": 0,
-            "totals": {"cv_skills": 0, "cv_experiences": 0, "total": 0},
-            "errors": [],
-            "percentage": 0,
-        }
+    res_ids: list[int] = []
+    if _results is not None:
+        for item in _results:
+            if isinstance(item, dict):
+                res_id = item.get("res_id")
+                status = item.get("status")
+                if isinstance(res_id, int) and (status is None or status == "success"):
+                    res_ids.append(res_id)
+        if not res_ids:
+            return {
+                "status": "empty",
+                "processed": 0,
+                "failed": 0,
+                "totals": {"cv_skills": 0, "cv_experiences": 0, "total": 0},
+                "errors": [],
+                "percentage": 0,
+            }
+    else:
+        cache = ScraperResIdCache()
+        res_ids = cache.get_res_ids()
+        if not res_ids:
+            return {
+                "status": "empty",
+                "processed": 0,
+                "failed": 0,
+                "totals": {"cv_skills": 0, "cv_experiences": 0, "total": 0},
+                "errors": [],
+                "percentage": 0,
+            }
 
     dictionary = load_skill_dictionary(_resolve_dictionary_path(None))
     extractor = SkillExtractor(dictionary)

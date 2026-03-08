@@ -23,8 +23,8 @@ R = TypeVar("R")
 METRICS_KEY_PREFIX = "profilebot:metrics:ingestion"
 
 CHORD_PARTIAL_FAILURES = Counter(
-    "profilebot_chord_partial_failures_total",
-    "Total partial failures in best-effort chords",
+    "celery_chord_partial_success_total",
+    "Total partial successes in best-effort chords",
 )
 
 
