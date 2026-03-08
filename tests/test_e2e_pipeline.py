@@ -152,7 +152,7 @@ def test_pipeline_complete__fetch_fanout_best_effort_embed_search(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     res_ids = [101, 202]
-    data_by_res_id = {res_id: b"cv-bytes" for res_id in res_ids}
+    data_by_res_id = dict.fromkeys(res_ids, b"cv-bytes")
     fake_cache = FakeResIdCache()
 
     monkeypatch.setattr(scraper_tasks, "_ensure_scraper_base_url", lambda: "http://scraper")
@@ -214,7 +214,7 @@ def test_pipeline_partial_failure__chord_continues_with_successes_only(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     res_ids = [101, 202, 303]
-    data_by_res_id = {res_id: b"cv-bytes" for res_id in res_ids}
+    data_by_res_id = dict.fromkeys(res_ids, b"cv-bytes")
     fake_scraper = FakeScraperClient(data_by_res_id)
 
     fake_qdrant = FakeQdrantClient()
