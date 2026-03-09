@@ -127,7 +127,8 @@ def test_process_cv__dry_run__returns_counts_and_skips_upsert() -> None:
 
     assert result["cv_skills"] == 1
     assert result["cv_experiences"] == 2
-    assert result["total"] == 3
+    assert result["cv_chunks"] == 1
+    assert result["total"] == 4
     qdrant_client.upsert.assert_not_called()
 
 
@@ -151,11 +152,12 @@ def test_process_cv__no_skills__skips_cv_skills() -> None:
 
     assert result["cv_skills"] == 0
     assert result["cv_experiences"] == 2
-    assert result["total"] == 2
+    assert result["cv_chunks"] == 1
+    assert result["total"] == 3
     assert embedding_service.embed_calls == []
 
 
-def test_process_cv__upsert_payloads__include_expected_fields() -> None:
+def _run_pipeline_for_upsert() -> tuple[dict[str, int], list]:
     parsed_cv = _make_parsed_cv()
     skill_result = _make_skill_result()
     embedding_service = DummyEmbeddingService()
@@ -167,14 +169,20 @@ def test_process_cv__upsert_payloads__include_expected_fields() -> None:
     )
 
     result = pipeline.process_cv(parsed_cv, skill_result, dry_run=False)
+    return result, qdrant_client.upsert.call_args_list
 
-    assert result["total"] == 3
-    assert qdrant_client.upsert.call_count == 2
 
-    cv_skills_call = qdrant_client.upsert.call_args_list[0]
-    cv_experiences_call = qdrant_client.upsert.call_args_list[1]
+def test_process_cv__upsert_counts__includes_all_collections() -> None:
+    result, calls = _run_pipeline_for_upsert()
 
-    cv_skills_points = cv_skills_call.kwargs["points"]
+    assert result["total"] == 4
+    assert len(calls) == 3
+
+
+def test_process_cv__upsert_payloads__include_skills_fields() -> None:
+    _, calls = _run_pipeline_for_upsert()
+
+    cv_skills_points = calls[0].kwargs["points"]
     assert len(cv_skills_points) == 1
     cv_skills_payload = cv_skills_points[0].payload
     assert cv_skills_payload["cv_id"] == "cv-123"
@@ -200,7 +208,19 @@ def test_process_cv__upsert_payloads__include_expected_fields() -> None:
     assert "cert_bonus" in sample_weight
     assert "skill_name" in sample_weight or "name" in sample_weight
 
-    cv_exp_points = cv_experiences_call.kwargs["points"]
+
+def test_process_cv__upsert_payloads__include_chunks_and_experiences_fields() -> None:
+    _, calls = _run_pipeline_for_upsert()
+
+    cv_chunks_points = calls[2].kwargs["points"]
+    assert len(cv_chunks_points) == 1
+    chunk_payload = cv_chunks_points[0].payload
+    assert chunk_payload["cv_id"] == "cv-123"
+    assert chunk_payload["res_id"] == 12345
+    assert chunk_payload["section_type"]
+    assert chunk_payload["text_preview"]
+
+    cv_exp_points = calls[1].kwargs["points"]
     assert len(cv_exp_points) == 2
     for payload in (point.payload for point in cv_exp_points):
         assert payload["cv_id"] == "cv-123"
@@ -286,7 +306,8 @@ def test_process_cv__no_experience_texts__skips_experience_points() -> None:
 
     assert result["cv_skills"] == 1
     assert result["cv_experiences"] == 0
-    assert result["total"] == 1
+    assert result["cv_chunks"] == 1
+    assert result["total"] == 2
 
 
 def test_process_cv__no_skills_and_no_experiences__returns_zero() -> None:
@@ -318,6 +339,7 @@ def test_process_cv__no_skills_and_no_experiences__returns_zero() -> None:
 
     assert result["cv_skills"] == 0
     assert result["cv_experiences"] == 0
+    assert result["cv_chunks"] == 0
     assert result["total"] == 0
 
 

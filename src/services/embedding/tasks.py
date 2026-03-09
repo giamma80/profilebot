@@ -131,7 +131,7 @@ def embed_batch_task(
 
     processed = 0
     failed = 0
-    totals = {"cv_skills": 0, "cv_experiences": 0, "total": 0}
+    totals = {"cv_skills": 0, "cv_experiences": 0, "cv_chunks": 0, "total": 0}
     errors: list[dict[str, str]] = []
 
     total_items = len(items)
@@ -164,6 +164,7 @@ def embed_batch_task(
                 logger.warning("res_id mismatch for CV '%s': '%s'", cv_id, res_id)
             totals["cv_skills"] += result.get("cv_skills", 0)
             totals["cv_experiences"] += result.get("cv_experiences", 0)
+            totals["cv_chunks"] += result.get("cv_chunks", 0)
             totals["total"] += result.get("total", 0)
             processed += 1
 
@@ -214,7 +215,7 @@ def embed_all_task(  # noqa: PLR0913 - task signature mirrors API payload
 
     processed = 0
     failed = 0
-    totals = {"cv_skills": 0, "cv_experiences": 0, "total": 0}
+    totals = {"cv_skills": 0, "cv_experiences": 0, "cv_chunks": 0, "total": 0}
     errors: list[dict[str, str]] = []
 
     total_items = len(items)
@@ -255,6 +256,7 @@ def embed_all_task(  # noqa: PLR0913 - task signature mirrors API payload
                     logger.warning("res_id mismatch for CV '%s': '%s'", cv_id, res_id)
                 totals["cv_skills"] += result.get("cv_skills", 0)
                 totals["cv_experiences"] += result.get("cv_experiences", 0)
+                totals["cv_chunks"] += result.get("cv_chunks", 0)
                 totals["total"] += result.get("total", 0)
                 processed += 1
             except Exception as exc:
@@ -303,7 +305,7 @@ def embed_from_scraper_task(
                 "status": "empty",
                 "processed": 0,
                 "failed": 0,
-                "totals": {"cv_skills": 0, "cv_experiences": 0, "total": 0},
+                "totals": {"cv_skills": 0, "cv_experiences": 0, "cv_chunks": 0, "total": 0},
                 "errors": [],
                 "percentage": 0,
             }
@@ -315,7 +317,7 @@ def embed_from_scraper_task(
                 "status": "empty",
                 "processed": 0,
                 "failed": 0,
-                "totals": {"cv_skills": 0, "cv_experiences": 0, "total": 0},
+                "totals": {"cv_skills": 0, "cv_experiences": 0, "cv_chunks": 0, "total": 0},
                 "errors": [],
                 "percentage": 0,
             }
@@ -326,7 +328,7 @@ def embed_from_scraper_task(
 
     processed = 0
     failed = 0
-    totals = {"cv_skills": 0, "cv_experiences": 0, "total": 0}
+    totals = {"cv_skills": 0, "cv_experiences": 0, "cv_chunks": 0, "total": 0}
     errors: list[dict[str, int | str]] = []
     total_res_ids = len(res_ids)
 
@@ -339,6 +341,7 @@ def embed_from_scraper_task(
                 result = pipeline.process_cv(parsed_cv, skill_result)
                 totals["cv_skills"] += result.get("cv_skills", 0)
                 totals["cv_experiences"] += result.get("cv_experiences", 0)
+                totals["cv_chunks"] += result.get("cv_chunks", 0)
                 totals["total"] += result.get("total", 0)
                 processed += 1
             except Exception as exc:

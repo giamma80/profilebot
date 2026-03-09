@@ -12,6 +12,7 @@ from datetime import UTC, date, datetime
 
 from qdrant_client import QdrantClient, models
 
+from src.core.embedding.chunk_pipeline import build_chunk_points
 from src.core.embedding.service import EmbeddingService, OpenAIEmbeddingService
 from src.core.parser.schemas import ExperienceItem, ParsedCV
 from src.core.seniority.calculator import (
@@ -80,11 +81,12 @@ class EmbeddingPipeline:
             skill_result=skill_result,
             created_at=created_at,
         )
+        chunk_points = build_chunk_points(parsed_cv, self._embedding_service)
 
-        total_points = len(skills_points) + len(experience_points)
+        total_points = len(skills_points) + len(experience_points) + len(chunk_points)
         if total_points == 0:
             logger.warning("No points to index for CV '%s'", cv_id)
-            return {"cv_skills": 0, "cv_experiences": 0, "total": 0}
+            return {"cv_skills": 0, "cv_experiences": 0, "cv_chunks": 0, "total": 0}
 
         if dry_run:
             logger.info(
@@ -95,6 +97,7 @@ class EmbeddingPipeline:
             return {
                 "cv_skills": len(skills_points),
                 "cv_experiences": len(experience_points),
+                "cv_chunks": len(chunk_points),
                 "total": total_points,
             }
 
@@ -112,6 +115,13 @@ class EmbeddingPipeline:
                 wait=True,
             )
 
+        if chunk_points:
+            self._qdrant_client.upsert(
+                collection_name="cv_chunks",
+                points=chunk_points,
+                wait=True,
+            )
+
         logger.info(
             "Indexed CV '%s': %d points",
             cv_id,
@@ -120,6 +130,7 @@ class EmbeddingPipeline:
         return {
             "cv_skills": len(skills_points),
             "cv_experiences": len(experience_points),
+            "cv_chunks": len(chunk_points),
             "total": total_points,
         }
 
