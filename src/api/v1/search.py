@@ -8,9 +8,9 @@ from typing import Any, cast
 from fastapi import APIRouter, HTTPException, status
 
 from src.api.v1.schemas import ProfileMatch, SearchMetadata, SkillSearchRequest, SkillSearchResponse
+from src.services.search.multi_layer import multi_layer_search
 from src.services.search.skill_search import ProfileMatch as ServiceProfileMatch
 from src.services.search.skill_search import SearchFilters as ServiceSearchFilters
-from src.services.search.skill_search import search_by_skills
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +54,7 @@ def search_profiles_by_skills(request: SkillSearchRequest) -> SkillSearchRespons
         return cast(SearchMetadata, SearchMetadata.model_validate(metadata))
 
     try:
-        response = search_by_skills(
+        response = multi_layer_search(
             skills=request.skills,
             filters=filters,
             limit=request.limit,
