@@ -201,12 +201,19 @@ def test_search_by_skills__paginates_results() -> None:
     assert response.results[0].res_id == 2
 
 
-def test_search_by_skills__unknown_skills_raise_value_error() -> None:
+def test_search_by_skills__unknown_skills_raise_value_error(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     dependencies = SearchDependencies(
         embedding_service=DummyEmbeddingService(),
         qdrant_client=DummyQdrantClient([]),
         dictionary=_make_dictionary(),
     )
+
+    def _settings_stub() -> object:
+        return type("SettingsStub", (), {"search_fallback_enabled": False})()
+
+    monkeypatch.setattr(skill_search, "get_settings", _settings_stub)
 
     with pytest.raises(ValueError, match="At least one valid skill is required"):
         search_by_skills(
@@ -270,3 +277,76 @@ def test_build_filter__redis_error_keeps_base_filters(
     assert len(query_filter.must) == 1
     assert query_filter.must[0].key == "res_id"
     assert query_filter.must[0].match.any == [100, 200]
+
+
+def test_search_by_skills__fallback_recovers_skills(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    points = [
+        DummyPoint(
+            score=0.9,
+            payload={
+                "cv_id": "cv-1",
+                "res_id": 1,
+                "normalized_skills": ["python", "fastapi"],
+                "skill_domain": "backend",
+                "seniority_bucket": "mid",
+            },
+        ),
+    ]
+    dependencies = SearchDependencies(
+        embedding_service=DummyEmbeddingService(),
+        qdrant_client=DummyQdrantClient(points),
+        dictionary=_make_dictionary(),
+    )
+
+    def _recover_skills(*_: object, **__: object) -> list[str]:
+        return ["python"]
+
+    monkeypatch.setattr(
+        "src.core.search.fallback.recover_skills_from_dictionary",
+        _recover_skills,
+    )
+
+    response = search_by_skills(
+        skills=["unknown"],
+        filters=None,
+        limit=10,
+        offset=0,
+        dependencies=dependencies,
+    )
+
+    assert response.fallback_activated is True
+    assert response.recovered_skills == ["python"]
+    assert response.results
+
+
+def test_search_by_skills__fallback_no_recovery_returns_reason(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    dependencies = SearchDependencies(
+        embedding_service=DummyEmbeddingService(),
+        qdrant_client=DummyQdrantClient([]),
+        dictionary=_make_dictionary(),
+    )
+
+    def _recover_skills(*_: object, **__: object) -> list[str]:
+        return []
+
+    monkeypatch.setattr(
+        "src.core.search.fallback.recover_skills_from_dictionary",
+        _recover_skills,
+    )
+
+    response = search_by_skills(
+        skills=["unknown"],
+        filters=None,
+        limit=10,
+        offset=0,
+        dependencies=dependencies,
+    )
+
+    assert response.fallback_activated is True
+    assert response.no_match_reason == "no_normalizable_skills_even_with_semantic_fallback"
+    assert response.results == []
+    assert response.total == 0

@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 import logging
+from typing import Any, cast
 
 from fastapi import APIRouter, HTTPException, status
 
-from src.api.v1.schemas import ProfileMatch, SkillSearchRequest, SkillSearchResponse
+from src.api.v1.schemas import ProfileMatch, SearchMetadata, SkillSearchRequest, SkillSearchResponse
+from src.services.search.multi_layer import multi_layer_search
+from src.services.search.skill_search import ProfileMatch as ServiceProfileMatch
 from src.services.search.skill_search import SearchFilters as ServiceSearchFilters
-from src.services.search.skill_search import search_by_skills
 
 logger = logging.getLogger(__name__)
 
@@ -32,8 +34,27 @@ def search_profiles_by_skills(request: SkillSearchRequest) -> SkillSearchRespons
             availability=request.filters.availability,
         )
 
+    def _map_matches(matches: list[ServiceProfileMatch] | None) -> list[ProfileMatch] | None:
+        if matches is None:
+            return None
+        return [
+            ProfileMatch(
+                res_id=match.res_id,
+                cv_id=match.cv_id,
+                score=match.score,
+                matched_skills=match.matched_skills,
+                missing_skills=match.missing_skills,
+            )
+            for match in matches
+        ]
+
+    def _map_metadata(metadata: dict[str, Any] | None) -> SearchMetadata | None:
+        if metadata is None:
+            return None
+        return cast(SearchMetadata, SearchMetadata.model_validate(metadata))
+
     try:
-        response = search_by_skills(
+        response = multi_layer_search(
             skills=request.skills,
             filters=filters,
             limit=request.limit,
@@ -47,18 +68,17 @@ def search_profiles_by_skills(request: SkillSearchRequest) -> SkillSearchRespons
         ) from exc
 
     return SkillSearchResponse(
-        results=[
-            ProfileMatch(
-                res_id=match.res_id,
-                cv_id=match.cv_id,
-                score=match.score,
-                matched_skills=match.matched_skills,
-                missing_skills=match.missing_skills,
-            )
-            for match in response.results
-        ],
+        results=_map_matches(response.results) or [],
         total=response.total,
         limit=response.limit,
         offset=response.offset,
         query_time_ms=response.query_time_ms,
+        candidates_by_skills=_map_matches(response.candidates_by_skills),
+        candidates_by_chunks=_map_matches(response.candidates_by_chunks),
+        candidates_fused=_map_matches(response.candidates_fused),
+        fallback_activated=response.fallback_activated,
+        recovered_skills=response.recovered_skills,
+        no_match_reason=response.no_match_reason,
+        fusion_strategy=response.fusion_strategy,
+        search_metadata=_map_metadata(response.search_metadata),
     )

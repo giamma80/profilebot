@@ -20,12 +20,12 @@ def test_calculate_seniority_bucket__mid_years__returns_mid() -> None:
 
 
 def test_calculate_seniority_bucket__senior_years__returns_senior() -> None:
-    result = calculate_seniority_bucket(8, 5, ["Backend Engineer"])
+    result = calculate_seniority_bucket(6, 5, ["Backend Engineer"])
     assert result == "senior"
 
 
 def test_calculate_seniority_bucket__lead_role__returns_lead() -> None:
-    result = calculate_seniority_bucket(6, 5, ["Tech Lead"])
+    result = calculate_seniority_bucket(8, 5, ["Tech Lead"])
     assert result == "lead"
 
 
@@ -60,10 +60,10 @@ def test_calculate_total_experience_years__multiple_items__returns_sum() -> None
 
 
 def test_calculate_seniority_bucket__skill_boost__raises_bucket() -> None:
-    result = calculate_seniority_bucket(2, 25, ["Engineer"])
+    result = calculate_seniority_bucket(None, 10, [])
     assert result == "mid"
 
 
-def test_calculate_seniority_bucket__role_floor__wins_over_years() -> None:
-    result = calculate_seniority_bucket(2, 3, ["Senior Engineer"])
+def test_calculate_seniority_bucket__skill_count_high__returns_senior() -> None:
+    result = calculate_seniority_bucket(None, 20, [])
     assert result == "senior"

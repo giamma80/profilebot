@@ -45,7 +45,7 @@ def test_search_skills__valid_request__returns_ranked_results(
     def _search_by_skills(**_: Any) -> SkillSearchResponse:
         return response_payload
 
-    monkeypatch.setattr("src.api.v1.search.search_by_skills", _search_by_skills)
+    monkeypatch.setattr("src.api.v1.search.multi_layer_search", _search_by_skills)
 
     response = client.post(
         "/api/v1/search/skills",
@@ -80,7 +80,7 @@ def test_search_skills__passes_filters_to_service(
             query_time_ms=1,
         )
 
-    monkeypatch.setattr("src.api.v1.search.search_by_skills", _search_by_skills)
+    monkeypatch.setattr("src.api.v1.search.multi_layer_search", _search_by_skills)
 
     response = client.post(
         "/api/v1/search/skills",
@@ -110,7 +110,7 @@ def test_search_skills__service_validation_error__returns_400(
     def _search_by_skills(**_: Any) -> SkillSearchResponse:
         raise ValueError("At least one valid skill is required")
 
-    monkeypatch.setattr("src.api.v1.search.search_by_skills", _search_by_skills)
+    monkeypatch.setattr("src.api.v1.search.multi_layer_search", _search_by_skills)
 
     response = client.post(
         "/api/v1/search/skills",
@@ -134,7 +134,7 @@ def test_search_skills__performance__returns_under_threshold(
     def _search_by_skills(**_: Any) -> SkillSearchResponse:
         return response_payload
 
-    monkeypatch.setattr("src.api.v1.search.search_by_skills", _search_by_skills)
+    monkeypatch.setattr("src.api.v1.search.multi_layer_search", _search_by_skills)
 
     start = time.perf_counter()
     response = client.post(

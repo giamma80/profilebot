@@ -83,6 +83,21 @@ class ProfileMatch(BaseModel):
     model_config = {"extra": "forbid"}
 
 
+class SearchMetadata(BaseModel):
+    """Metadata for multi-layer search responses."""
+
+    query_skills_raw: list[str]
+    query_skills_normalized: list[str]
+    query_skills_recovered: list[str]
+    layers_used: list[str]
+    scoring_formula: str
+    total_candidates_evaluated: int
+    fusion_applied: bool
+    elapsed_ms: int
+
+    model_config = {"extra": "forbid"}
+
+
 class SkillSearchResponse(BaseModel):
     """Response payload for skill search."""
 
@@ -91,5 +106,13 @@ class SkillSearchResponse(BaseModel):
     limit: int = Field(..., ge=0)
     offset: int = Field(..., ge=0)
     query_time_ms: int = Field(..., ge=0)
+    candidates_by_skills: list[ProfileMatch] | None = None
+    candidates_by_chunks: list[ProfileMatch] | None = None
+    candidates_fused: list[ProfileMatch] | None = None
+    fallback_activated: bool = False
+    recovered_skills: list[str] | None = None
+    no_match_reason: str | None = None
+    fusion_strategy: str | None = None
+    search_metadata: SearchMetadata | None = None
 
-    model_config = {"extra": "forbid"}
+    model_config = {"extra": "ignore"}

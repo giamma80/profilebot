@@ -25,8 +25,10 @@ def get_collections_config() -> dict[str, dict]:
                 "section_type": models.PayloadSchemaType.KEYWORD,
                 "normalized_skills": models.PayloadSchemaType.KEYWORD,
                 "skill_domain": models.PayloadSchemaType.KEYWORD,
+                "domain_primary": models.PayloadSchemaType.KEYWORD,
                 "seniority_bucket": models.PayloadSchemaType.KEYWORD,
                 "dictionary_version": models.PayloadSchemaType.KEYWORD,
+                "total_experience_years": models.PayloadSchemaType.INTEGER,
                 "created_at": models.PayloadSchemaType.DATETIME,
             },
         },
@@ -42,6 +44,31 @@ def get_collections_config() -> dict[str, dict]:
                 "related_skills": models.PayloadSchemaType.KEYWORD,
                 "experience_years": models.PayloadSchemaType.INTEGER,
                 "created_at": models.PayloadSchemaType.DATETIME,
+            },
+        },
+        "skills_dictionary": {
+            "vectors_config": models.VectorParams(
+                size=DEFAULT_VECTOR_SIZE,
+                distance=DEFAULT_DISTANCE,
+            ),
+            "payload_schema": {
+                "canonical_name": models.PayloadSchemaType.KEYWORD,
+                "domain": models.PayloadSchemaType.KEYWORD,
+                "aliases_count": models.PayloadSchemaType.INTEGER,
+                "related_skills": models.PayloadSchemaType.KEYWORD,
+            },
+        },
+        "cv_chunks": {
+            "vectors_config": models.VectorParams(
+                size=DEFAULT_VECTOR_SIZE,
+                distance=DEFAULT_DISTANCE,
+            ),
+            "payload_schema": {
+                "cv_id": models.PayloadSchemaType.KEYWORD,
+                "res_id": models.PayloadSchemaType.INTEGER,
+                "section_type": models.PayloadSchemaType.KEYWORD,
+                "chunk_index": models.PayloadSchemaType.INTEGER,
+                "text_preview": models.PayloadSchemaType.KEYWORD,
             },
         },
     }

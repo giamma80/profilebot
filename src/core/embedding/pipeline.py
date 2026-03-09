@@ -12,6 +12,7 @@ from datetime import UTC, date, datetime
 
 from qdrant_client import QdrantClient, models
 
+from src.core.embedding.chunk_pipeline import build_chunk_points
 from src.core.embedding.service import EmbeddingService, OpenAIEmbeddingService
 from src.core.parser.schemas import ExperienceItem, ParsedCV
 from src.core.seniority.calculator import (
@@ -19,6 +20,7 @@ from src.core.seniority.calculator import (
     calculate_total_experience_years,
 )
 from src.core.skills.schemas import NormalizedSkill, SkillExtractionResult
+from src.core.skills.weight import SkillWeight
 from src.services.qdrant.client import get_qdrant_client
 from src.services.qdrant.collections import ensure_collections
 
@@ -79,11 +81,12 @@ class EmbeddingPipeline:
             skill_result=skill_result,
             created_at=created_at,
         )
+        chunk_points = build_chunk_points(parsed_cv, self._embedding_service)
 
-        total_points = len(skills_points) + len(experience_points)
+        total_points = len(skills_points) + len(experience_points) + len(chunk_points)
         if total_points == 0:
             logger.warning("No points to index for CV '%s'", cv_id)
-            return {"cv_skills": 0, "cv_experiences": 0, "total": 0}
+            return {"cv_skills": 0, "cv_experiences": 0, "cv_chunks": 0, "total": 0}
 
         if dry_run:
             logger.info(
@@ -94,6 +97,7 @@ class EmbeddingPipeline:
             return {
                 "cv_skills": len(skills_points),
                 "cv_experiences": len(experience_points),
+                "cv_chunks": len(chunk_points),
                 "total": total_points,
             }
 
@@ -111,6 +115,13 @@ class EmbeddingPipeline:
                 wait=True,
             )
 
+        if chunk_points:
+            self._qdrant_client.upsert(
+                collection_name="cv_chunks",
+                points=chunk_points,
+                wait=True,
+            )
+
         logger.info(
             "Indexed CV '%s': %d points",
             cv_id,
@@ -119,6 +130,7 @@ class EmbeddingPipeline:
         return {
             "cv_skills": len(skills_points),
             "cv_experiences": len(experience_points),
+            "cv_chunks": len(chunk_points),
             "total": total_points,
         }
 
@@ -160,8 +172,22 @@ class EmbeddingPipeline:
             years_experience_estimate,
             skill_result.skill_count,
             role_titles,
+            summary_text=parsed_cv.raw_text,
         )
 
+        weighted_skills = [
+            SkillWeight(
+                name=skill.canonical,
+                years=0.0,
+                level="intermediate",
+                certified=False,
+                from_experience=True,
+                years_factor=0.0,
+                cert_bonus=0.0,
+                weight=0.0,
+            ).model_dump()
+            for skill in skill_result.normalized_skills
+        ]
         skill_details = [
             {
                 "canonical": skill.canonical,
@@ -189,11 +215,15 @@ class EmbeddingPipeline:
             "section_type": "skills",
             "normalized_skills": normalized_skills,
             "skill_domain": _get_primary_domain(skill_result.normalized_skills),
+            "domain_primary": _get_primary_domain(skill_result.normalized_skills),
             "seniority_bucket": seniority_bucket,
+            "seniority": seniority_bucket,
             "dictionary_version": skill_result.dictionary_version,
+            "total_experience_years": years_experience_estimate,
             "created_at": created_at,
             "full_name": parsed_cv.metadata.full_name,
             "current_role": parsed_cv.metadata.current_role,
+            "weighted_skills": weighted_skills,
             "skill_details": skill_details,
             "unknown_skills": skill_result.unknown_skills,
             "experiences_compact": experiences_compact,

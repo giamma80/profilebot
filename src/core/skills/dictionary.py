@@ -65,6 +65,11 @@ class SkillDictionary:
         """Return the number of canonical skills."""
         return len(self._skills)
 
+    @property
+    def skills(self) -> dict[str, SkillEntry]:
+        """Return canonical skill entries."""
+        return dict(self._skills)
+
     def get_by_canonical(self, name: str) -> SkillEntry | None:
         """Return a skill entry by canonical name."""
         return self._skills.get(name)
@@ -80,6 +85,10 @@ class SkillDictionary:
     def all_names(self) -> list[str]:
         """Return all searchable names (canonical + aliases)."""
         return list({*self._skills.keys(), *self._alias_map.keys()})
+
+    def canonical_items(self) -> list[tuple[str, SkillEntry]]:
+        """Return canonical skill entries with their names."""
+        return list(self._skills.items())
 
 
 def load_skill_dictionary(path: str | Path) -> SkillDictionary:

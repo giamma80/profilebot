@@ -64,7 +64,7 @@ def test_smoke__core_endpoints__respond_ok(
     monkeypatch.setattr("src.api.v1.embeddings.celery_app.control.inspect", _inspect)
     monkeypatch.setattr("src.api.v1.availability.celery_app.control.inspect", _inspect)
     monkeypatch.setattr("src.api.v1.availability.AvailabilityCache.scan_records", _scan_records)
-    monkeypatch.setattr("src.api.v1.search.search_by_skills", _search_by_skills)
+    monkeypatch.setattr("src.api.v1.search.multi_layer_search", _search_by_skills)
 
     settings = get_settings()
     require_scraper = os.getenv("SCRAPER_SMOKE_REQUIRED", "").strip().lower() in {

@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 import os
 import time
+from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, cast
@@ -12,18 +13,27 @@ from typing import Any, cast
 import redis
 from qdrant_client import QdrantClient, models
 
+from src.core.config import get_settings
 from src.core.embedding.service import EmbeddingService, OpenAIEmbeddingService
+from src.core.search import fallback
 from src.core.skills.dictionary import SkillDictionary, load_skill_dictionary
 from src.core.skills.normalizer import SkillNormalizer
 from src.services.availability.cache import AvailabilityCache
 from src.services.availability.schemas import AvailabilityStatus, ProfileAvailability
 from src.services.qdrant.client import get_qdrant_client
-from src.services.search.scoring import calculate_final_score
+from src.services.search.metrics import FALLBACK_ACTIVATED
+from src.services.search.scoring import (
+    calculate_final_score,
+    calculate_weighted_final_score,
+    calculate_weighted_match_ratio,
+)
 from src.utils.normalization import normalize_string_list
 
 logger = logging.getLogger(__name__)
 
 DEFAULT_DICTIONARY_PATH = "data/skills_dictionary.yaml"
+
+_SENIORITY_RANK = {"junior": 0, "mid": 1, "senior": 2, "lead": 3}
 
 
 @dataclass(frozen=True)
@@ -59,6 +69,14 @@ class SkillSearchResponse:
     limit: int
     offset: int
     query_time_ms: int
+    candidates_by_skills: list[ProfileMatch] | None = None
+    candidates_by_chunks: list[ProfileMatch] | None = None
+    candidates_fused: list[ProfileMatch] | None = None
+    fallback_activated: bool = False
+    recovered_skills: list[str] | None = None
+    no_match_reason: str | None = None
+    fusion_strategy: str | None = None
+    search_metadata: dict[str, Any] | None = None
 
 
 @dataclass(frozen=True)
@@ -95,9 +113,51 @@ def search_by_skills(
     """
     resolved = dependencies or SearchDependencies()
     start_time = time.perf_counter()
-    normalized_skills = _normalize_query_skills(skills, resolved.dictionary)
+    settings = get_settings()
+    fallback_activated = False
+    recovered_skills: list[str] | None = None
+    dictionary_instance = resolved.dictionary or load_skill_dictionary(_resolve_dictionary_path())
+    normalized_skills = _normalize_query_skills(skills, dictionary_instance)
     if not normalized_skills:
-        raise ValueError("At least one valid skill is required")
+        if settings.search_fallback_enabled:
+            recovered = fallback.recover_skills_from_dictionary(
+                query_text=" ".join(skills),
+                options=fallback.FallbackOptions(top_k=5, score_threshold=0.7),
+            )
+            fallback_activated = True
+            FALLBACK_ACTIVATED.inc()
+            if recovered:
+                recovered_skills = recovered
+                normalized_skills = recovered
+                logger.info(
+                    "FALLBACK_SKILL_RECOVERY via skills_dictionary: recovered %s",
+                    recovered,
+                )
+            else:
+                logger.info("FALLBACK_SKILL_RECOVERY: no skills recovered (threshold=0.7)")
+                elapsed_ms = int((time.perf_counter() - start_time) * 1000)
+                return SkillSearchResponse(
+                    results=[],
+                    total=0,
+                    limit=limit,
+                    offset=offset,
+                    query_time_ms=elapsed_ms,
+                    candidates_by_skills=[],
+                    candidates_by_chunks=None,
+                    candidates_fused=None,
+                    fallback_activated=True,
+                    recovered_skills=None,
+                    no_match_reason="no_normalizable_skills_even_with_semantic_fallback",
+                    fusion_strategy=None,
+                    search_metadata=None,
+                )
+        else:
+            raise ValueError("At least one valid skill is required")
+
+    query_domain = _resolve_query_domain(normalized_skills, dictionary_instance)
+    query_seniority = (
+        filters.seniority[0].strip().lower() if filters and filters.seniority else None
+    )
 
     query_vector = (resolved.embedding_service or OpenAIEmbeddingService()).embed(
         ", ".join(normalized_skills)
@@ -124,7 +184,7 @@ def search_by_skills(
         )
         scored_points = response.points
 
-    results = _build_matches(scored_points, normalized_skills)
+    results = _build_matches(scored_points, normalized_skills, query_domain, query_seniority)
     paged = results[offset : offset + limit] if limit > 0 else []
 
     elapsed_ms = int((time.perf_counter() - start_time) * 1000)
@@ -134,15 +194,22 @@ def search_by_skills(
         limit=limit,
         offset=offset,
         query_time_ms=elapsed_ms,
+        candidates_by_skills=paged,
+        candidates_by_chunks=None,
+        candidates_fused=None,
+        fallback_activated=fallback_activated,
+        recovered_skills=recovered_skills,
+        no_match_reason=None,
+        fusion_strategy=None,
+        search_metadata=None,
     )
 
 
 def _normalize_query_skills(
     skills: list[str],
-    dictionary: SkillDictionary | None,
+    dictionary: SkillDictionary,
 ) -> list[str]:
-    dictionary_instance = dictionary or load_skill_dictionary(_resolve_dictionary_path())
-    normalizer = SkillNormalizer(dictionary_instance)
+    normalizer = SkillNormalizer(dictionary)
 
     normalized: list[str] = []
     seen: set[str] = set()
@@ -163,6 +230,20 @@ def _normalize_query_skills(
 def _resolve_dictionary_path() -> Path:
     env_path = os.getenv("SKILLS_DICTIONARY_PATH")
     return Path(env_path or DEFAULT_DICTIONARY_PATH)
+
+
+def _resolve_query_domain(
+    normalized_skills: list[str],
+    dictionary: SkillDictionary,
+) -> str | None:
+    domains: list[str] = []
+    for skill in normalized_skills:
+        entry = dictionary.get_by_canonical(skill)
+        if entry and entry.domain:
+            domains.append(entry.domain)
+    if not domains:
+        return None
+    return Counter(domains).most_common(1)[0][0]
 
 
 def _build_filter(filters: SearchFilters | None) -> models.Filter | None:
@@ -254,9 +335,12 @@ def _matches_mode(record: ProfileAvailability | None, mode: str) -> bool:
 def _build_matches(
     points: list[models.ScoredPoint],
     normalized_query: list[str],
+    query_domain: str | None,
+    query_seniority: str | None,
 ) -> list[ProfileMatch]:
     query_set = set(normalized_query)
     matches: list[ProfileMatch] = []
+    settings = get_settings()
 
     for point in points:
         payload = point.payload if isinstance(point.payload, dict) else {}
@@ -274,11 +358,31 @@ def _build_matches(
             )
             continue
 
-        final_score = calculate_final_score(
-            similarity=point.score or 0.0,
-            matched=matched,
-            query=query_set,
-        )
+        if settings.scoring_use_weighted:
+            weight_map = _extract_weight_map(payload)
+            weighted_match_ratio = calculate_weighted_match_ratio(
+                matched,
+                normalized_query,
+                weight_map,
+            )
+            payload_domain = _extract_payload_str(payload, "skill_domain")
+            payload_seniority = _extract_payload_str(payload, "seniority") or _extract_payload_str(
+                payload, "seniority_bucket"
+            )
+            domain_boost = _calculate_domain_boost(query_domain, payload_domain)
+            seniority_penalty = _calculate_seniority_penalty(query_seniority, payload_seniority)
+            final_score = calculate_weighted_final_score(
+                similarity=point.score or 0.0,
+                weighted_match_ratio=weighted_match_ratio,
+                domain_boost=domain_boost,
+                seniority_penalty=seniority_penalty,
+            )
+        else:
+            final_score = calculate_final_score(
+                similarity=point.score or 0.0,
+                matched=matched,
+                query=query_set,
+            )
 
         ordered_matched = [skill for skill in normalized_query if skill in matched]
         ordered_missing = [skill for skill in normalized_query if skill in missing]
@@ -308,6 +412,46 @@ def _extract_payload_list(payload: dict[str, Any], key: str) -> set[str]:
     if isinstance(raw, list):
         return {str(item).strip().lower() for item in raw if str(item).strip()}
     return set()
+
+
+def _calculate_domain_boost(query_domain: str | None, profile_domain: str | None) -> float:
+    if not query_domain or not profile_domain:
+        return 0.0
+    return 1.2 if query_domain == profile_domain else 0.0
+
+
+def _calculate_seniority_penalty(
+    query_seniority: str | None,
+    profile_seniority: str | None,
+) -> float:
+    if not query_seniority or not profile_seniority:
+        return 0.0
+    query_rank = _SENIORITY_RANK.get(query_seniority)
+    profile_rank = _SENIORITY_RANK.get(profile_seniority)
+    if query_rank is None or profile_rank is None:
+        return 0.0
+    return abs(query_rank - profile_rank) * 0.05
+
+
+def _extract_weight_map(payload: dict[str, Any]) -> dict[str, float]:
+    raw = payload.get("weighted_skills")
+    if not isinstance(raw, list):
+        return {}
+    weight_map: dict[str, float] = {}
+    for item in raw:
+        if not isinstance(item, dict):
+            continue
+        name = item.get("skill_name") or item.get("name")
+        if not isinstance(name, str):
+            continue
+        canonical = name.strip().lower()
+        if not canonical:
+            continue
+        weight = item.get("weight")
+        if not isinstance(weight, int | float):
+            continue
+        weight_map[canonical] = float(weight)
+    return weight_map
 
 
 def _extract_payload_str(payload: dict[str, Any], key: str) -> str | None:
