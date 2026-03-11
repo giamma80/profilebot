@@ -19,6 +19,7 @@ from src.core.seniority.calculator import (
     calculate_seniority_bucket,
     calculate_total_experience_years,
 )
+from src.core.skills.enricher import enrich_skill_metadata
 from src.core.skills.schemas import NormalizedSkill, SkillExtractionResult
 from src.core.skills.weight import SkillWeight
 from src.services.qdrant.client import get_qdrant_client
@@ -175,19 +176,25 @@ class EmbeddingPipeline:
             summary_text=parsed_cv.raw_text,
         )
 
-        weighted_skills = [
-            SkillWeight(
-                name=skill.canonical,
-                years=0.0,
-                level="intermediate",
-                certified=False,
-                from_experience=True,
-                years_factor=0.0,
-                cert_bonus=0.0,
-                weight=0.0,
-            ).model_dump()
-            for skill in skill_result.normalized_skills
-        ]
+        weighted_skills = []
+        for skill in skill_result.normalized_skills:
+            metadata = enrich_skill_metadata(
+                skill_name=skill.canonical,
+                experiences=parsed_cv.experiences,
+                certifications=parsed_cv.certifications,
+            )
+            weighted_skills.append(
+                SkillWeight(
+                    name=skill.canonical,
+                    years=metadata["years"],
+                    level=metadata["level"],
+                    certified=metadata["certified"],
+                    from_experience=metadata["years"] > 0.0,
+                    years_factor=0.0,
+                    cert_bonus=0.0,
+                    weight=0.0,
+                ).model_dump()
+            )
         skill_details = [
             {
                 "canonical": skill.canonical,

@@ -57,6 +57,7 @@ def test_build_chunk_points__fixture_cvs__returns_points(
         assert payload["res_id"] == parsed.metadata.res_id
         assert payload["section_type"]
         assert payload["chunk_index"] >= 0
+        assert payload["chunk_text"]
         assert payload["text_preview"]
 
 

@@ -48,12 +48,8 @@ def parse_ranking_output(
                 res_id=match.res_id,
                 full_name=_extract_full_name(match),
                 overall_score=score,
-                matched_skills=_safe_str_list(
-                    entry.get("matched_skills", entry.get("matched", []))
-                ),
-                missing_skills=_safe_str_list(
-                    entry.get("missing_skills", entry.get("missing", []))
-                ),
+                matched_skills=match.matched_skills,
+                missing_skills=match.missing_skills,
                 explanation=str(entry.get("explanation", "")),
                 strengths=_safe_str_list(entry.get("strengths", [])),
                 gaps=_safe_str_list(entry.get("gaps", [])),

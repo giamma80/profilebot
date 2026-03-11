@@ -67,6 +67,7 @@ def build_chunk_points(
                 "res_id": parsed_cv.metadata.res_id,
                 "section_type": candidate.section_type,
                 "chunk_index": candidate.chunk_index,
+                "chunk_text": candidate.text,
                 "text_preview": _build_text_preview(candidate.text),
             }
             points.append(models.PointStruct(id=point_id, vector=vector, payload=payload))

@@ -37,6 +37,7 @@ ELIGIBILITY_MATCH_RATIO_THRESHOLD = 0.4
 def multi_layer_search(
     skills: list[str],
     *,
+    must_have: list[str] | None = None,
     filters: SearchFilters | None = None,
     limit: int = 10,
     offset: int = 0,
@@ -45,6 +46,7 @@ def multi_layer_search(
 
     Args:
         skills: Raw skill strings from the request.
+        must_have: Optional must-have skills for eligibility checks.
         filters: Optional filter constraints.
         limit: Maximum number of results to return.
         offset: Result offset for pagination.
@@ -54,6 +56,7 @@ def multi_layer_search(
     """
     start_time = time.perf_counter()
     fetch_limit = max(0, limit) + max(0, offset)
+    normalized_must_have = _normalize_query_skills_for_metadata(must_have or [])
 
     skills_response = search_by_skills(
         skills=skills,
@@ -81,7 +84,11 @@ def multi_layer_search(
     if fusion_applied:
         FUSION_USED.inc()
 
-    eligible_fused = _filter_by_eligibility(fused_candidates, candidates_by_skills)
+    eligible_fused = _filter_by_eligibility(
+        fused_candidates,
+        candidates_by_skills,
+        normalized_must_have,
+    )
 
     paged_skills = _paginate(candidates_by_skills, limit, offset)
     paged_chunks = _paginate(candidates_by_chunks, limit, offset)
@@ -134,10 +141,15 @@ def _paginate(items: list[ProfileMatch], limit: int, offset: int) -> list[Profil
 def _filter_by_eligibility(
     fused_candidates: list[ProfileMatch],
     skill_candidates: list[ProfileMatch],
+    must_have: list[str],
 ) -> list[ProfileMatch]:
     match_ratios = _build_match_ratio_map(skill_candidates)
+    matched_skills = _build_matched_skills_map(skill_candidates)
+    must_have_set = {skill.strip().lower() for skill in must_have if skill.strip()}
     return [
-        candidate for candidate in fused_candidates if _is_eligible(candidate.cv_id, match_ratios)
+        candidate
+        for candidate in fused_candidates
+        if _is_eligible(candidate.cv_id, match_ratios, matched_skills, must_have_set)
     ]
 
 
@@ -151,7 +163,21 @@ def _build_match_ratio_map(skill_candidates: list[ProfileMatch]) -> dict[str, fl
     return ratios
 
 
-def _is_eligible(cv_id: str, match_ratios: dict[str, float]) -> bool:
+def _build_matched_skills_map(skill_candidates: list[ProfileMatch]) -> dict[str, set[str]]:
+    matched: dict[str, set[str]] = {}
+    for candidate in skill_candidates:
+        matched[candidate.cv_id] = {skill.strip().lower() for skill in candidate.matched_skills}
+    return matched
+
+
+def _is_eligible(
+    cv_id: str,
+    match_ratios: dict[str, float],
+    matched_skills: dict[str, set[str]],
+    must_have: set[str],
+) -> bool:
+    if must_have and must_have.intersection(matched_skills.get(cv_id, set())):
+        return True
     return match_ratios.get(cv_id, 0.0) >= ELIGIBILITY_MATCH_RATIO_THRESHOLD
 
 
