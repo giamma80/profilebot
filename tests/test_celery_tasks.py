@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 from typing import Any
 
+import httpx
 import pytest
+from openai import RateLimitError
 
 from src.core.parser.docx_parser import CVParseError
 from src.services.embedding import tasks
@@ -110,6 +113,195 @@ def test_embed_cv_task__progress_meta__includes_parsed_res_id(
 
     assert result["res_id"] == 99999
     assert states[-1]["meta"]["res_id"] == 99999
+
+
+def test_embed_cv_task__res_id_mismatch__logs_warning(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """Log a warning when res_id differs from parsed value."""
+    cv_path = tmp_path / "12345_mismatch.docx"
+    cv_path.write_bytes(b"dummy")
+
+    tasks.embed_cv_task.request.id = "task-mismatch"
+
+    def _update_state(*, state: str, meta: dict[str, Any]) -> None:
+        return None
+
+    def _embed_cv(*_: Any, **__: Any) -> tuple[str, int, dict[str, int]]:
+        return "cv-123", 12345, {"cv_skills": 1, "cv_experiences": 0, "total": 1}
+
+    monkeypatch.setattr(tasks.embed_cv_task, "update_state", _update_state)
+    monkeypatch.setattr(tasks, "_embed_cv", _embed_cv)
+
+    with caplog.at_level(logging.WARNING, logger=tasks.__name__):
+        tasks.embed_cv_task.run(cv_path=str(cv_path), res_id="99999")
+
+    assert any("res_id mismatch" in record.getMessage() for record in caplog.records)
+
+
+def test_embed_cv_task__rate_limit_error__retries_with_backoff(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """Retry with backoff when OpenAI rate limit is hit."""
+    cv_path = tmp_path / "12345_rate_limit.docx"
+    cv_path.write_bytes(b"dummy")
+    tasks.embed_cv_task.request.id = "task-rate-limit"
+    captured: dict[str, int] = {}
+
+    def _update_state(*, state: str, meta: dict[str, Any]) -> None:
+        return None
+
+    def _embed_cv(*_: Any, **__: Any) -> tuple[str, int, dict[str, int]]:
+        response = httpx.Response(
+            status_code=429,
+            request=httpx.Request("POST", "https://api.openai.com/v1"),
+        )
+        raise RateLimitError("rate limit", response=response, body=None)
+
+    def _retry(*, exc: Exception, countdown: int) -> Exception:
+        captured["countdown"] = countdown
+        raise exc
+
+    monkeypatch.setattr(tasks.embed_cv_task, "update_state", _update_state)
+    monkeypatch.setattr(tasks, "_embed_cv", _embed_cv)
+    monkeypatch.setattr(tasks.embed_cv_task, "retry", _retry)
+
+    with pytest.raises(RateLimitError):
+        tasks.embed_cv_task.run(cv_path=str(cv_path), res_id="12345")
+
+    assert captured["countdown"] == 60
+
+
+def test_embed_batch_task__multiple_items__spawns_subtasks(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """Process multiple items and report progress per item."""
+    first = tmp_path / "101_first.docx"
+    second = tmp_path / "202_second.docx"
+    first.write_bytes(b"dummy")
+    second.write_bytes(b"dummy")
+
+    calls: list[Path] = []
+    states: list[dict[str, Any]] = []
+
+    class DummyExtractor:
+        def __init__(self, dictionary: object) -> None:
+            self.dictionary = dictionary
+
+    class DummyPipeline:
+        def __init__(self) -> None:
+            return None
+
+    def _embed_cv(
+        cv_path: Path,
+        dictionary_path: str | None,
+        dry_run: bool,
+        *,
+        extractor: object,
+        pipeline: object,
+    ) -> tuple[str, int, dict[str, int]]:
+        calls.append(cv_path)
+        parsed_res_id = int(cv_path.stem.split("_")[0])
+        return (
+            f"cv-{parsed_res_id}",
+            parsed_res_id,
+            {
+                "cv_skills": 1,
+                "cv_experiences": 0,
+                "cv_chunks": 0,
+                "total": 1,
+            },
+        )
+
+    def _update_state(*, state: str, meta: dict[str, Any]) -> None:
+        states.append(meta)
+
+    monkeypatch.setattr(tasks, "load_skill_dictionary", lambda *_: {}, raising=True)
+    monkeypatch.setattr(tasks, "SkillExtractor", DummyExtractor, raising=True)
+    monkeypatch.setattr(tasks, "EmbeddingPipeline", DummyPipeline, raising=True)
+    monkeypatch.setattr(tasks, "_embed_cv", _embed_cv, raising=True)
+    monkeypatch.setattr(tasks.embed_batch_task, "update_state", _update_state, raising=True)
+
+    items = [
+        {"cv_path": str(first), "res_id": "101"},
+        {"cv_path": str(second), "res_id": "202"},
+    ]
+
+    result = tasks.embed_batch_task.run(items=items)
+
+    assert result["processed"] == 2
+    assert result["failed"] == 0
+    assert result["totals"]["total"] == 2
+    assert len(calls) == 2
+    assert states[-1]["percentage"] == 100
+
+
+def test_embed_all_task__multiple_items__processes_all(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """Process multiple items passed into the task."""
+    filenames = ["101_alpha.docx", "102_beta.docx", "103_gamma.docx"]
+    for name in filenames:
+        (tmp_path / name).write_bytes(b"dummy")
+
+    items = [
+        {"cv_path": str(path), "res_id": path.stem.split("_")[0]}
+        for path in sorted(tmp_path.glob("*.docx"))
+    ]
+
+    calls: list[Path] = []
+    states: list[dict[str, Any]] = []
+
+    class DummyExtractor:
+        def __init__(self, dictionary: object) -> None:
+            self.dictionary = dictionary
+
+    class DummyPipeline:
+        def __init__(self) -> None:
+            return None
+
+    def _embed_cv(
+        cv_path: Path,
+        dictionary_path: str | None,
+        dry_run: bool,
+        *,
+        extractor: object,
+        pipeline: object,
+    ) -> tuple[str, int, dict[str, int]]:
+        calls.append(cv_path)
+        parsed_res_id = int(cv_path.stem.split("_")[0])
+        return (
+            f"cv-{parsed_res_id}",
+            parsed_res_id,
+            {
+                "cv_skills": 1,
+                "cv_experiences": 0,
+                "cv_chunks": 0,
+                "total": 1,
+            },
+        )
+
+    def _update_state(*, state: str, meta: dict[str, Any]) -> None:
+        states.append(meta)
+
+    monkeypatch.setattr(tasks, "load_skill_dictionary", lambda *_: {}, raising=True)
+    monkeypatch.setattr(tasks, "SkillExtractor", DummyExtractor, raising=True)
+    monkeypatch.setattr(tasks, "EmbeddingPipeline", DummyPipeline, raising=True)
+    monkeypatch.setattr(tasks, "_embed_cv", _embed_cv, raising=True)
+    monkeypatch.setattr(tasks.embed_all_task, "update_state", _update_state, raising=True)
+
+    result = tasks.embed_all_task.run(items=items, batch_size=2)
+
+    assert result["processed"] == 3
+    assert result["failed"] == 0
+    assert result["totals"]["total"] == 3
+    assert len(calls) == 3
+    assert states[-1]["percentage"] == 100
 
 
 def test_embed_from_scraper_task__skips_without_base_url(
