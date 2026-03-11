@@ -72,6 +72,9 @@ class EmbeddingPipeline:
         cv_id = parsed_cv.metadata.cv_id
         created_at = datetime.now(UTC)
 
+        if not dry_run:
+            self._delete_existing_points(parsed_cv.metadata.res_id)
+
         skills_points = self._build_skills_points(
             parsed_cv=parsed_cv,
             skill_result=skill_result,
@@ -134,6 +137,26 @@ class EmbeddingPipeline:
             "cv_chunks": len(chunk_points),
             "total": total_points,
         }
+
+    def _delete_existing_points(self, res_id: int) -> None:
+        if not res_id:
+            return
+        selector = models.FilterSelector(
+            filter=models.Filter(
+                must=[
+                    models.FieldCondition(
+                        key="res_id",
+                        match=models.MatchValue(value=res_id),
+                    )
+                ]
+            )
+        )
+        for collection_name in ("cv_skills", "cv_experiences", "cv_chunks"):
+            self._qdrant_client.delete(
+                collection_name=collection_name,
+                points_selector=selector,
+                wait=True,
+            )
 
     def _build_skills_points(
         self,

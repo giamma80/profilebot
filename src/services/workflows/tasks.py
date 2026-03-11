@@ -105,6 +105,54 @@ def run_workflow_fanout_task(
     }
 
 
+@celery_app.task(name="workflow.fanout_single_res_id")
+def run_workflow_single_res_id_fanout_task(
+    *,
+    res_id: int,
+    fanout_task: str,
+    fanout_parameter_name: str = "res_id",
+    options: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Trigger a fan-out for a single res_id."""
+    if not res_id:
+        logger.info("Single res_id fanout skipped, missing res_id")
+        return {"status": "skipped", "res_id": res_id}
+
+    options = options or {}
+    callback_task = options.get("callback_task")
+    on_error_task = options.get("on_error_task")
+    min_success_ratio = options.get("min_success_ratio", 0.8)
+
+    signature_item = signature(fanout_task, kwargs={fanout_parameter_name: res_id})
+
+    if callback_task is not None:
+        callback_signature = signature(callback_task, kwargs={})
+        on_error_signature = None
+        if on_error_task is not None:
+            on_error_signature = signature(on_error_task, kwargs={})
+        builder = BestEffortChord(app=celery_app, min_success_ratio=min_success_ratio)
+        chord_signature = builder.build(
+            [signature_item],
+            callback_signature,
+            on_error=on_error_signature,
+        )
+        result = chord_signature.apply_async()
+        logger.info(
+            "Triggered single res_id fanout with chord %s for res_id %s",
+            result.id,
+            res_id,
+        )
+        return {
+            "status": "triggered",
+            "res_id": res_id,
+            "chord_task_id": result.id,
+        }
+
+    result = signature_item.apply_async()
+    logger.info("Triggered single res_id fanout task %s for res_id %s", result.id, res_id)
+    return {"status": "triggered", "res_id": res_id, "task_id": result.id}
+
+
 @celery_app.task(name="workflow.log_failed_profiles")
 def log_failed_profiles_task(
     _results: list[Any] | None = None,

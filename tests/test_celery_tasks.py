@@ -14,6 +14,25 @@ from src.core.parser.docx_parser import CVParseError
 from src.services.embedding import tasks
 
 
+class DummyFreshnessGate:
+    def __init__(self, *args: object, **kwargs: object) -> None:
+        return None
+
+    def is_fresh(self, res_id: int) -> bool:
+        return False
+
+    def acquire(self, res_id: int) -> bool:
+        return True
+
+    def release(self, res_id: int) -> None:
+        return None
+
+
+@pytest.fixture(autouse=True)
+def _disable_freshness_gate(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(tasks, "FreshnessGate", DummyFreshnessGate, raising=True)
+
+
 def test_embed_cv_task__valid_res_id__returns_res_id_and_sets_progress(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,

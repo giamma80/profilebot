@@ -12,6 +12,7 @@ from src.core.embedding.pipeline import EmbeddingPipeline
 from src.core.parser import parse_docx, parse_docx_bytes
 from src.core.skills import SkillExtractor, load_skill_dictionary
 from src.services.embedding.celery_app import celery_app
+from src.services.embedding.freshness import FreshnessGate
 from src.services.scraper.cache import ScraperResIdCache
 from src.services.scraper.client import ScraperClient
 from src.services.scraper.tasks import _ensure_scraper_base_url
@@ -19,6 +20,21 @@ from src.services.scraper.tasks import _ensure_scraper_base_url
 logger = logging.getLogger(__name__)
 
 DEFAULT_DICTIONARY_PATH = "data/skills_dictionary.yaml"
+
+
+def _coerce_res_id(value: str | int | None) -> int | None:
+    if value is None:
+        return None
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _acquire_freshness(gate: FreshnessGate, res_id: int) -> bool:
+    if gate.is_fresh(res_id):
+        return False
+    return gate.acquire(res_id)
 
 
 def _resolve_dictionary_path(dictionary_path: str | None) -> Path:
@@ -77,12 +93,23 @@ def embed_cv_task(
     Returns:
         Task result summary with indexing counts.
     """
+    gate = FreshnessGate()
+    gate_res_id = _coerce_res_id(res_id)
     try:
         path = Path(cv_path)
         if not path.exists():
             raise FileNotFoundError(f"CV file not found: {path}")
         if path.suffix.lower() != ".docx":
             logger.warning("CV file extension is not .docx: %s", path)
+
+        if gate_res_id is not None and not _acquire_freshness(gate, gate_res_id):
+            logger.info("Skipping CV due to freshness gate for res_id %s", gate_res_id)
+            return {
+                "status": "skipped",
+                "reason": "freshness",
+                "res_id": gate_res_id,
+                "percentage": 0,
+            }
 
         if self.request.id is not None:
             self.update_state(state="PROGRESS", meta={"percentage": 10, "res_id": res_id})
@@ -104,6 +131,8 @@ def embed_cv_task(
             "percentage": 100,
         }
     except Exception as exc:
+        if gate_res_id is not None:
+            gate.release(gate_res_id)
         logger.exception("Failed embedding CV: %s", cv_path)
         raise self.retry(exc=exc, countdown=60) from exc
 
@@ -134,6 +163,7 @@ def embed_batch_task(
     totals = {"cv_skills": 0, "cv_experiences": 0, "cv_chunks": 0, "total": 0}
     errors: list[dict[str, str]] = []
 
+    gate = FreshnessGate()
     total_items = len(items)
     dictionary = load_skill_dictionary(_resolve_dictionary_path(dictionary_path))
     extractor = SkillExtractor(dictionary)
@@ -144,6 +174,11 @@ def embed_batch_task(
         if not cv_path:
             failed += 1
             errors.append({"file": "", "error": "Missing cv_path"})
+            continue
+
+        gate_res_id = _coerce_res_id(res_id)
+        if gate_res_id is not None and not _acquire_freshness(gate, gate_res_id):
+            logger.info("Skipping CV due to freshness gate for res_id %s", gate_res_id)
             continue
 
         try:
@@ -174,6 +209,8 @@ def embed_batch_task(
                 meta={"percentage": percentage, "cv_id": cv_id, "res_id": parsed_res_id},
             )
         except Exception as exc:
+            if gate_res_id is not None:
+                gate.release(gate_res_id)
             failed += 1
             logger.exception("Failed embedding CV in batch: %s", cv_path)
             errors.append({"file": str(cv_path), "error": str(exc)})
@@ -189,7 +226,7 @@ def embed_batch_task(
 
 
 @celery_app.task(bind=True, name="embedding.index_all_cvs")
-def embed_all_task(  # noqa: PLR0913 - task signature mirrors API payload
+def embed_all_task(  # noqa: PLR0913, PLR0915 - task signature mirrors API payload
     self,
     items: list[dict[str, Any]],
     *,
@@ -218,6 +255,7 @@ def embed_all_task(  # noqa: PLR0913 - task signature mirrors API payload
     totals = {"cv_skills": 0, "cv_experiences": 0, "cv_chunks": 0, "total": 0}
     errors: list[dict[str, str]] = []
 
+    gate = FreshnessGate()
     total_items = len(items)
     if batch_size <= 0:
         batch_size = total_items or 1
@@ -235,6 +273,12 @@ def embed_all_task(  # noqa: PLR0913 - task signature mirrors API payload
             if not cv_path:
                 failed += 1
                 errors.append({"file": "", "error": "Missing cv_path"})
+                processed_so_far += 1
+                continue
+
+            gate_res_id = _coerce_res_id(res_id)
+            if gate_res_id is not None and not _acquire_freshness(gate, gate_res_id):
+                logger.info("Skipping CV due to freshness gate for res_id %s", gate_res_id)
                 processed_so_far += 1
                 continue
 
@@ -260,6 +304,8 @@ def embed_all_task(  # noqa: PLR0913 - task signature mirrors API payload
                 totals["total"] += result.get("total", 0)
                 processed += 1
             except Exception as exc:
+                if gate_res_id is not None:
+                    gate.release(gate_res_id)
                 failed += 1
                 logger.exception("Failed embedding CV in full run: %s", cv_path)
                 errors.append({"file": str(cv_path), "error": str(exc)})
@@ -283,7 +329,7 @@ def embed_all_task(  # noqa: PLR0913 - task signature mirrors API payload
 
 
 @celery_app.task(bind=True, name="embedding.index_from_scraper")
-def embed_from_scraper_task(
+def embed_from_scraper_task(  # noqa: PLR0912 - task flow is intentionally explicit
     self,
     _results: list[Any] | None = None,
     _errors: list[dict[str, Any]] | None = None,
@@ -326,6 +372,7 @@ def embed_from_scraper_task(
     extractor = SkillExtractor(dictionary)
     pipeline = EmbeddingPipeline()
 
+    gate = FreshnessGate()
     processed = 0
     failed = 0
     totals = {"cv_skills": 0, "cv_experiences": 0, "cv_chunks": 0, "total": 0}
@@ -334,6 +381,9 @@ def embed_from_scraper_task(
 
     with ScraperClient() as client:
         for index, res_id in enumerate(res_ids, start=1):
+            if not _acquire_freshness(gate, res_id):
+                logger.info("Skipping CV due to freshness gate for res_id %s", res_id)
+                continue
             try:
                 data = client.download_inside_cv(res_id)
                 parsed_cv = parse_docx_bytes(data, res_id)
@@ -345,6 +395,7 @@ def embed_from_scraper_task(
                 totals["total"] += result.get("total", 0)
                 processed += 1
             except Exception as exc:
+                gate.release(res_id)
                 failed += 1
                 errors.append({"res_id": res_id, "error": str(exc)})
                 logger.exception("Failed embedding CV for res_id %s", res_id)

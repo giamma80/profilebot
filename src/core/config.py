@@ -35,6 +35,10 @@ class Settings(BaseSettings):
         default="*/30 * * * *",
         validation_alias="RESKILLING_REFRESH_SCHEDULE",
     )
+    freshness_ttl_seconds: int = Field(
+        default=43200,
+        validation_alias="FRESHNESS_TTL_SECONDS",
+    )
     celery_broker_url: str = Field(
         default="redis://localhost:6379/0",
         validation_alias="CELERY_BROKER_URL",

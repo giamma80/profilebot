@@ -27,6 +27,25 @@ from src.services.search.skill_search import ProfileMatch, SearchDependencies, s
 SCRAPER_DLQ_QUEUE = "scraper.dlq"
 
 
+class DummyFreshnessGate:
+    def __init__(self, *args: object, **kwargs: object) -> None:
+        return None
+
+    def is_fresh(self, res_id: int) -> bool:
+        return False
+
+    def acquire(self, res_id: int) -> bool:
+        return True
+
+    def release(self, res_id: int) -> None:
+        return None
+
+
+@pytest.fixture(autouse=True)
+def _disable_freshness_gate(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(embedding_tasks, "FreshnessGate", DummyFreshnessGate, raising=True)
+
+
 @dataclass
 class FakeResIdCache:
     stored: list[int] = field(default_factory=list)
@@ -94,6 +113,15 @@ class FakeQdrantClient:
 
     def upsert(self, *, collection_name: str, points: list[Any], wait: bool = True) -> None:
         self.points_by_collection.setdefault(collection_name, []).extend(points)
+
+    def delete(
+        self,
+        *,
+        collection_name: str,
+        points_selector: Any,
+        wait: bool = True,
+    ) -> None:
+        return None
 
     def search(
         self,

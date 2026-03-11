@@ -102,6 +102,16 @@ I task che superano i retry vengono inviati al task:
 - `scraper.refresh_inside_profile_dlq`  
 Output atteso: `{status: "dlq", res_id, error, error_type}`.
 
+## Freshness Gate (Ingestion)
+La pipeline blocca re-ingestion dello stesso `res_id` entro la TTL configurata (`FRESHNESS_TTL_SECONDS`, default 43200s).  
+Chiave Redis: `profilebot:freshness:{res_id}`.
+
+**Sintomo:** log con "Skipping CV due to freshness gate".  
+**Azioni:**
+1. Verificare presenza chiave: `redis-cli GET profilebot:freshness:{res_id}`.
+2. Se serve forzare re-ingestion, cancellare la chiave: `redis-cli DEL profilebot:freshness:{res_id}`.
+3. Controllare eventuali failure a monte prima di rimuovere il gate.
+
 ## Escalation
 Se un P1 non rientra entro 15 minuti:
 - Escalare al team Ops e bloccare temporaneamente nuove ingestion.
