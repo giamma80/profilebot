@@ -9,6 +9,7 @@ from collections.abc import Iterable
 from pathlib import Path
 
 from src.core.parser.schemas import ParsedCV
+from src.core.skills.blacklist import SkillBlacklist, load_skill_blacklist
 from src.core.skills.dictionary import SkillDictionary, load_skill_dictionary
 from src.core.skills.normalizer import SkillNormalizer
 from src.core.skills.schemas import NormalizedSkill, SkillExtractionResult
@@ -19,13 +20,19 @@ logger = logging.getLogger(__name__)
 class SkillExtractor:
     """Extract and normalize skills from parsed CV data."""
 
-    def __init__(self, dictionary: SkillDictionary) -> None:
+    def __init__(
+        self,
+        dictionary: SkillDictionary,
+        blacklist: SkillBlacklist | None = None,
+    ) -> None:
         """Inizializza l'estrattore con un dizionario skill.
 
         Args:
             dictionary: Dizionario skill caricato e validato.
+            blacklist: Blacklist opzionale per filtrare token non-skill.
         """
         self._dictionary = dictionary
+        self._blacklist = blacklist or load_skill_blacklist()
         self._normalizer = SkillNormalizer(dictionary)
 
     def extract(self, parsed_cv: ParsedCV) -> SkillExtractionResult:
@@ -62,6 +69,8 @@ class SkillExtractor:
                 cleaned = self._clean(token)
                 if not cleaned:
                     continue
+                if self._blacklist.is_blocked(cleaned):
+                    continue
 
                 normalized_skill = self._normalizer.normalize(token)
                 if normalized_skill is None:
@@ -94,7 +103,7 @@ class SkillExtractor:
             return parsed_cv.skills.skill_keywords
         if parsed_cv.skills and parsed_cv.skills.raw_text:
             return _split_text_to_skills(parsed_cv.skills.raw_text)
-        return _split_text_to_skills(parsed_cv.raw_text)
+        return []
 
     @staticmethod
     def _clean(text: str) -> str:

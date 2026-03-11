@@ -18,6 +18,7 @@ from src.services.scraper.client import ScraperClient
 logger = logging.getLogger(__name__)
 
 RETRY_COUNTDOWN = 60
+SERVER_ERROR_STATUS_CODE = 500
 SCRAPER_DLQ_QUEUE = "scraper.dlq"
 
 
@@ -96,11 +97,31 @@ def scraper_inside_refresh_item_task(self, *, res_id: int) -> dict[str, Any]:
             logger.error("Inside CV refresh exceeded retries for res_id %s", res_id)
             raise retry_exc from exc
     except httpx.HTTPStatusError as exc:
-        logger.warning("Inside CV refresh failed for res_id %s: %s", res_id, exc)
-        return {"status": "failed", "reason": str(exc), "res_id": res_id}
+        status_code = exc.response.status_code if exc.response is not None else None
+        logger.warning(
+            "Inside CV refresh failed for res_id %s: %s",
+            res_id,
+            exc,
+        )
+        if status_code is not None and status_code >= SERVER_ERROR_STATUS_CODE:
+            try:
+                raise self.retry(exc=exc) from exc
+            except MaxRetriesExceededError as retry_exc:
+                celery_app.send_task(
+                    "scraper.refresh_inside_profile_dlq",
+                    kwargs={
+                        "res_id": res_id,
+                        "error": str(exc),
+                        "error_type": type(exc).__name__,
+                    },
+                    queue=SCRAPER_DLQ_QUEUE,
+                )
+                logger.error("Inside CV refresh exceeded retries for res_id %s", res_id)
+                raise retry_exc from exc
+        raise
     except (TypeError, ValueError) as exc:
         logger.warning("Inside CV refresh failed for res_id %s: %s", res_id, exc)
-        return {"status": "failed", "reason": str(exc), "res_id": res_id}
+        raise
 
 
 @celery_app.task(name="scraper.refresh_inside_profile_dlq")

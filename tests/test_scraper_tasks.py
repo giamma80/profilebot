@@ -144,16 +144,35 @@ def test_scraper_inside_refresh_item_task__status_error_returns_failed(
         return httpx.Response(404)
 
     transport = httpx.MockTransport(handler)
+    captured: dict[str, Any] = {}
+
+    def _send_task(name: str, *args: Any, **options: Any) -> None:
+        captured["name"] = name
+        captured["kwargs"] = options.get("kwargs", {})
+        captured["queue"] = options.get("queue")
+
+    def _retry(*, exc: Exception, **_: Any) -> None:
+        raise MaxRetriesExceededError()
 
     monkeypatch.setattr(
         scraper_tasks, "ScraperClient", lambda: _mock_client(transport), raising=True
     )
+    monkeypatch.setattr(scraper_tasks.celery_app, "send_task", _send_task, raising=True)
+    monkeypatch.setattr(
+        scraper_tasks.scraper_inside_refresh_item_task,
+        "retry",
+        _retry,
+        raising=True,
+    )
 
-    result = scraper_tasks.scraper_inside_refresh_item_task.run(res_id=10)
+    with pytest.raises(MaxRetriesExceededError):
+        scraper_tasks.scraper_inside_refresh_item_task.run(res_id=10)
 
-    assert result["status"] == "failed"
-    assert result["res_id"] == 10
-    assert "500" in result["reason"]
+    assert captured["name"] == "scraper.refresh_inside_profile_dlq"
+    assert captured["queue"] == scraper_tasks.SCRAPER_DLQ_QUEUE
+    assert captured["kwargs"]["res_id"] == 10
+    assert captured["kwargs"]["error_type"] == "HTTPStatusError"
+    assert "500" in captured["kwargs"]["error"]
 
 
 def test_scraper_inside_refresh_item_task__request_error_sends_to_dlq(

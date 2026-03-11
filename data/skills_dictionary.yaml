@@ -477,7 +477,16 @@ skills:
   assembler:
     canonical: "assembler"
     domain: "backend"
-    aliases: ["arm assembly", "asm", "assembler 8086", "assembler mips", "assembly", "mips", "x86 assembly"]
+    aliases:
+      [
+        "arm assembly",
+        "asm",
+        "assembler 8086",
+        "assembler mips",
+        "assembly",
+        "mips",
+        "x86 assembly",
+      ]
     related: []
   asyncapi:
     canonical: "asyncapi"
@@ -497,7 +506,16 @@ skills:
   bash:
     canonical: "bash"
     domain: "backend"
-    aliases: ["bash script", "bash scripting", "linux shell scripting", "sh", "shell / bash", "shell script", "shell scripting"]
+    aliases:
+      [
+        "bash script",
+        "bash scripting",
+        "linux shell scripting",
+        "sh",
+        "shell / bash",
+        "shell script",
+        "shell scripting",
+      ]
     related: []
   batch_scripting:
     canonical: "batch-scripting"
@@ -572,7 +590,8 @@ skills:
   credit_cards:
     canonical: "credit-cards"
     domain: "backend"
-    aliases: ["carta di credito", "carte di credito", "credit card", "credit cards"]
+    aliases:
+      ["carta di credito", "carte di credito", "credit card", "credit cards"]
     related: []
   crystal:
     canonical: "crystal"
@@ -582,7 +601,8 @@ skills:
   csharp:
     canonical: "csharp"
     domain: "backend"
-    aliases: [".net", "c#", "dotnet", "microsoft .net framework 4.7", "visual c#"]
+    aliases:
+      [".net", "c#", "dotnet", "microsoft .net framework 4.7", "visual c#"]
     related: ["asp.net", "entity framework"]
   csv:
     canonical: "csv"
@@ -847,7 +867,16 @@ skills:
   kotlin:
     canonical: "kotlin"
     domain: "backend"
-    aliases: ["kotlin js", "kotlin jvm", "kotlin multiplatform", "kotlin native", "kotlin-js", "kotlin/jvm", "kotlin/native"]
+    aliases:
+      [
+        "kotlin js",
+        "kotlin jvm",
+        "kotlin multiplatform",
+        "kotlin native",
+        "kotlin-js",
+        "kotlin/jvm",
+        "kotlin/native",
+      ]
     related: ["ktor", "spring"]
   laravel:
     canonical: "laravel"
@@ -972,7 +1001,15 @@ skills:
   payments:
     canonical: "payments"
     domain: "backend"
-    aliases: ["payment", "payment processing", "payment system", "payment systems", "sistema di pagamento", "sistemi di pagamento"]
+    aliases:
+      [
+        "payment",
+        "payment processing",
+        "payment system",
+        "payment systems",
+        "sistema di pagamento",
+        "sistemi di pagamento",
+      ]
     related: []
   peewee:
     canonical: "peewee"
@@ -1394,7 +1431,13 @@ skills:
   azure_app_service:
     canonical: "azure-app-service"
     domain: "cloud"
-    aliases: ["azure app service", "azure web app", "azure-web-app", "microsoft azure web app"]
+    aliases:
+      [
+        "azure app service",
+        "azure web app",
+        "azure-web-app",
+        "microsoft azure web app",
+      ]
     related: ["azure"]
   azure_blob:
     canonical: "azure-blob"
@@ -1608,6 +1651,11 @@ skills:
     domain: "data"
     aliases: ["apache beam"]
     related: []
+  businessobjects:
+    canonical: "businessobjects"
+    domain: "data"
+    aliases: ["business objects", "business object", "sap businessobjects"]
+    related: ["bi"]
   bi:
     canonical: "bi"
     domain: "data"
@@ -2003,7 +2051,14 @@ skills:
   dynamodb:
     canonical: "dynamodb"
     domain: "database"
-    aliases: ["amazon dynamo db", "amazon dynamodb", "aws dynamo db", "aws dynamodb", "dynamo db"]
+    aliases:
+      [
+        "amazon dynamo db",
+        "amazon dynamodb",
+        "aws dynamo db",
+        "aws dynamodb",
+        "dynamo db",
+      ]
     related: ["aws", "nosql"]
   etcd:
     canonical: "etcd"
@@ -2138,8 +2193,21 @@ skills:
   oracle:
     canonical: "oracle"
     domain: "database"
-    aliases: ["oracle 10g", "oracle 11g", "oracle 12c", "oracle 19c", "oracle 21c", "oracle db"]
+    aliases:
+      [
+        "oracle 10g",
+        "oracle 11g",
+        "oracle 12c",
+        "oracle 19c",
+        "oracle 21c",
+        "oracle db",
+      ]
     related: ["sql"]
+  oracle_reports:
+    canonical: "oracle-reports"
+    domain: "database"
+    aliases: ["oracle reports", "reports (oracle)"]
+    related: ["oracle"]
   oracle_sql_developer:
     canonical: "oracle-sql-developer"
     domain: "database"
@@ -2208,7 +2276,22 @@ skills:
   sqlserver:
     canonical: "sqlserver"
     domain: "database"
-    aliases: ["ms sql", "ms sql server", "ms sql server 2000", "ms sql server 2005", "ms sql server 2008", "ms sql server 2008 r2", "ms sql server 2012", "ms sql server 2014", "ms sql server 2016", "ms sql server 2017", "ms sql server 2019", "mssql", "sql server"]
+    aliases:
+      [
+        "ms sql",
+        "ms sql server",
+        "ms sql server 2000",
+        "ms sql server 2005",
+        "ms sql server 2008",
+        "ms sql server 2008 r2",
+        "ms sql server 2012",
+        "ms sql server 2014",
+        "ms sql server 2016",
+        "ms sql server 2017",
+        "ms sql server 2019",
+        "mssql",
+        "sql server",
+      ]
     related: ["sql"]
   ssms:
     canonical: "ssms"
@@ -2238,7 +2321,7 @@ skills:
   toad:
     canonical: "toad"
     domain: "database"
-    aliases: ["oracle toad", "toad oracle"]
+    aliases: ["oracle toad", "toad oracle", "toad mysql"]
     related: []
   typesense:
     canonical: "typesense"
@@ -2320,7 +2403,15 @@ skills:
   cicd:
     canonical: "cicd"
     domain: "devops"
-    aliases: ["ci cd", "ci/cd", "continuous delivery", "continuous deployment", "continuous integration", "pipeline"]
+    aliases:
+      [
+        "ci cd",
+        "ci/cd",
+        "continuous delivery",
+        "continuous deployment",
+        "continuous integration",
+        "pipeline",
+      ]
     related: []
   circleci:
     canonical: "circleci"
@@ -2360,7 +2451,8 @@ skills:
   docker:
     canonical: "docker"
     domain: "devops"
-    aliases: ["container", "containerization", "docker containers", "dockerfile"]
+    aliases:
+      ["container", "containerization", "docker containers", "dockerfile"]
     related: ["kubernetes", "docker-compose"]
   docker_compose:
     canonical: "docker-compose"
@@ -2774,7 +2866,16 @@ skills:
   angular:
     canonical: "angular"
     domain: "frontend"
-    aliases: ["angular 17", "angular 18", "angular 4", "angular 6", "angular js", "angularjs", "ng"]
+    aliases:
+      [
+        "angular 17",
+        "angular 18",
+        "angular 4",
+        "angular 6",
+        "angular js",
+        "angularjs",
+        "ng",
+      ]
     related: ["typescript"]
   astro:
     canonical: "astro"
@@ -3021,7 +3122,7 @@ skills:
   agile:
     canonical: "agile"
     domain: "governance"
-    aliases: []
+    aliases: ["agile software development"]
     related: []
   bpmn:
     canonical: "bpmn"
@@ -3198,6 +3299,36 @@ skills:
     domain: "governance"
     aliases: ["requirements management"]
     related: []
+  data_flow_diagrams:
+    canonical: "data-flow-diagrams"
+    domain: "governance"
+    aliases: ["data flow diagrams", "dfd"]
+    related: []
+  entity_relationship_diagram:
+    canonical: "entity-relationship-diagram"
+    domain: "governance"
+    aliases: ["entity relationship diagram", "er diagram", "erd"]
+    related: []
+  information_architecture:
+    canonical: "information-architecture"
+    domain: "governance"
+    aliases: ["information architecture"]
+    related: []
+  management_of_risk:
+    canonical: "management-of-risk"
+    domain: "governance"
+    aliases: ["management of risk", "m_o_r", "mor"]
+    related: []
+  urs:
+    canonical: "urs"
+    domain: "governance"
+    aliases:
+      [
+        "user requirement specification",
+        "user requirement specification (urs)",
+        "user requirements specification",
+      ]
+    related: ["requirements-management"]
   risk_analysis:
     canonical: "risk-analysis"
     domain: "governance"
@@ -3801,6 +3932,11 @@ skills:
     domain: "network"
     aliases: []
     related: []
+  network_protocols:
+    canonical: "network-protocols"
+    domain: "network"
+    aliases: ["network protocols", "reti & protocolli"]
+    related: []
   ntp:
     canonical: "ntp"
     domain: "network"
@@ -4245,6 +4381,11 @@ skills:
     domain: "os"
     aliases: []
     related: []
+  operating_systems:
+    canonical: "operating-systems"
+    domain: "os"
+    aliases: ["operating systems", "sistemi operativi"]
+    related: []
   qnx:
     canonical: "qnx"
     domain: "os"
@@ -4490,7 +4631,14 @@ skills:
   msoffice:
     canonical: "msoffice"
     domain: "platforms"
-    aliases: ["ms office", "ms office 365", "office 365"]
+    aliases:
+      [
+        "microsoft office",
+        "ms office",
+        "ms office 365",
+        "office 365",
+        "pacchetto office",
+      ]
     related: []
   n8n:
     canonical: "n8n"
@@ -4829,6 +4977,11 @@ skills:
     domain: "qa"
     aliases: ["test automation"]
     related: []
+  test_cases:
+    canonical: "test-cases"
+    domain: "qa"
+    aliases: ["test cases"]
+    related: ["testing"]
   testing:
     canonical: "testing"
     domain: "qa"
@@ -5015,6 +5168,11 @@ skills:
     canonical: "owasp"
     domain: "security"
     aliases: ["owasp top 10"]
+    related: ["security"]
+  pci_dss:
+    canonical: "pci-dss"
+    domain: "security"
+    aliases: ["pci", "pci dss"]
     related: ["security"]
   pentest:
     canonical: "pentest"
@@ -5505,7 +5663,7 @@ skills:
   catia:
     canonical: "catia"
     domain: "tools"
-    aliases: []
+    aliases: ["catia v5"]
     related: []
   clickup:
     canonical: "clickup"
@@ -5550,7 +5708,7 @@ skills:
   confluence:
     canonical: "confluence"
     domain: "tools"
-    aliases: []
+    aliases: ["atlassian confluence"]
     related: []
   copilot:
     canonical: "copilot"
@@ -6061,6 +6219,11 @@ skills:
     canonical: "virtualbox"
     domain: "tools"
     aliases: []
+    related: []
+  visio:
+    canonical: "visio"
+    domain: "tools"
+    aliases: ["microsoft visio"]
     related: []
   visual_studio:
     canonical: "visual-studio"

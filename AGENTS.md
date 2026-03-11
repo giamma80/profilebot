@@ -2,6 +2,7 @@
 
 > **Scope:** Istruzioni per AI agent (Zed, Cursor, Windsurf) durante lo sviluppo di ProfileBot.
 
+indicazioni sul repositori: .github/copilot_instructions.md
 ---
 
 ## Project Overview

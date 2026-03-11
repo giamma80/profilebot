@@ -155,6 +155,26 @@ def test_extract_from_parsed_cv__falls_back_to_raw_text_when_missing_keywords(ex
     assert canonical == {"python", "fastapi"}
 
 
+def test_extract_from_parsed_cv__does_not_fallback_to_full_raw_text(extractor):
+    # Arrange
+    metadata = CVMetadata(cv_id="cv-3", file_name="cv.docx", res_id=1003)
+    parsed = ParsedCV(
+        metadata=metadata,
+        skills=None,
+        experiences=[],
+        education=[],
+        certifications=[],
+        raw_text="Python, FastAPI",
+    )
+
+    # Act
+    result = extractor.extract_from_parsed_cv(parsed)
+
+    # Assert
+    assert result.normalized_skills == []
+    assert result.unknown_skills == []
+
+
 def test_dictionary__contains_minimum_entries(dictionary):
     # Assert
     assert dictionary.canonical_count >= 100

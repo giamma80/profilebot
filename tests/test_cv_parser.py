@@ -170,6 +170,12 @@ def test_parse_minimal_cv_skills(tmp_path: Path) -> None:
     assert parsed.skills.skill_keywords
 
 
+def test_parse_cv__multipart_name__extracts_full_name() -> None:
+    docx_path = FIXTURES_DIR / "curriculum_212255.docx"
+    parsed = parse_docx_bytes(docx_path.read_bytes(), 212255, filename=docx_path.name)
+    assert parsed.metadata.full_name == "Giuseppe Alessandro DE BLASIO"
+
+
 def test_parse_campione_cv__uppercase_surname__extracts_name_and_role() -> None:
     parsed = _parse_campione_docx("curriculum_12369.docx")
     assert parsed.metadata.full_name == "Andrea AMOROSO"

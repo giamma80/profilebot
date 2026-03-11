@@ -2,6 +2,11 @@
 
 from __future__ import annotations
 
+from src.core.skills.blacklist import (
+    SkillBlacklist,
+    SkillBlacklistError,
+    load_skill_blacklist,
+)
 from src.core.skills.dictionary import (
     SkillDictionary,
     SkillDictionaryError,
@@ -26,6 +31,8 @@ __all__ = [
     "ExactMatcher",
     "FuzzyMatcher",
     "NormalizedSkill",
+    "SkillBlacklist",
+    "SkillBlacklistError",
     "SkillDictionary",
     "SkillDictionaryError",
     "SkillEntry",
@@ -36,5 +43,6 @@ __all__ = [
     "SkillWeight",
     "calculate_skill_weight",
     "enrich_skill_metadata",
+    "load_skill_blacklist",
     "load_skill_dictionary",
 ]

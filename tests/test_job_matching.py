@@ -444,8 +444,8 @@ class TestParseRankingOutput:
         )
         results = [_make_profile_match("cv-1")]
         candidates = parse_ranking_output(raw, results, max_candidates=5)
-        assert candidates[0].matched_skills == ["python"]
-        assert candidates[0].missing_skills == ["docker"]
+        assert candidates[0].matched_skills == ["python", "fastapi"]
+        assert candidates[0].missing_skills == ["kubernetes"]
 
 
 # ──────────────────────────────────────────

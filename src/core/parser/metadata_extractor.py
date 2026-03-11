@@ -7,6 +7,8 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import UTC, datetime
 
+from src.core.parser.section_detector import is_section_heading
+
 
 @dataclass(frozen=True)
 class MetadataCandidates:
@@ -28,9 +30,6 @@ class ParsedMetadata:
 
 NAME_PATTERNS = [
     re.compile(r"(?i)^(?:nome\s*e\s*cognome|nome|cognome)\s*[:\-]\s*(.+)$"),
-    re.compile(r"^([A-Z][a-zà-ù]+\s+[A-Z][a-zà-ù]+)$"),
-    re.compile(r"^([A-Z][a-zà-ù]+\s+[A-ZÀ-Ù'-]{2,})$"),
-    re.compile(r"^([A-ZÀ-Ù'-]{2,}\s+[A-ZÀ-Ù'-]{2,})$"),
 ]
 
 ROLE_PATTERNS = [
@@ -70,11 +69,32 @@ ROLE_EXCLUDE_PATTERNS = [
 
 EMAIL_PATTERN = re.compile(r"(?i)\b[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}\b")
 
+NAME_PARTICLES = {
+    "da",
+    "de",
+    "dei",
+    "del",
+    "della",
+    "delle",
+    "dello",
+    "degli",
+    "di",
+    "dos",
+    "das",
+    "du",
+    "la",
+    "le",
+    "van",
+    "von",
+}
+NAME_PART_PATTERN = re.compile(r"^[A-ZÀ-Ù][a-zà-ù]+(?:[-'][A-ZÀ-Ù][a-zà-ù]+)*$")
+SUMMARY_HEADING_PATTERN = re.compile(r"(?i)^(sommario|profilo|profilo professionale)\b")
+
 MIN_NAME_PARTS = 2
+MAX_NAME_PARTS = 5
 MIN_PART_LENGTH = 2
-MAX_UPPERCASE_PART_LENGTH = 3
-FULL_UPPERCASE_NAME_PARTS = 2
 MAX_ROLE_LENGTH = 80
+MAX_METADATA_SCAN_LINES = 25
 
 
 def extract_metadata_candidates(lines: Iterable[str]) -> MetadataCandidates:
@@ -83,18 +103,25 @@ def extract_metadata_candidates(lines: Iterable[str]) -> MetadataCandidates:
 
     This is a best-effort heuristic:
     - Prefer explicit labels (Nome/Cognome, Ruolo/Posizione).
-    - Fall back to the first likely full name line (Title Case, two tokens).
+    - Fall back to the first likely full name line.
     - Ignore email-only lines.
+
+    Note: this is a temporary heuristic and will be revisited with LLM section
+    classification (issue #76).
     """
     full_name: str | None = None
     current_role: str | None = None
+    seen_content = False
 
-    for raw in lines:
+    for index, raw in enumerate(lines):
+        if index >= MAX_METADATA_SCAN_LINES:
+            break
         line = raw.strip()
-        if not line:
+        if not line or EMAIL_PATTERN.search(line):
             continue
-        if EMAIL_PATTERN.search(line):
-            continue
+        if seen_content and _is_metadata_section_heading(line):
+            break
+        seen_content = True
 
         if full_name is None:
             match = _match_first(NAME_PATTERNS, line)
@@ -102,6 +129,8 @@ def extract_metadata_candidates(lines: Iterable[str]) -> MetadataCandidates:
                 candidate = match.strip()
                 if _is_probable_name(candidate):
                     full_name = candidate
+            elif _is_probable_name(line):
+                full_name = line
 
         if current_role is None:
             match = _match_first(ROLE_PATTERNS, line)
@@ -126,35 +155,44 @@ def _match_first(patterns: Iterable[re.Pattern[str]], line: str) -> str | None:
     return None
 
 
+def _is_metadata_section_heading(line: str) -> bool:
+    if is_section_heading(line):
+        return True
+    return SUMMARY_HEADING_PATTERN.search(line) is not None
+
+
+def _is_valid_name_part(part: str) -> bool:
+    if part.lower() in NAME_PARTICLES:
+        return True
+    if part.isupper():
+        return True
+    return NAME_PART_PATTERN.match(part) is not None
+
+
 def _is_probable_name(candidate: str) -> bool:
     parts = candidate.split()
-    if len(parts) < MIN_NAME_PARTS:
-        return False
-
     valid = True
-    if any(len(p) < MIN_PART_LENGTH for p in parts):
+    if len(parts) < MIN_NAME_PARTS or len(parts) > MAX_NAME_PARTS:
         valid = False
     elif any(any(ch.isdigit() for ch in p) for p in parts):
         valid = False
     elif _is_probable_role(candidate):
         valid = False
+    elif not all(_is_valid_name_part(part) for part in parts):
+        valid = False
+    elif any(len(part) < MIN_PART_LENGTH for part in parts if part.lower() not in NAME_PARTICLES):
+        valid = False
     else:
-        uppercase_indices = [i for i, p in enumerate(parts) if p.isupper()]
+        uppercase_indices = [
+            i
+            for i, part in enumerate(parts)
+            if part.isupper() and part.lower() not in NAME_PARTICLES
+        ]
         if uppercase_indices:
             if uppercase_indices == list(range(len(parts))):
-                valid = len(parts) == FULL_UPPERCASE_NAME_PARTS
+                valid = True
             elif uppercase_indices != [len(parts) - 1]:
                 valid = False
-
-        if valid:
-            for index, part in enumerate(parts):
-                if (
-                    part.isupper()
-                    and len(part) > MAX_UPPERCASE_PART_LENGTH
-                    and index != len(parts) - 1
-                ):
-                    valid = False
-                    break
 
     return valid
 
