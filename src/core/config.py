@@ -83,6 +83,10 @@ class Settings(BaseSettings):
     llm_temperature: float = Field(default=0.1, validation_alias="LLM_TEMPERATURE")
     llm_max_tokens: int = Field(default=2000, validation_alias="LLM_MAX_TOKENS")
     llm_timeout: float = Field(default=30.0, validation_alias="LLM_TIMEOUT")
+    llm_section_classification_enabled: bool = Field(
+        default=False,
+        validation_alias="LLM_SECTION_CLASSIFICATION_ENABLED",
+    )
     search_min_skill_score: float = Field(default=0.0, validation_alias="SEARCH_MIN_SKILL_SCORE")
     search_fallback_enabled: bool = Field(default=True, validation_alias="SEARCH_FALLBACK_ENABLED")
     search_chunk_weight: float = Field(default=0.3, validation_alias="SEARCH_CHUNK_WEIGHT")

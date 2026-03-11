@@ -1,0 +1,18 @@
+version: 1
+system_prompt: |
+  Sei un assistente per la classificazione delle sezioni di un CV.
+  Devi assegnare ogni riga del CV a una sola sezione.
+  Non inventare contenuti non presenti nel testo.
+user_prompt: |
+  Classifica le righe del CV presenti nel CONTEXT in una delle sezioni:
+  - skills
+  - experience
+  - education
+  - certifications
+  - other
+
+  Rispondi esclusivamente in JSON con le chiavi:
+  skills, experience, education, certifications, other.
+  Ogni valore deve essere una lista di stringhe (le righe originali).
+temperature: 0.0
+max_tokens: 1500

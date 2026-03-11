@@ -18,8 +18,13 @@ from docx.oxml.text.paragraph import CT_P
 from docx.table import Table
 from docx.text.paragraph import Paragraph
 
+from src.core.config import get_settings
 from src.core.parser.metadata_extractor import extract_metadata
 from src.core.parser.schemas import CVMetadata, ExperienceItem, ParsedCV, SkillSection
+from src.core.parser.section_classifier import (
+    SectionClassificationError,
+    classify_sections,
+)
 from src.core.parser.section_detector import detect_sections
 
 logger = logging.getLogger(__name__)
@@ -178,6 +183,21 @@ class DocxParser:
 
     def _extract_sections(self, lines: list[str], raw_text: str) -> ParsedSections:
         """Detect and group content into sections."""
+        settings = get_settings()
+        if settings.llm_section_classification_enabled:
+            try:
+                classified = classify_sections(lines, raw_text)
+            except SectionClassificationError as exc:
+                logger.error("LLM section classification failed: %s", exc)
+                raise CVParseError("LLM section classification failed") from exc
+            return ParsedSections(
+                skills=classified.skills,
+                experience=classified.experience,
+                education=classified.education,
+                certifications=classified.certifications,
+                raw_text=raw_text,
+            )
+
         detected = detect_sections(lines)
 
         return ParsedSections(
