@@ -135,6 +135,18 @@ def test_parse_docx__res_id_edge_cases__parses_numeric_prefix(
     assert parsed.metadata.res_id == expected
 
 
+def test_parse_docx__leading_zeros__strips_to_int(tmp_path: Path) -> None:
+    """Leading zeros in res_id should be parsed as int."""
+    docx_path = tmp_path / "000123_mario_rossi.docx"
+    document = Document()
+    document.add_paragraph("Test CV")
+    document.save(docx_path)
+
+    parsed = parse_docx(docx_path)
+
+    assert parsed.metadata.res_id == 123
+
+
 def test_parse_standard_cv_has_sections(tmp_path: Path) -> None:
     docx_path = _copy_fixture_with_res_id(tmp_path, FIXTURES_DIR / "cv_standard.docx", 12345)
     parsed = parse_docx(docx_path)
