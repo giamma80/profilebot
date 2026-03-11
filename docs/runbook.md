@@ -112,6 +112,17 @@ Chiave Redis: `profilebot:freshness:{res_id}`.
 2. Se serve forzare re-ingestion, cancellare la chiave: `redis-cli DEL profilebot:freshness:{res_id}`.
 3. Controllare eventuali failure a monte prima di rimuovere il gate.
 
+## LLM Section Classification
+La classificazione LLM delle sezioni CV è disattivata di default.  
+Feature flag: `LLM_SECTION_CLASSIFICATION_ENABLED` (default `false`).  
+Prompt versionato: `data/prompts/section_classification.yaml`.
+
+**Sintomo:** parsing CV fallisce con errore di classificazione LLM.  
+**Azioni:**
+1. Verificare log applicativi per il dettaglio dell’errore.
+2. Validare il prompt e l’output JSON atteso.
+3. Se serve stabilità immediata, disattivare il flag e ripetere l’ingestion del singolo CV.
+
 ## Escalation
 Se un P1 non rientra entro 15 minuti:
 - Escalare al team Ops e bloccare temporaneamente nuove ingestion.

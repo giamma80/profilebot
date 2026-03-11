@@ -25,6 +25,18 @@ class SkillSection(BaseModel):
     skill_keywords: list[str] = Field(default_factory=list, description="Skill keywords")
 
 
+class SectionClassification(BaseModel):
+    """LLM section classification output."""
+
+    skills: list[str] = Field(default_factory=list)
+    experience: list[str] = Field(default_factory=list)
+    education: list[str] = Field(default_factory=list)
+    certifications: list[str] = Field(default_factory=list)
+    other: list[str] = Field(default_factory=list)
+
+    model_config = {"extra": "forbid"}
+
+
 class ExperienceItem(BaseModel):
     """Single experience item."""
 
