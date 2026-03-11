@@ -172,6 +172,8 @@ def test_parse_minimal_cv_skills(tmp_path: Path) -> None:
 
 def test_parse_cv__multipart_name__extracts_full_name() -> None:
     docx_path = FIXTURES_DIR / "curriculum_212255.docx"
+    if not docx_path.exists():
+        pytest.skip(f"Fixture not available: {docx_path}")
     parsed = parse_docx_bytes(docx_path.read_bytes(), 212255, filename=docx_path.name)
     assert parsed.metadata.full_name == "Giuseppe Alessandro DE BLASIO"
 
