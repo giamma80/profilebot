@@ -10,6 +10,7 @@ SECTION_PATTERNS: dict[str, list[str]] = {
     "skills": [
         r"(?i)^(competenze|skills?|technical skills?|conoscenze)",
         r"(?i)^(tecnologie|tools?|linguaggi|frameworks?)",
+        r"(?i)^(applicativi\s*(?:&|e)\s*tools?)",
         r"(?i)^(hard skills|soft skills|competenze tecniche)",
     ],
     "experience": [
@@ -24,6 +25,14 @@ SECTION_PATTERNS: dict[str, list[str]] = {
     "certifications": [
         r"(?i)^(certificazioni|certifications?|qualifiche)",
         r"(?i)^(attestati|corsi|training)",
+        r"(?i)^(certificati ufficiali)",
+    ],
+    "languages": [
+        r"(?i)^(lingua|lingue|languages?|competenze linguistiche)",
+    ],
+    "other": [
+        r"(?i)^(patente di guida|patenti)",
+        r"(?i)^(sommario|profilo|summary)",
     ],
 }
 

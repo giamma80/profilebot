@@ -34,6 +34,29 @@ def _collect_task_names(signature: Any) -> list[str]:
     return []
 
 
+def _find_signature_by_task(signature: Any, task_name: str) -> Any | None:
+    stack: list[Any] = [signature]
+    while stack:
+        current = stack.pop()
+        if current is None:
+            continue
+        if getattr(current, "task", None) == task_name:
+            return current
+        if isinstance(current, dict):
+            if current.get("task") == task_name:
+                return current
+            body = current.get("body")
+            tasks = current.get("tasks")
+        else:
+            body = getattr(current, "body", None)
+            tasks = getattr(current, "tasks", None)
+        if body is not None:
+            stack.append(body)
+        if isinstance(tasks, list):
+            stack.extend(tasks)
+    return None
+
+
 def test_build_canvas__linear_dependencies__creates_chain() -> None:
     definition = WorkflowDefinition(
         workflow_id="workflow",
@@ -87,34 +110,16 @@ def test_build_canvas__fanout_node__adds_fanout_kwargs() -> None:
     assert canvas.kwargs["fanout_parameter_name"] == "res_id"
 
 
-def test_build_canvas__workflow_includes_fanout_callback_params() -> None:
+def test_build_canvas__workflow_uses_fanout_task() -> None:
     definition = load_workflow(Path("config/workflows/res_id_workflow.yaml"))
 
     canvas = WorkflowRunner().build_canvas(definition)
 
-    assert canvas.task == "workflow.best_effort_group"
-    payload = canvas.kwargs.get("payload")
-    assert payload is not None
-    body = payload.get("body")
-    assert body is not None
+    assert "workflow.best_effort_group" not in _collect_task_names(canvas)
 
-    fanout_signature = None
-    tasks = getattr(body, "tasks", None)
-    if isinstance(tasks, list):
-        for task in tasks:
-            if getattr(task, "task", None) == "workflow.fanout_by_res_id":
-                fanout_signature = task
-                break
-    if fanout_signature is None and isinstance(body, dict):
-        if body.get("task") == "workflow.fanout_by_res_id":
-            fanout_signature = body
-        else:
-            nested_tasks = body.get("tasks")
-            if isinstance(nested_tasks, list):
-                for task in nested_tasks:
-                    if isinstance(task, dict) and task.get("task") == "workflow.fanout_by_res_id":
-                        fanout_signature = task
-                        break
+    fanout_signature = _find_signature_by_task(canvas, "workflow.fanout_by_res_id")
+    if fanout_signature is None and hasattr(canvas, "to_dict"):
+        fanout_signature = _find_signature_by_task(canvas.to_dict(), "workflow.fanout_by_res_id")
 
     assert fanout_signature is not None
     fanout_kwargs = getattr(fanout_signature, "kwargs", None)
@@ -122,6 +127,6 @@ def test_build_canvas__workflow_includes_fanout_callback_params() -> None:
         fanout_kwargs = fanout_signature.get("kwargs", {})
     if fanout_kwargs is None:
         fanout_kwargs = {}
-    options = fanout_kwargs.get("options", {})
-    assert options["callback_task"] == "embedding.index_from_scraper"
-    assert options["on_error_task"] == "workflow.log_failed_profiles"
+    assert fanout_kwargs["fanout_task"] == "ingestion.process_res_id"
+    options = fanout_kwargs.get("options") or {}
+    assert "callback_task" not in options

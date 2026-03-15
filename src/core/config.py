@@ -63,6 +63,10 @@ class Settings(BaseSettings):
         default=300,
         validation_alias="BEST_EFFORT_CHORD_MAX_WAIT_SECONDS",
     )
+    ingestion_api_base_url: str = Field(
+        default="http://localhost:8000",
+        validation_alias="INGESTION_API_BASE_URL",
+    )
     scraper_base_url: str = Field(
         default="",
         validation_alias="SCRAPER_BASE_URL",
