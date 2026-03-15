@@ -22,6 +22,7 @@ celery_app = Celery(
         "src.services.embedding.tasks",
         "src.services.availability.tasks",
         "src.services.scraper.tasks",
+        "src.services.ingestion.tasks",
         "src.services.workflows.tasks",
     ],
 )

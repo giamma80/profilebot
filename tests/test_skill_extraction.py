@@ -98,6 +98,20 @@ def test_extract_skills__logs_unknown_and_collects_results(extractor, caplog):
     assert "Unknown skill" in caplog.text
 
 
+def test_extract_skills__sentence_like_tokens_are_ignored(extractor, caplog):
+    caplog.set_level(logging.WARNING)
+    raw_skills = [
+        "Sono una persona analitica e logica con obiettivi specifici.",
+        "Python",
+    ]
+
+    result = extractor.extract_from_raw(cv_id="cv-sentence", raw_skills=raw_skills)
+
+    assert {skill.canonical for skill in result.normalized_skills} == {"python"}
+    assert result.unknown_skills == []
+    assert "Unknown skill" not in caplog.text
+
+
 def test_extract_skills__stats_percentages_are_consistent(extractor):
     # Arrange
     raw_skills = ["Python", "py", "Pythn", "xyz123"]

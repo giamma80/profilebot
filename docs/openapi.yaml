@@ -138,6 +138,33 @@ paths:
                 additionalProperties: true
                 type: object
                 title: Response Get Embedding Stats Api V1 Embeddings Stats Get
+  /api/v1/ingestion/res-id/{res_id}:
+    post:
+      tags:
+        - ingestion
+      summary: Ingest profile by res_id
+      description: Ingest a single profile end-to-end by res_id.
+      operationId: ingest_res_id_api_v1_ingestion_res_id__res_id__post
+      parameters:
+        - name: res_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            title: Res Id
+      responses:
+        "200":
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IngestionResponse"
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
   /api/v1/search/skills:
     post:
       tags:
@@ -512,6 +539,46 @@ components:
         - res_id
       title: EmbeddingItem
       description: Input item for embedding jobs.
+    IngestionResponse:
+      properties:
+        status:
+          type: string
+          enum:
+            - success
+            - skipped
+          title: Status
+        res_id:
+          type: integer
+          title: Res Id
+        cv_id:
+          anyOf:
+            - type: string
+            - type: "null"
+          title: Cv Id
+        totals:
+          anyOf:
+            - additionalProperties:
+                type: integer
+              type: object
+            - type: "null"
+          title: Totals
+        availability_cached:
+          type: boolean
+          title: Availability Cached
+        reskilling_cached:
+          type: boolean
+          title: Reskilling Cached
+        reason:
+          anyOf:
+            - type: string
+            - type: "null"
+          title: Reason
+      type: object
+      required:
+        - status
+        - res_id
+      title: IngestionResponse
+      description: Response payload for single res_id ingestion.
     HTTPValidationError:
       properties:
         detail:
@@ -809,5 +876,7 @@ tags:
     description: Ricerca profili per skill.
   - name: availability
     description: Gestione disponibilità e cache.
+  - name: ingestion
+    description: Ingestion atomica per profilo.
   - name: health
     description: Verifiche di stato e disponibilità.
