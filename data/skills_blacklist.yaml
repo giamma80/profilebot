@@ -17,6 +17,12 @@ exact:
   - "sommario"
   - "tech skills"
   - "linguaggi di programmazione"
+  - "applicativi & tools"
+  - "certificati ufficiali"
+  - "patente di guida"
+  - "nativo o bilingue"
+  - "competenza professionale completa"
+  - "madrelingua"
 
 patterns:
   - "^(?:[•\\-–—]\\s*)?ultimo aggiornamento\\b.*"
@@ -28,3 +34,6 @@ patterns:
   - "^(?:[•\\-–—]\\s*)?(descrizione|compiti|responsabilit[aà]|attivit[aà])\\b.*"
   - "^(?:[•\\-–—]\\s*)?(istruzione|formazione|informazioni personali|esperienza professionale|esperienze professionali|profilo|sommario)\\b.*"
   - "^(?:[•\\-–—]\\s*)?(strumenti|metodologia|metodologie)\\b.*"
+  - "^(?:[•\\-–—]\\s*)?patente di guida\\b.*"
+  - "^(?:[•\\-–—]\\s*)?(nativo|madrelingua|bilingue)\\b.*"
+  - "^(?:[•\\-–—]\\s*)?competenza professionale completa\\b.*"

@@ -101,12 +101,12 @@ def test_docx_parser__feature_flag_on__uses_llm(
 
     monkeypatch.setattr(docx_parser, "classify_sections", _fake_classify)
 
-    path = _make_docx(tmp_path, "12345_test.docx", ["Summary", "Skills", "Python"])
+    long_text = "experience " * 100
+    path = _make_docx(tmp_path, "12345_test.docx", ["Summary", long_text])
     parsed = parse_docx(path)
 
     assert called["value"] is True
-    assert parsed.skills is not None
-    assert "Python" in parsed.skills.raw_text
+    assert parsed.skills is None
     assert parsed.experiences
 
 
@@ -120,7 +120,8 @@ def test_docx_parser__llm_error__raises_parse_error(
 
     monkeypatch.setattr(docx_parser, "classify_sections", _raise)
 
-    path = _make_docx(tmp_path, "12345_test.docx", ["Skills", "Python"])
+    long_text = "experience " * 100
+    path = _make_docx(tmp_path, "12345_test.docx", ["Summary", long_text])
 
     with pytest.raises(CVParseError, match="LLM section classification failed"):
         parse_docx(path)

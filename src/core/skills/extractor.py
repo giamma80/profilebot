@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import re
 from collections.abc import Iterable
 from pathlib import Path
 
@@ -15,6 +16,10 @@ from src.core.skills.normalizer import SkillNormalizer
 from src.core.skills.schemas import NormalizedSkill, SkillExtractionResult
 
 logger = logging.getLogger(__name__)
+
+MIN_SENTENCE_WORDS = 8
+SENTENCE_LENGTH_THRESHOLD = 80
+BULLET_PREFIX_PATTERN = "^[•\\-\\u2013\\u2014]\\s*"
 
 
 class SkillExtractor:
@@ -74,8 +79,24 @@ class SkillExtractor:
 
                 normalized_skill = self._normalizer.normalize(token)
                 if normalized_skill is None:
-                    unknown.append(cleaned)
-                    logger.warning("Unknown skill: '%s' from CV '%s'", cleaned, cv_id)
+                    candidates = self._expand_candidates(token)
+                    matched = False
+                    for candidate in candidates:
+                        candidate_clean = self._clean(candidate)
+                        if not candidate_clean:
+                            continue
+                        if self._blacklist.is_blocked(candidate_clean):
+                            continue
+                        normalized_candidate = self._normalizer.normalize(candidate)
+                        if normalized_candidate is None:
+                            continue
+                        normalized.append(normalized_candidate)
+                        matched = True
+                    if not matched:
+                        if self._is_sentence_like(cleaned):
+                            continue
+                        unknown.append(cleaned)
+                        logger.warning("Unknown skill: '%s' from CV '%s'", cleaned, cv_id)
                 else:
                     normalized.append(normalized_skill)
 
@@ -109,6 +130,76 @@ class SkillExtractor:
     def _clean(text: str) -> str:
         """Normalize and trim raw skill text."""
         return text.strip().lower()
+
+    @staticmethod
+    def _is_sentence_like(text: str) -> bool:
+        words = text.split()
+        if len(words) < MIN_SENTENCE_WORDS:
+            return False
+        lowered = text.lower()
+        markers = (
+            "sono ",
+            "ho ",
+            "mi ",
+            "credo",
+            "definisco",
+            "ritengo",
+            "persona",
+            "capace",
+            "generalmente",
+            "posso",
+        )
+        if any(marker in lowered for marker in markers):
+            return True
+        if "." in text or ";" in text:
+            return True
+        return len(text) >= SENTENCE_LENGTH_THRESHOLD
+
+    @staticmethod
+    def _expand_candidates(text: str) -> list[str]:
+        cleaned = re.sub(BULLET_PREFIX_PATTERN, "", text).replace("\t", " ").strip()
+        if not cleaned:
+            return []
+        cleaned = cleaned.replace("(", ",").replace(")", ",")
+        cleaned = re.sub(r"\\s+", " ", cleaned)
+        parts = re.split(r"[,/;|]", cleaned)
+
+        candidates: list[str] = []
+        seen: set[str] = set()
+        for part in parts:
+            stripped = part.strip()
+            if not stripped:
+                continue
+            cleaned_part = SkillExtractor._strip_prefixes(stripped)
+            subparts = re.split(r"\\s+(?:e|ed|con|tramite|in|per|su)\\s+", cleaned_part)
+            for sub in subparts:
+                token = sub.strip().strip(".:")
+                if not token or token in seen:
+                    continue
+                seen.add(token)
+                candidates.append(token)
+        return candidates
+
+    @staticmethod
+    def _strip_prefixes(text: str) -> str:
+        prefixes = (
+            r"esperienza\\s+con",
+            r"utilizzo\\s+di",
+            r"uso\\s+di",
+            r"implementazione\\s+di",
+            r"sviluppo\\s+(?:backend|frontend)?\\s*(?:in|con)?",
+            r"testing\\s+automatico\\s+in",
+            r"ottimizzazione\\s+(?:delle|dei|del)?",
+            r"interrogazioni\\s+",
+            r"gestione\\s+di",
+            r"struttura\\s+e\\s+gestione",
+            r"database\\s+e\\s+gestione\\s+dati",
+            r"protocolli\\s+di\\s+comunicazione\\s+e\\s+integrazioni",
+            r"frontend\\s+e\\s+ui/ux",
+        )
+        for prefix in prefixes:
+            text = re.sub(rf"^(?:{prefix})\\s+", "", text, flags=re.IGNORECASE)
+        return text.strip()
 
 
 def _split_text_to_skills(text: str) -> list[str]:

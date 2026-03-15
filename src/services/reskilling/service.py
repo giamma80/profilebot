@@ -5,12 +5,16 @@ from __future__ import annotations
 import logging
 from collections.abc import Callable, Iterable
 
+import httpx
+
 from src.services.reskilling.cache import ReskillingCache
 from src.services.reskilling.normalizer import normalize_row_response
 from src.services.reskilling.schemas import ReskillingRecord, ReskillingStatus
 from src.services.scraper.client import ScraperClient
 
 logger = logging.getLogger(__name__)
+
+RESKILLING_NOT_FOUND_STATUS_CODE = 404
 
 
 class ReskillingService:
@@ -101,7 +105,14 @@ class ReskillingService:
         res_id: int,
         client: ScraperClient,
     ) -> ReskillingRecord | None:
-        payload = client.fetch_reskilling_row(res_id)
+        try:
+            payload = client.fetch_reskilling_row(res_id)
+        except httpx.HTTPStatusError as exc:
+            status_code = exc.response.status_code if exc.response is not None else None
+            if status_code == RESKILLING_NOT_FOUND_STATUS_CODE:
+                logger.info("Reskilling row not found for res_id %s", res_id)
+                return None
+            raise
         record = normalize_row_response(payload)
         if record is None:
             return None

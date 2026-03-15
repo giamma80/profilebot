@@ -29,6 +29,8 @@ from src.core.parser.section_detector import detect_sections
 
 logger = logging.getLogger(__name__)
 
+MIN_RAW_TEXT_LEN_FOR_LLM_FALLBACK = 200
+
 
 class CVParseError(Exception):
     """Raised when a CV cannot be parsed."""
@@ -181,32 +183,96 @@ class DocxParser:
             elif isinstance(child, CT_Tbl):
                 yield Table(child, document)
 
+    @staticmethod
+    def _summarize_section_lines(lines: list[str]) -> dict[str, int | str]:
+        count = len(lines)
+        preview_items = [line.strip() for line in lines if line.strip()][:3]
+        preview = " | ".join(preview_items)
+        return {"count": count, "preview": preview}
+
+    def _log_sections_summary(self, source: str, sections: ParsedSections) -> None:
+        skills_summary = self._summarize_section_lines(sections.skills)
+        experience_summary = self._summarize_section_lines(sections.experience)
+        education_summary = self._summarize_section_lines(sections.education)
+        certifications_summary = self._summarize_section_lines(sections.certifications)
+        logger.warning(
+            "cv_sections_detected",
+            extra={
+                "source": source,
+                "skills": skills_summary,
+                "experience": experience_summary,
+                "education": education_summary,
+                "certifications": certifications_summary,
+            },
+        )
+        logger.warning(
+            "cv_sections_detected source=%s skills=%d(%s) experience=%d(%s) education=%d(%s) certifications=%d(%s)",
+            source,
+            skills_summary["count"],
+            skills_summary["preview"],
+            experience_summary["count"],
+            experience_summary["preview"],
+            education_summary["count"],
+            education_summary["preview"],
+            certifications_summary["count"],
+            certifications_summary["preview"],
+        )
+
     def _extract_sections(self, lines: list[str], raw_text: str) -> ParsedSections:
         """Detect and group content into sections."""
         settings = get_settings()
-        if settings.llm_section_classification_enabled:
-            try:
-                classified = classify_sections(lines, raw_text)
-            except SectionClassificationError as exc:
-                logger.error("LLM section classification failed: %s", exc)
-                raise CVParseError("LLM section classification failed") from exc
-            return ParsedSections(
-                skills=classified.skills,
-                experience=classified.experience,
-                education=classified.education,
-                certifications=classified.certifications,
-                raw_text=raw_text,
-            )
-
         detected = detect_sections(lines)
-
-        return ParsedSections(
+        heuristic_sections = ParsedSections(
             skills=detected.get("skills", []),
             experience=detected.get("experience", []),
             education=detected.get("education", []),
             certifications=detected.get("certifications", []),
             raw_text=raw_text,
         )
+        self._log_sections_summary("heuristic", heuristic_sections)
+
+        if not settings.llm_section_classification_enabled:
+            return heuristic_sections
+
+        raw_text_len = len(raw_text.strip()) if raw_text else 0
+        missing_skills = not heuristic_sections.skills
+        missing_experience = not heuristic_sections.experience
+        if raw_text_len <= MIN_RAW_TEXT_LEN_FOR_LLM_FALLBACK or not (
+            missing_skills or missing_experience
+        ):
+            return heuristic_sections
+
+        missing_sections: list[str] = []
+        if missing_skills:
+            missing_sections.append("skills")
+        if missing_experience:
+            missing_sections.append("experience")
+        logger.warning(
+            "LLM fallback enabled for sections %s (raw_text_len=%d)",
+            missing_sections,
+            raw_text_len,
+        )
+
+        try:
+            classified = classify_sections(lines, raw_text)
+        except SectionClassificationError as exc:
+            logger.error("LLM section classification failed: %s", exc)
+            raise CVParseError("LLM section classification failed") from exc
+
+        detected_skills = detected.get("skills", [])
+        skills = detected_skills if detected_skills else []
+        if not detected_skills and classified.skills:
+            logger.warning("LLM skills ignored because no explicit skills section was detected")
+
+        parsed_sections = ParsedSections(
+            skills=skills,
+            experience=heuristic_sections.experience or classified.experience,
+            education=heuristic_sections.education or classified.education,
+            certifications=heuristic_sections.certifications or classified.certifications,
+            raw_text=raw_text,
+        )
+        self._log_sections_summary("llm_fallback", parsed_sections)
+        return parsed_sections
 
     def _log_parse_result(
         self, parsed: ParsedCV, sections: ParsedSections, start_time: float
