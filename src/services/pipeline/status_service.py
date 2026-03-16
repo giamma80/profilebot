@@ -88,6 +88,7 @@ class PipelineStatusService:
         """Return a snapshot of the pipeline status from live sources."""
         warnings: list[str] = []
         failed_sources, failed_count, last_run_at = 0, 0, None
+        indexed_count: int = 0
 
         try:
             count_result = self._qdrant_client.count(
@@ -100,7 +101,6 @@ class PipelineStatusService:
         except Exception as exc:  # pragma: no cover - defensive for external client
             logger.warning("Qdrant count failed: %s", exc)
             warnings.append("Qdrant unavailable")
-            indexed_count = 0
             failed_sources += 1
 
         if self._redis_client is None:
