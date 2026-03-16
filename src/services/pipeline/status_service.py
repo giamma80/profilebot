@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from typing import Literal, Protocol
+from typing import Literal, Protocol, cast
 
 import redis
 from celery import Celery
@@ -31,6 +31,10 @@ class RedisClient(Protocol):
     def llen(self, key: str) -> int: ...
 
     def get(self, key: str) -> str | None: ...
+
+
+class CountResult(Protocol):
+    count: int
 
 
 @dataclass(frozen=True)
@@ -89,10 +93,10 @@ class PipelineStatusService:
             count_result = self._qdrant_client.count(
                 collection_name=self._collection_name,
             )
-            try:
-                indexed_count = int(count_result.count)
-            except AttributeError:
-                indexed_count = int(count_result)
+            if isinstance(count_result, int):
+                indexed_count = count_result
+            else:
+                indexed_count = cast(CountResult, count_result).count
         except Exception as exc:  # pragma: no cover - defensive for external client
             logger.warning("Qdrant count failed: %s", exc)
             warnings.append("Qdrant unavailable")
