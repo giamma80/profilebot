@@ -143,7 +143,6 @@ services:
     env_file: .env
     command:
       - --config.file=/etc/alertmanager/alertmanager.yml
-      - --config.expand-env
       - --log.level=info
     networks:
       - profilebot

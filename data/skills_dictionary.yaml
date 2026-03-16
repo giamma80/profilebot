@@ -110,7 +110,7 @@ skills:
   data_analysis:
     canonical: "data-analysis"
     domain: "ai"
-    aliases: ["data analysis"]
+    aliases: ["analisi dati", "bi testing", "data analysis", "query optimization"]
     related: []
   data_analytics:
     canonical: "data-analytics"
@@ -255,7 +255,7 @@ skills:
   ml:
     canonical: "ml"
     domain: "ai"
-    aliases: ["machine learning"]
+    aliases: ["machine learning", "supervised learning", "unsupervised learning"]
     related: []
   mlflow:
     canonical: "mlflow"
@@ -482,6 +482,7 @@ skills:
         "arm assembly",
         "asm",
         "assembler 8086",
+        "assembler arm",
         "assembler mips",
         "assembly",
         "mips",
@@ -515,7 +516,23 @@ skills:
         "shell / bash",
         "shell script",
         "shell scripting",
+        "unix shell scripts",
       ]
+    related: []
+  awk:
+    canonical: "awk"
+    domain: "backend"
+    aliases: []
+    related: []
+  dao:
+    canonical: "dao"
+    domain: "backend"
+    aliases: []
+    related: []
+  pascal:
+    canonical: "pascal"
+    domain: "backend"
+    aliases: ["borland turbo pascal"]
     related: []
   batch_scripting:
     canonical: "batch-scripting"
@@ -575,8 +592,23 @@ skills:
   cobol:
     canonical: "cobol"
     domain: "backend"
-    aliases: ["as400 cobol"]
+    aliases: ["as400 cobol", "ibm 3270", "jcl", "jcp"]
     related: []
+  abap:
+    canonical: "abap"
+    domain: "backend"
+    aliases: []
+    related: []
+  ada:
+    canonical: "ada"
+    domain: "backend"
+    aliases: []
+    related: []
+  jax_rs:
+    canonical: "jax-rs"
+    domain: "backend"
+    aliases: ["jax-rs"]
+    related: ["java"]
   codeigniter:
     canonical: "codeigniter"
     domain: "backend"
@@ -585,7 +617,7 @@ skills:
   cpp:
     canonical: "cpp"
     domain: "backend"
-    aliases: ["c++", "dev-c++"]
+    aliases: ["c++", "c++ standard template library (stl)", "dev-c++", "visual c++"]
     related: []
   credit_cards:
     canonical: "credit-cards"
@@ -1644,7 +1676,7 @@ skills:
   activemq:
     canonical: "activemq"
     domain: "data"
-    aliases: []
+    aliases: ["apache activemq"]
     related: []
   airflow:
     canonical: "airflow"
@@ -1881,10 +1913,15 @@ skills:
     domain: "data"
     aliases: []
     related: []
+  r:
+    canonical: "r"
+    domain: "data"
+    aliases: ["r programming language"]
+    related: []
   powerbi:
     canonical: "powerbi"
     domain: "data"
-    aliases: ["power bi"]
+    aliases: ["ms powerbi", "power bi"]
     related: ["bi"]
   prefect:
     canonical: "prefect"
@@ -2037,6 +2074,11 @@ skills:
     canonical: "databricks"
     domain: "database"
     aliases: []
+    related: []
+  datastage:
+    canonical: "datastage"
+    domain: "data"
+    aliases: ["ibm infosphere datastage"]
     related: []
   datagrip:
     canonical: "datagrip"
@@ -2878,6 +2920,11 @@ skills:
     domain: "frontend"
     aliases: []
     related: ["javascript", "html", "css"]
+  axios:
+    canonical: "axios"
+    domain: "frontend"
+    aliases: []
+    related: ["javascript"]
   alpinejs:
     canonical: "alpinejs"
     domain: "frontend"
@@ -2980,7 +3027,7 @@ skills:
   jquery:
     canonical: "jquery"
     domain: "frontend"
-    aliases: ["j query"]
+    aliases: ["j query", "jquery ui"]
     related: ["javascript"]
   material_ui:
     canonical: "material-ui"
@@ -3138,11 +3185,17 @@ skills:
     aliases: []
     related: []
 
+  ux_ui_design:
+    canonical: "ux-ui-design"
+    domain: "frontend"
+    aliases: ["adobe after effects", "detailed design in ux ui", "detailed design in ux/ui", "responsive web design", "ui design", "usability testing", "ux design", "ux ui", "ux/ui", "ux/ui design"]
+    related: []
+
   # Governance
   agile:
     canonical: "agile"
     domain: "governance"
-    aliases: ["agile software development"]
+    aliases: ["agile software development", "use case modelling", "user stories"]
     related: []
   bpmn:
     canonical: "bpmn"
@@ -3163,6 +3216,26 @@ skills:
     canonical: "clean-architecture"
     domain: "governance"
     aliases: ["clean architecture"]
+    related: []
+  software_architecture:
+    canonical: "software-architecture"
+    domain: "governance"
+    aliases: ["ssd", "state diagrams", "use case diagram (ssd)"]
+    related: []
+  basic_design:
+    canonical: "basic-design"
+    domain: "governance"
+    aliases: ["basic design", "detailed design"]
+    related: []
+  model_based_design:
+    canonical: "model-based-design"
+    domain: "governance"
+    aliases: ["model based design"]
+    related: []
+  model_driven_architecture:
+    canonical: "model-driven-architecture"
+    domain: "governance"
+    aliases: ["mda"]
     related: []
   cobit:
     canonical: "cobit"
@@ -3287,7 +3360,7 @@ skills:
   pmp:
     canonical: "pmp"
     domain: "governance"
-    aliases: ["project management"]
+    aliases: ["project management", "technical team leadership: coordinamento di piccoli team", "technical team leadership: coordinamento di piccoli team'"]
     related: []
   prince2:
     canonical: "prince2"
@@ -3313,6 +3386,11 @@ skills:
     canonical: "requirements-engineering"
     domain: "governance"
     aliases: ["requirements engineering"]
+    related: []
+  requirements_analysis:
+    canonical: "requirements-analysis"
+    domain: "governance"
+    aliases: ["analisi dei requisiti", "requirements analysis"]
     related: []
   requirements_management:
     canonical: "requirements-management"
@@ -3352,7 +3430,7 @@ skills:
   risk_analysis:
     canonical: "risk-analysis"
     domain: "governance"
-    aliases: ["risk analysis"]
+    aliases: ["risk analysis", "risk assessments"]
     related: []
   root_cause_analysis:
     canonical: "root-cause-analysis"
@@ -3377,7 +3455,7 @@ skills:
   six_sigma:
     canonical: "six-sigma"
     domain: "governance"
-    aliases: ["six sigma"]
+    aliases: ["5s methodology", "8s methodology", "dmaic", "six sigma"]
     related: []
   software_development:
     canonical: "software-development"
@@ -3397,7 +3475,7 @@ skills:
   uml:
     canonical: "uml"
     domain: "governance"
-    aliases: []
+    aliases: ["activity diagram", "use case diagram"]
     related: []
   v_model:
     canonical: "v-model"
@@ -3407,7 +3485,7 @@ skills:
   waterfall:
     canonical: "waterfall"
     domain: "governance"
-    aliases: []
+    aliases: ["waterfall method"]
     related: []
   xp:
     canonical: "xp"
@@ -3439,12 +3517,27 @@ skills:
   arduino:
     canonical: "arduino"
     domain: "hardware"
-    aliases: ["arduino mega", "arduino uno"]
+    aliases: ["arduino ide", "arduino mega", "arduino uno"]
     related: []
   arm:
     canonical: "arm"
     domain: "hardware"
     aliases: ["arm cortex"]
+    related: []
+  cuda:
+    canonical: "cuda"
+    domain: "hardware"
+    aliases: []
+    related: []
+  microchip_pic:
+    canonical: "microchip-pic"
+    domain: "hardware"
+    aliases: ["microchip pic"]
+    related: []
+  m68000:
+    canonical: "m68000"
+    domain: "hardware"
+    aliases: ["68000"]
     related: []
   arm7:
     canonical: "arm7"
@@ -3454,7 +3547,7 @@ skills:
   avr:
     canonical: "avr"
     domain: "hardware"
-    aliases: ["atmega", "attiny"]
+    aliases: ["atmega", "atmel atmega", "attiny"]
     related: []
   beaglebone:
     canonical: "beaglebone"
@@ -3777,6 +3870,26 @@ skills:
     related: []
 
   # Network
+  access_network:
+    canonical: "access-network"
+    domain: "network"
+    aliases: ["access network"]
+    related: []
+  bittorrent:
+    canonical: "bittorrent"
+    domain: "network"
+    aliases: []
+    related: []
+  load_balancer:
+    canonical: "load-balancer"
+    domain: "network"
+    aliases: ["load balancers"]
+    related: []
+  sockets:
+    canonical: "sockets"
+    domain: "network"
+    aliases: []
+    related: []
   amqp:
     canonical: "amqp"
     domain: "network"
@@ -3850,7 +3963,7 @@ skills:
   firewall:
     canonical: "firewall"
     domain: "network"
-    aliases: []
+    aliases: ["linux-firewall"]
     related: []
   ftp:
     canonical: "ftp"
@@ -3912,6 +4025,16 @@ skills:
     domain: "network"
     aliases: []
     related: []
+  ipv4:
+    canonical: "ipv4"
+    domain: "network"
+    aliases: []
+    related: ["ip"]
+  ipv6:
+    canonical: "ipv6"
+    domain: "network"
+    aliases: []
+    related: ["ip"]
   lan:
     canonical: "lan"
     domain: "network"
@@ -3920,7 +4043,7 @@ skills:
   ldap:
     canonical: "ldap"
     domain: "network"
-    aliases: ["lightweight directory access protocol"]
+    aliases: ["ldap database", "lightweight directory access protocol"]
     related: []
   lora_protocol:
     canonical: "lora-protocol"
@@ -3955,7 +4078,7 @@ skills:
   network_protocols:
     canonical: "network-protocols"
     domain: "network"
-    aliases: ["network protocols", "reti & protocolli"]
+    aliases: ["network protocols", "networking", "reti & protocolli"]
     related: []
   ntp:
     canonical: "ntp"
@@ -4120,7 +4243,7 @@ skills:
   wifi:
     canonical: "wifi"
     domain: "network"
-    aliases: ["wi fi", "wi-fi", "wireless", "wlan"]
+    aliases: ["access point", "wi fi", "wi-fi", "wireless", "wlan"]
     related: []
   wsdl:
     canonical: "wsdl"
@@ -4157,7 +4280,14 @@ skills:
   elasticsearch:
     canonical: "elasticsearch"
     domain: "observability"
-    aliases: ["elastic", "elastic search"]
+    aliases:
+      [
+        "elastic",
+        "elastic search",
+        "elk",
+        "elasticsearch stack",
+        "elasticsearch-elk stack",
+      ]
     related: ["search"]
   elk:
     canonical: "elk"
@@ -4334,12 +4464,12 @@ skills:
   gentoo:
     canonical: "gentoo"
     domain: "os"
-    aliases: []
+    aliases: ["gentoo linux"]
     related: []
   ios:
     canonical: "ios"
     domain: "os"
-    aliases: ["iphone"]
+    aliases: ["iphone", "iphone os"]
     related: []
   ipados:
     canonical: "ipados"
@@ -4359,7 +4489,7 @@ skills:
   macos:
     canonical: "macos"
     domain: "os"
-    aliases: ["mac os", "mac os x", "osx"]
+    aliases: ["apple macintosh", "mac os", "mac os x", "macintosh", "osx"]
     related: []
   manjaro:
     canonical: "manjaro"
@@ -4461,6 +4591,16 @@ skills:
     domain: "os"
     aliases: []
     related: []
+  hp_ux:
+    canonical: "hp-ux"
+    domain: "os"
+    aliases: ["hp-ux"]
+    related: []
+  blackberry_os:
+    canonical: "blackberry-os"
+    domain: "os"
+    aliases: ["blackberry os"]
+    related: []
   vxworks:
     canonical: "vxworks"
     domain: "os"
@@ -4474,7 +4614,7 @@ skills:
   windows:
     canonical: "windows"
     domain: "os"
-    aliases: ["open windows", "windows 10", "windows 11"]
+    aliases: ["open windows", "windows 10", "windows 11", "windows nt", "windows vista", "windows xp"]
     related: []
   windows_2000:
     canonical: "windows-2000"
@@ -4489,7 +4629,7 @@ skills:
   windows_phone:
     canonical: "windows-phone"
     domain: "os"
-    aliases: ["windows phone"]
+    aliases: ["windows 10 mobile", "windows phone"]
     related: ["windows"]
   windows_server:
     canonical: "windows-server"
@@ -4633,6 +4773,11 @@ skills:
     domain: "platforms"
     aliases: []
     related: []
+  as400:
+    canonical: "as400"
+    domain: "platforms"
+    aliases: ["ibm as/400"]
+    related: []
   mendix:
     canonical: "mendix"
     domain: "platforms"
@@ -4653,12 +4798,32 @@ skills:
     domain: "platforms"
     aliases:
       [
+        "excel",
+        "excel object model",
+        "libreoffice",
+        "microsoft excel",
         "microsoft office",
+        "microsoft outlook",
+        "microsoft powerpoint",
+        "microsoft word",
+        "ms excel",
         "ms office",
         "ms office 365",
+        "ms outlook",
+        "ms powerpoint",
+        "ms word",
         "office 365",
+        "openoffice",
+        "outlook",
         "pacchetto office",
+        "powerpoint",
+        "word",
       ]
+    related: []
+  ms_project:
+    canonical: "ms-project"
+    domain: "platforms"
+    aliases: ["microsoft project", "ms project"]
     related: []
   n8n:
     canonical: "n8n"
@@ -4777,6 +4942,11 @@ skills:
     related: []
 
   # Qa
+  acceptance_testing:
+    canonical: "acceptance-testing"
+    domain: "qa"
+    aliases: ["acceptance testing", "user acceptance testing", "uat"]
+    related: ["testing"]
   appium:
     canonical: "appium"
     domain: "qa"
@@ -4950,8 +5120,13 @@ skills:
   qc:
     canonical: "qc"
     domain: "qa"
-    aliases: ["quality control"]
+    aliases: ["controllo qualità", "quality control"]
     related: []
+  quality_assurance:
+    canonical: "quality-assurance"
+    domain: "qa"
+    aliases: ["assicurazione qualità", "audit plans", "batch release", "capa", "corrective action plans", "continuous quality improvement", "data integrity", "hardware testing", "internal audits", "process validation", "qa validation", "quality assurance", "quality kpi", "quality management system", "qualificazione / validazione"]
+    related: ["testing"]
   rest_assured:
     canonical: "rest-assured"
     domain: "qa"
@@ -4967,6 +5142,11 @@ skills:
     domain: "qa"
     aliases: ["selenium webdriver"]
     related: ["testing"]
+  silk_performer:
+    canonical: "silk-performer"
+    domain: "qa"
+    aliases: ["silk performer"]
+    related: ["testing"]
   soapui:
     canonical: "soapui"
     domain: "qa"
@@ -4977,6 +5157,11 @@ skills:
     domain: "qa"
     aliases: ["software testing"]
     related: []
+  system_testing:
+    canonical: "system-testing"
+    domain: "qa"
+    aliases: ["system testing"]
+    related: ["testing"]
   specflow:
     canonical: "specflow"
     domain: "qa"
@@ -5005,7 +5190,7 @@ skills:
   testing:
     canonical: "testing"
     domain: "qa"
-    aliases: ["test", "qa"]
+    aliases: ["test", "test analysis", "qa"]
     related: ["pytest", "selenium"]
   testlink:
     canonical: "testlink"
@@ -5316,6 +5501,66 @@ skills:
     domain: "standards"
     aliases: ["iec 62304"]
     related: []
+  ascii:
+    canonical: "ascii"
+    domain: "standards"
+    aliases: []
+    related: []
+  eu_mdr_2017_745:
+    canonical: "eu-mdr-2017-745"
+    domain: "standards"
+    aliases: ["eu mdr 2017 /745"]
+    related: []
+  iso13485:
+    canonical: "iso13485"
+    domain: "standards"
+    aliases: ["iso 13485"]
+    related: ["iso"]
+  iso14971:
+    canonical: "iso14971"
+    domain: "standards"
+    aliases: ["iso 14971"]
+    related: ["iso"]
+  do_254:
+    canonical: "do-254"
+    domain: "standards"
+    aliases: ["do 254"]
+    related: []
+  cfr_part_11:
+    canonical: "21-cfr-part-11"
+    domain: "standards"
+    aliases: ["21 cfr part 11"]
+    related: []
+  haccp:
+    canonical: "haccp"
+    domain: "standards"
+    aliases: []
+    related: []
+  autosar:
+    canonical: "autosar"
+    domain: "standards"
+    aliases: []
+    related: []
+  ema:
+    canonical: "ema"
+    domain: "standards"
+    aliases: ["ema (european medicines agency)"]
+    related: []
+  iec_60601:
+    canonical: "iec-60601"
+    domain: "standards"
+    aliases: ["iec 60601"]
+    related: []
+  misra_c:
+    canonical: "misra-c"
+    domain: "standards"
+    aliases: ["misra c"]
+    related: []
+  eec_93_42:
+    canonical: "93-42-eec"
+    domain: "standards"
+    aliases: ["93/42/eec"]
+    related: []
   iso:
     canonical: "iso"
     domain: "standards"
@@ -5473,11 +5718,6 @@ skills:
     domain: "telecom"
     aliases: []
     related: []
-  i2c:
-    canonical: "i2c"
-    domain: "telecom"
-    aliases: []
-    related: []
   j1939:
     canonical: "j1939"
     domain: "telecom"
@@ -5593,6 +5833,66 @@ skills:
     domain: "telecom"
     aliases: []
     related: []
+  arinc_429:
+    canonical: "arinc-429"
+    domain: "telecom"
+    aliases: ["arinc 429"]
+    related: []
+  bts:
+    canonical: "bts"
+    domain: "telecom"
+    aliases: []
+    related: []
+  flexray:
+    canonical: "flexray"
+    domain: "telecom"
+    aliases: []
+    related: []
+  i2c:
+    canonical: "i2c"
+    domain: "telecom"
+    aliases: ["i²c"]
+    related: []
+  mimo:
+    canonical: "mimo"
+    domain: "telecom"
+    aliases: []
+    related: []
+  roaming:
+    canonical: "roaming"
+    domain: "telecom"
+    aliases: []
+    related: []
+  wimax:
+    canonical: "wimax"
+    domain: "telecom"
+    aliases: []
+    related: []
+  circuit_switch:
+    canonical: "circuit-switch"
+    domain: "telecom"
+    aliases: ["circuit switch"]
+    related: []
+  coaxial_cable:
+    canonical: "coaxial-cable"
+    domain: "telecom"
+    aliases: ["coaxial cable"]
+    related: []
+  hdlc:
+    canonical: "hdlc"
+    domain: "telecom"
+    aliases: []
+    related: []
+  i2s:
+    canonical: "i2s"
+    domain: "telecom"
+    aliases: []
+    related: []
+  uds:
+    canonical: "uds"
+    domain: "telecom"
+    aliases: ["uds (obd-2)"]
+    related: []
   usb:
     canonical: "usb"
     domain: "telecom"
@@ -5620,10 +5920,80 @@ skills:
     domain: "tools"
     aliases: ["adobe xd"]
     related: []
+  adobe_indesign:
+    canonical: "adobe-indesign"
+    domain: "tools"
+    aliases: ["adobe indesign"]
+    related: []
+  adobe_premiere:
+    canonical: "adobe-premiere"
+    domain: "tools"
+    aliases: ["adobe premiere"]
+    related: []
+  ant:
+    canonical: "ant"
+    domain: "tools"
+    aliases: []
+    related: []
+  apache_poi:
+    canonical: "apache-poi"
+    domain: "tools"
+    aliases: ["apache poi"]
+    related: []
+  arcgis:
+    canonical: "arcgis"
+    domain: "tools"
+    aliases: []
+    related: []
+  doxygen:
+    canonical: "doxygen"
+    domain: "tools"
+    aliases: []
+    related: []
+  eagle:
+    canonical: "eagle"
+    domain: "tools"
+    aliases: []
+    related: []
+  lotus_notes:
+    canonical: "lotus-notes"
+    domain: "tools"
+    aliases: ["lotus notes"]
+    related: []
+  marc_mentat:
+    canonical: "marc-mentat"
+    domain: "tools"
+    aliases: ["marc/mentat"]
+    related: []
+  multisim:
+    canonical: "multisim"
+    domain: "tools"
+    aliases: []
+    related: []
+  nuget:
+    canonical: "nuget"
+    domain: "tools"
+    aliases: ["nuget package manager"]
+    related: []
+  opengl:
+    canonical: "opengl"
+    domain: "tools"
+    aliases: []
+    related: []
+  testcomplete:
+    canonical: "testcomplete"
+    domain: "qa"
+    aliases: []
+    related: ["testing"]
+  vivado_design_suite:
+    canonical: "vivado-design-suite"
+    domain: "tools"
+    aliases: ["vivado design suite"]
+    related: []
   ansys:
     canonical: "ansys"
     domain: "tools"
-    aliases: []
+    aliases: ["ansys fluent"]
     related: []
   asana:
     canonical: "asana"
@@ -5638,7 +6008,22 @@ skills:
   autocad:
     canonical: "autocad"
     domain: "tools"
-    aliases: []
+    aliases: ["autocad electrical", "autocad mechanical"]
+    related: []
+  autodesk_inventor:
+    canonical: "autodesk-inventor"
+    domain: "tools"
+    aliases: ["autodesk inventor", "inventor"]
+    related: []
+  fusion_360:
+    canonical: "fusion-360"
+    domain: "tools"
+    aliases: ["fusion 360"]
+    related: []
+  solid_edge:
+    canonical: "solid-edge"
+    domain: "tools"
+    aliases: ["solid edge"]
     related: []
   bazel:
     canonical: "bazel"
@@ -5660,10 +6045,135 @@ skills:
     domain: "tools"
     aliases: []
     related: []
+  bmc_ars:
+    canonical: "bmc-ars"
+    domain: "tools"
+    aliases: ["bmc ars"]
+    related: []
+  cadence:
+    canonical: "cadence"
+    domain: "tools"
+    aliases: []
+    related: []
+  canoe:
+    canonical: "canoe"
+    domain: "tools"
+    aliases: []
+    related: []
+  capl:
+    canonical: "capl"
+    domain: "tools"
+    aliases: []
+    related: []
+  javadoc:
+    canonical: "javadoc"
+    domain: "tools"
+    aliases: []
+    related: []
+  ladder_diagram:
+    canonical: "ladder-diagram"
+    domain: "tools"
+    aliases: ["ladder diagram (ld)"]
+    related: []
+  mantis:
+    canonical: "mantis"
+    domain: "tools"
+    aliases: []
+    related: []
+  minitab:
+    canonical: "minitab"
+    domain: "tools"
+    aliases: []
+    related: []
+  pdm_plm:
+    canonical: "pdm-plm"
+    domain: "tools"
+    aliases: ["pdm/plm"]
+    related: []
+  polarion:
+    canonical: "polarion"
+    domain: "tools"
+    aliases: []
+    related: []
+  azure_api_management:
+    canonical: "azure-api-management"
+    domain: "platforms"
+    aliases: ["microsoft azure api management"]
+    related: []
+  remedy_itsm:
+    canonical: "remedy-itsm"
+    domain: "tools"
+    aliases: ["remedy itsm"]
+    related: []
+  serena_dimensions:
+    canonical: "serena-dimensions"
+    domain: "tools"
+    aliases: ["serena dimensions"]
+    related: []
+  siemens_teamcenter:
+    canonical: "siemens-teamcenter"
+    domain: "tools"
+    aliases: ["siemens teamcenter"]
+    related: []
+  codesys:
+    canonical: "codesys"
+    domain: "tools"
+    aliases: []
+    related: []
+  stateflow:
+    canonical: "stateflow"
+    domain: "tools"
+    aliases: []
+    related: []
+  sequential_function_chart:
+    canonical: "sequential-function-chart"
+    domain: "tools"
+    aliases: ["sequential function chart (sfc)"]
+    related: []
   canalyzer:
     canonical: "canalyzer"
     domain: "tools"
     aliases: []
+    related: []
+  fem:
+    canonical: "fem"
+    domain: "tools"
+    aliases: ["finite element method", "finite element method (fem)"]
+    related: []
+  ltspice:
+    canonical: "ltspice"
+    domain: "tools"
+    aliases: ["ltspice iv"]
+    related: []
+  nastran:
+    canonical: "nastran"
+    domain: "tools"
+    aliases: ["nastran/patran", "patran"]
+    related: []
+  orcad:
+    canonical: "orcad"
+    domain: "tools"
+    aliases: []
+    related: []
+  pspice:
+    canonical: "pspice"
+    domain: "tools"
+    aliases: []
+    related: []
+  simcenter_star_ccm:
+    canonical: "simcenter-star-ccm"
+    domain: "tools"
+    aliases: ["simcenter star ccm+"]
+    related: []
+  abaqus:
+    canonical: "abaqus"
+    domain: "tools"
+    aliases: []
+    related: []
+  altium_designer:
+    canonical: "altium-designer"
+    domain: "tools"
+    aliases: ["altium designer"]
     related: []
   candela_studio:
     canonical: "candela-studio"
@@ -5870,6 +6380,11 @@ skills:
     domain: "tools"
     aliases: ["brew"]
     related: []
+  xpath:
+    canonical: "xpath"
+    domain: "tools"
+    aliases: []
+    related: []
   hyper_mesh:
     canonical: "hyper-mesh"
     domain: "tools"
@@ -5884,6 +6399,11 @@ skills:
     canonical: "inkscape"
     domain: "tools"
     aliases: []
+    related: []
+  internet_explorer:
+    canonical: "internet-explorer"
+    domain: "tools"
+    aliases: ["internet explorer"]
     related: []
   intellij:
     canonical: "intellij"
@@ -5908,7 +6428,7 @@ skills:
   jira:
     canonical: "jira"
     domain: "tools"
-    aliases: ["atlassian jira", "jira service desk"]
+    aliases: ["atlassian jira", "jira service desk", "jira software"]
     related: []
   kicad:
     canonical: "kicad"
@@ -6143,12 +6663,12 @@ skills:
   siemens_nx:
     canonical: "siemens-nx"
     domain: "tools"
-    aliases: ["siemens nx"]
+    aliases: ["nx for design", "siemens nx"]
     related: []
   simulink:
     canonical: "simulink"
     domain: "tools"
-    aliases: []
+    aliases: ["matlab simulink"]
     related: []
   sketch:
     canonical: "sketch"
@@ -6168,7 +6688,7 @@ skills:
   sourcetree:
     canonical: "sourcetree"
     domain: "tools"
-    aliases: ["source tree"]
+    aliases: ["atlassian source tree", "source tree"]
     related: ["git"]
   sphinx:
     canonical: "sphinx"
@@ -6188,7 +6708,7 @@ skills:
   svn:
     canonical: "svn"
     domain: "tools"
-    aliases: ["subversion"]
+    aliases: ["subversion", "tortoisesvn"]
     related: ["git"]
   systemd:
     canonical: "systemd"
@@ -6223,7 +6743,7 @@ skills:
   unity:
     canonical: "unity"
     domain: "tools"
-    aliases: []
+    aliases: ["unity3d"]
     related: []
   unreal:
     canonical: "unreal"
@@ -6243,12 +6763,12 @@ skills:
   visio:
     canonical: "visio"
     domain: "tools"
-    aliases: ["microsoft visio"]
+    aliases: ["microsoft visio", "ms visio"]
     related: []
   visual_studio:
     canonical: "visual-studio"
     domain: "tools"
-    aliases: ["ms visual studio", "visual studio"]
+    aliases: ["ms visual studio", "visual studio", "visual studio 2019"]
     related: []
   vmware:
     canonical: "vmware"
@@ -6263,7 +6783,7 @@ skills:
   webstorm:
     canonical: "webstorm"
     domain: "tools"
-    aliases: ["web storm"]
+    aliases: ["jetbrains webstorm", "web storm"]
     related: []
   winscp:
     canonical: "winscp"

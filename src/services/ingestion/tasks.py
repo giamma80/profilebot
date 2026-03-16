@@ -39,6 +39,7 @@ def ingestion_process_res_id_task(self, *, res_id: int) -> dict[str, Any]:
     if not res_id:
         return {"status": "skipped", "reason": "missing res_id", "res_id": res_id}
 
+    settings = get_settings()
     base_url = _ensure_ingestion_base_url()
     if not base_url:
         return {
@@ -49,7 +50,7 @@ def ingestion_process_res_id_task(self, *, res_id: int) -> dict[str, Any]:
 
     url = f"{base_url}/api/v1/ingestion/res-id/{res_id}"
     try:
-        with httpx.Client(timeout=60.0) as client:
+        with httpx.Client(timeout=settings.ingestion_api_timeout) as client:
             response = client.post(url)
             response.raise_for_status()
             payload: dict[str, Any] | None = None

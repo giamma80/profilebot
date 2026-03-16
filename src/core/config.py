@@ -67,6 +67,10 @@ class Settings(BaseSettings):
         default="http://localhost:8000",
         validation_alias="INGESTION_API_BASE_URL",
     )
+    ingestion_api_timeout: float = Field(
+        default=60.0,
+        validation_alias="INGESTION_API_TIMEOUT",
+    )
     scraper_base_url: str = Field(
         default="",
         validation_alias="SCRAPER_BASE_URL",

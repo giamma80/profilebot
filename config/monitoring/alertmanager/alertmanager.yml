@@ -10,13 +10,13 @@ route:
   routes:
     - matchers:
         - priority="P1"
-      receiver: "slack-p1"
+      receiver: "log-only"
       group_wait: 10s
       group_interval: 2m
       repeat_interval: 1h
     - matchers:
         - priority="P2"
-      receiver: "slack-p2"
+      receiver: "log-only"
       group_wait: 1m
       group_interval: 15m
       repeat_interval: 2h
@@ -25,19 +25,5 @@ route:
       receiver: "log-only"
 
 receivers:
-  - name: "slack-p1"
-    slack_configs:
-      - channel: "#profilebot-alerts"
-        send_resolved: true
-        api_url: ${SLACK_WEBHOOK_URL}
-        title: "[P1] {{ .CommonLabels.alertname }}"
-        text: "{{ .CommonAnnotations.summary }}\n{{ .CommonAnnotations.description }}"
-  - name: "slack-p2"
-    slack_configs:
-      - channel: "#profilebot-alerts"
-        send_resolved: true
-        api_url: ${SLACK_WEBHOOK_URL}
-        title: "[P2] {{ .CommonLabels.alertname }}"
-        text: "{{ .CommonAnnotations.summary }}\n{{ .CommonAnnotations.description }}"
   - name: "log-only"
     webhook_configs: []
