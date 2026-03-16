@@ -29,11 +29,12 @@ from src.core.llm.schemas import DecisionCandidate, DecisionOutput, LLMRequest
 logger = logging.getLogger(__name__)
 
 
-def create_llm_client(settings: Settings) -> OpenAI | AzureOpenAI:
+def create_llm_client(settings: Settings, *, timeout: float | None = None) -> OpenAI | AzureOpenAI:
     """Create an OpenAI-compatible client based on configured provider.
 
     Args:
         settings: Application settings.
+        timeout: Optional client timeout in seconds.
 
     Returns:
         OpenAI-compatible client instance.
@@ -49,17 +50,20 @@ def create_llm_client(settings: Settings) -> OpenAI | AzureOpenAI:
             azure_endpoint=settings.llm_base_url or "",
             api_key=settings.llm_api_key,
             api_version=api_version,
+            timeout=timeout,
         )
 
     if provider == "ollama":
         return OpenAI(
             base_url=settings.llm_base_url or "http://localhost:11434/v1",
             api_key="ollama",
+            timeout=timeout,
         )
 
     # provider == "openai" (default)
     return OpenAI(
         api_key=os.getenv("OPENAI_API_KEY"),
+        timeout=timeout,
     )
 
 

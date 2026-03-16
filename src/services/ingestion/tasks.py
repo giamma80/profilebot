@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import logging
+from datetime import UTC, datetime
 from typing import Any
 
 import httpx
+import redis
 from celery.exceptions import MaxRetriesExceededError
 
 from src.core.config import get_settings
@@ -16,6 +18,8 @@ logger = logging.getLogger(__name__)
 RETRY_COUNTDOWN = 60
 SERVER_ERROR_STATUS_CODE = 500
 INGESTION_DLQ_QUEUE = "ingestion.dlq"
+PIPELINE_FAILED_COUNT_KEY = "pipeline:failed_count"
+PIPELINE_LAST_RUN_AT_KEY = "pipeline:last_run_at"
 
 
 def _ensure_ingestion_base_url() -> str | None:
@@ -25,6 +29,28 @@ def _ensure_ingestion_base_url() -> str | None:
         logger.warning("INGESTION_API_BASE_URL not configured")
         return None
     return base_url
+
+
+def _get_pipeline_redis_client() -> redis.Redis | None:
+    settings = get_settings()
+    try:
+        return redis.from_url(settings.celery_result_backend, decode_responses=True)
+    except (redis.RedisError, ValueError) as exc:
+        logger.warning("Pipeline metadata Redis unavailable: %s", exc)
+        return None
+
+
+def _record_pipeline_run(*, success: bool) -> None:
+    client = _get_pipeline_redis_client()
+    if client is None:
+        return
+    try:
+        now = datetime.now(UTC).isoformat()
+        client.set(PIPELINE_LAST_RUN_AT_KEY, now)
+        if not success:
+            client.incr(PIPELINE_FAILED_COUNT_KEY)
+    except redis.RedisError as exc:
+        logger.warning("Failed to update pipeline metadata: %s", exc)
 
 
 @celery_app.task(
@@ -56,6 +82,7 @@ def ingestion_process_res_id_task(self, *, res_id: int) -> dict[str, Any]:
             payload: dict[str, Any] | None = None
             if response.content:
                 payload = response.json()
+        _record_pipeline_run(success=True)
         return {"status": "success", "res_id": res_id, "response": payload}
     except httpx.RequestError as exc:
         logger.warning("Ingestion API request failed for res_id %s: %s", res_id, exc)
@@ -72,6 +99,7 @@ def ingestion_process_res_id_task(self, *, res_id: int) -> dict[str, Any]:
                 queue=INGESTION_DLQ_QUEUE,
             )
             logger.error("Ingestion API exceeded retries for res_id %s", res_id)
+            _record_pipeline_run(success=False)
             raise retry_exc from exc
     except httpx.HTTPStatusError as exc:
         status_code = exc.response.status_code if exc.response is not None else None
@@ -90,7 +118,9 @@ def ingestion_process_res_id_task(self, *, res_id: int) -> dict[str, Any]:
                     queue=INGESTION_DLQ_QUEUE,
                 )
                 logger.error("Ingestion API exceeded retries for res_id %s", res_id)
+                _record_pipeline_run(success=False)
                 raise retry_exc from exc
+        _record_pipeline_run(success=False)
         return {
             "status": "failed",
             "res_id": res_id,
