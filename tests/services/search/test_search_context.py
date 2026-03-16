@@ -32,7 +32,7 @@ def test_extract_search_context__llm_response__returns_parsed_context(
         _chat_completion_raw,
     )
 
-    result = extract_search_context("cerco un senior python disponibile")
+    result = extract_search_context("cerco un senior python disponibile", client=object())
 
     assert result is not None
     assert result.extracted_skills == ["python", "fastapi"]
@@ -70,7 +70,7 @@ def test_extract_search_context__llm_timeout__uses_fallback(
         _fallback,
     )
 
-    result = extract_search_context("senior python backend")
+    result = extract_search_context("senior python backend", client=object())
 
     assert result is not None
     assert result.extracted_skills == ["python"]
