@@ -607,7 +607,7 @@ skills:
   jax_rs:
     canonical: "jax-rs"
     domain: "backend"
-    aliases: ["jax-rs"]
+    aliases: []
     related: ["java"]
   codeigniter:
     canonical: "codeigniter"
@@ -4594,7 +4594,7 @@ skills:
   hp_ux:
     canonical: "hp-ux"
     domain: "os"
-    aliases: ["hp-ux"]
+    aliases: []
     related: []
   blackberry_os:
     canonical: "blackberry-os"
