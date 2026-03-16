@@ -883,6 +883,26 @@ skills:
     domain: "backend"
     aliases: ["laravel php framework"]
     related: []
+  laravel_sanctum:
+    canonical: "laravel-sanctum"
+    domain: "backend"
+    aliases: ["laravel sanctum", "sanctum"]
+    related: ["laravel"]
+  spatie_laravel_permission:
+    canonical: "spatie-laravel-permission"
+    domain: "backend"
+    aliases:
+      [
+        "spatie laravel role",
+        "spatie laravel role permission",
+        "spatie laravel permission",
+      ]
+    related: ["laravel"]
+  blade:
+    canonical: "blade"
+    domain: "frontend"
+    aliases: ["laravel blade", "blade templates"]
+    related: ["laravel"]
   less:
     canonical: "less"
     domain: "backend"

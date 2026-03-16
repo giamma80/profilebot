@@ -7,14 +7,17 @@ from src.services.ingestion.errors import (
     NormalizationError,
     ValidationError,
 )
+from src.services.ingestion.profile_service import IngestionOutcome, ProfileIngestionService
 from src.services.ingestion.schemas import IngestionMetadata, NormalizedDocument
 
 __all__ = [
     "FetchError",
     "IngestionError",
     "IngestionMetadata",
+    "IngestionOutcome",
     "IngestionSource",
     "NormalizationError",
     "NormalizedDocument",
+    "ProfileIngestionService",
     "ValidationError",
 ]

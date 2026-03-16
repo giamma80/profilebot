@@ -34,6 +34,10 @@ app = FastAPI(
             "description": "Gestione disponibilità e cache.",
         },
         {
+            "name": "ingestion",
+            "description": "Ingestion atomica per profilo.",
+        },
+        {
             "name": "health",
             "description": "Verifiche di stato e disponibilità.",
         },

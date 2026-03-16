@@ -1,7 +1,7 @@
 version: 1
 workflow_id: res_id_ingestion
 schedule: "0 */4 * * *"
-best_effort_chord: true
+best_effort_chord: false
 min_success_ratio: 0.8
 
 nodes:
@@ -11,14 +11,9 @@ nodes:
   - id: inside_fanout
     task: workflow.fanout_by_res_id
     depends_on: [fetch_res_ids]
-    params:
-      options:
-        callback_task: embedding.index_from_scraper
-        on_error_task: workflow.log_failed_profiles
-        min_success_ratio: 0.8
     fanout:
       source: redis:profilebot:scraper:inside:res_ids
-      task: scraper.refresh_inside_profile
+      task: ingestion.process_res_id
       parameter_name: res_id
 
   - id: export_availability

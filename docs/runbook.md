@@ -112,6 +112,18 @@ Chiave Redis: `profilebot:freshness:{res_id}`.
 2. Se serve forzare re-ingestion, cancellare la chiave: `redis-cli DEL profilebot:freshness:{res_id}`.
 3. Controllare eventuali failure a monte prima di rimuovere il gate.
 
+## Ingestion API (per-res_id)
+Endpoint: `POST /api/v1/ingestion/res-id/{res_id}`.  
+Usato dai task Celery di fanout (`ingestion.process_res_id`) per l’ingestion atomica del singolo profilo.
+
+**Config:**
+- `INGESTION_API_BASE_URL` (default `http://localhost:8000`)
+- `SCRAPER_BASE_URL` deve essere configurato, altrimenti l’endpoint risponde `503`.
+
+**Failure mode:**
+- Errori 5xx/timeout: retry automatico.
+- Superati i retry: task in DLQ `ingestion.process_res_id_dlq` (queue `ingestion.dlq`).
+
 ## LLM Section Classification
 La classificazione LLM delle sezioni CV è disattivata di default.  
 Feature flag: `LLM_SECTION_CLASSIFICATION_ENABLED` (default `false`).  
