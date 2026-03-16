@@ -5,12 +5,15 @@ from __future__ import annotations
 import os
 import re
 from pathlib import Path
+from typing import Literal, cast
 
 from src.core.skills.dictionary import load_skill_dictionary
 from src.core.skills.normalizer import SkillNormalizer
 from src.services.search.schemas import SearchContext
 
 TOKEN_RE = re.compile(r"[A-Za-z0-9#+./-]+")
+
+SeniorityLiteral = Literal["junior", "mid", "senior", "lead"]
 
 SENIORITY_KEYWORDS = {
     "junior": "junior",
@@ -100,13 +103,13 @@ def _extract_skills(query: str) -> list[str]:
     return extracted
 
 
-def _extract_seniority(query: str) -> str | None:
+def _extract_seniority(query: str) -> SeniorityLiteral | None:
     if not query:
         return None
     tokens = _tokenize(query)
     for token in tokens:
         if token in SENIORITY_KEYWORDS:
-            return SENIORITY_KEYWORDS[token]
+            return cast(SeniorityLiteral, SENIORITY_KEYWORDS[token])
     return None
 
 

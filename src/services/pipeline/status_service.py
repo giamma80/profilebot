@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from typing import Protocol
+from typing import Literal, Protocol
 
 import redis
 from celery import Celery
@@ -24,6 +24,7 @@ DEFAULT_INSPECT_TIMEOUT = 3.0
 PIPELINE_FAILED_COUNT_KEY = "pipeline:failed_count"
 PIPELINE_LAST_RUN_AT_KEY = "pipeline:last_run_at"
 TOTAL_SOURCES = 3
+StatusLiteral = Literal["healthy", "degraded", "error"]
 
 
 class RedisClient(Protocol):
@@ -82,15 +83,16 @@ class PipelineStatusService:
     def get_status(self) -> PipelineStatusResult:
         """Return a snapshot of the pipeline status from live sources."""
         warnings: list[str] = []
-        failed_sources = 0
-        failed_count = 0
-        last_run_at = None
+        failed_sources, failed_count, last_run_at = 0, 0, None
 
         try:
             count_result = self._qdrant_client.count(
                 collection_name=self._collection_name,
             )
-            indexed_count = int(getattr(count_result, "count", count_result))
+            try:
+                indexed_count = int(count_result.count)
+            except AttributeError:
+                indexed_count = int(count_result)
         except Exception as exc:  # pragma: no cover - defensive for external client
             logger.warning("Qdrant count failed: %s", exc)
             warnings.append("Qdrant unavailable")
@@ -147,7 +149,7 @@ class PipelineStatusService:
         return PipelineStatusResult(response=response, failed_sources=failed_sources)
 
 
-def _resolve_status(failed_sources: int) -> str:
+def _resolve_status(failed_sources: int) -> StatusLiteral:
     if failed_sources == 0:
         return "healthy"
     if failed_sources >= TOTAL_SOURCES:
