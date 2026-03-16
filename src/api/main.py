@@ -38,6 +38,10 @@ app = FastAPI(
             "description": "Ingestion atomica per profilo.",
         },
         {
+            "name": "profiles",
+            "description": "Dati di profilo e percorsi di reskilling.",
+        },
+        {
             "name": "health",
             "description": "Verifiche di stato e disponibilità.",
         },

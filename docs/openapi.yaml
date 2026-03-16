@@ -325,6 +325,33 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/AvailabilityTasksResponse"
+  /api/v1/profiles/{res_id}/reskilling:
+    get:
+      tags:
+        - profiles
+      summary: Ottieni reskilling per res_id
+      description: Return reskilling record for a given res_id.
+      operationId: get_reskilling_api_v1_profiles__res_id__reskilling_get
+      parameters:
+        - name: res_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            title: Res Id
+      responses:
+        "200":
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReskillingResponse"
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
   /health:
     get:
       tags:
@@ -523,6 +550,59 @@ components:
         - unavailable
       title: AvailabilityStatus
       description: Supported availability states.
+    ReskillingStatus:
+      type: string
+      enum:
+        - in_progress
+        - completed
+        - planned
+      title: ReskillingStatus
+      description: Supported reskilling course statuses.
+    ReskillingResponse:
+      properties:
+        res_id:
+          type: integer
+          title: Res Id
+        course_name:
+          type: string
+          title: Course Name
+        skill_target:
+          anyOf:
+            - type: string
+            - type: "null"
+          title: Skill Target
+        status:
+          $ref: "#/components/schemas/ReskillingStatus"
+        start_date:
+          anyOf:
+            - type: string
+            - type: "null"
+          title: Start Date
+        end_date:
+          anyOf:
+            - type: string
+            - type: "null"
+          title: End Date
+        provider:
+          anyOf:
+            - type: string
+            - type: "null"
+          title: Provider
+        completion_pct:
+          anyOf:
+            - type: integer
+              minimum: 0.0
+              maximum: 100.0
+            - type: "null"
+          title: Completion Pct
+      additionalProperties: false
+      type: object
+      required:
+        - res_id
+        - course_name
+        - status
+      title: ReskillingResponse
+      description: Response payload for a single reskilling record.
     EmbeddingItem:
       properties:
         cv_path:
@@ -878,5 +958,7 @@ tags:
     description: Gestione disponibilità e cache.
   - name: ingestion
     description: Ingestion atomica per profilo.
+  - name: profiles
+    description: Dati di profilo e percorsi di reskilling.
   - name: health
     description: Verifiche di stato e disponibilità.
