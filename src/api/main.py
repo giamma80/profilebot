@@ -42,6 +42,10 @@ app = FastAPI(
             "description": "Dati di profilo e percorsi di reskilling.",
         },
         {
+            "name": "pipeline",
+            "description": "Monitoraggio pipeline ingestion.",
+        },
+        {
             "name": "health",
             "description": "Verifiche di stato e disponibilità.",
         },

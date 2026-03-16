@@ -9,6 +9,8 @@ from fastapi import APIRouter, HTTPException, status
 
 from src.api.v1.schemas import ProfileMatch, SearchMetadata, SkillSearchRequest, SkillSearchResponse
 from src.services.search.multi_layer import multi_layer_search
+from src.services.search.search_context import extract_search_context
+from src.services.search.search_context_fallback import build_fallback_search_context
 from src.services.search.skill_search import ProfileMatch as ServiceProfileMatch
 from src.services.search.skill_search import SearchFilters as ServiceSearchFilters
 
@@ -33,6 +35,12 @@ def search_profiles_by_skills(request: SkillSearchRequest) -> SkillSearchRespons
             seniority=request.filters.seniority,
             availability=request.filters.availability,
         )
+
+    if request.query:
+        search_context = extract_search_context(request.query)
+    else:
+        search_context = build_fallback_search_context(" ".join(request.skills))
+        search_context = search_context.model_copy(update={"raw_query": None})
 
     def _map_matches(matches: list[ServiceProfileMatch] | None) -> list[ProfileMatch] | None:
         if matches is None:
@@ -81,4 +89,5 @@ def search_profiles_by_skills(request: SkillSearchRequest) -> SkillSearchRespons
         no_match_reason=response.no_match_reason,
         fusion_strategy=response.fusion_strategy,
         search_metadata=_map_metadata(response.search_metadata),
+        search_context=search_context,
     )

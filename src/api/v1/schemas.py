@@ -4,7 +4,12 @@ from __future__ import annotations
 
 from pydantic import BaseModel, Field, field_validator
 
+from src.services.pipeline import schemas as pipeline_schemas
+from src.services.search import schemas as search_schemas
 from src.utils.normalization import normalize_string_list
+
+PipelineStatusResponse = pipeline_schemas.PipelineStatusResponse
+SearchContext = search_schemas.SearchContext
 
 
 class SearchFilters(BaseModel):
@@ -54,6 +59,7 @@ class SkillSearchRequest(BaseModel):
     """Request payload for skill search."""
 
     skills: list[str] = Field(..., min_length=1)
+    query: str | None = None
     filters: SearchFilters | None = None
     limit: int = Field(default=10, ge=0)
     offset: int = Field(default=0, ge=0)
@@ -114,5 +120,6 @@ class SkillSearchResponse(BaseModel):
     no_match_reason: str | None = None
     fusion_strategy: str | None = None
     search_metadata: SearchMetadata | None = None
+    search_context: SearchContext | None = None
 
     model_config = {"extra": "ignore"}

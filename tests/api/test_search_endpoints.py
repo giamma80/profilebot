@@ -9,6 +9,7 @@ from pydantic import ValidationError
 
 from src.api.main import app
 from src.api.v1.schemas import SearchFilters as ApiSearchFilters
+from src.services.search.schemas import SearchContext
 from src.services.search.skill_search import (
     ProfileMatch,
 )
@@ -21,6 +22,25 @@ from src.services.search.skill_search import (
 @pytest.fixture()
 def client() -> TestClient:
     return TestClient(app)
+
+
+@pytest.fixture(autouse=True)
+def _mock_search_context(monkeypatch: pytest.MonkeyPatch) -> None:
+    def _extract_search_context(_: str) -> SearchContext:
+        return SearchContext(
+            extracted_skills=["python"],
+            seniority="senior",
+            availability_required=True,
+            domain="backend",
+            role=None,
+            business_context=None,
+            raw_query="python",
+        )
+
+    monkeypatch.setattr(
+        "src.api.v1.search.extract_search_context",
+        _extract_search_context,
+    )
 
 
 def test_search_skills__valid_request__returns_ranked_results(
@@ -51,6 +71,7 @@ def test_search_skills__valid_request__returns_ranked_results(
         "/api/v1/search/skills",
         json={
             "skills": ["Python", "FastAPI"],
+            "query": "cerco un senior python per progetto banking",
             "filters": {"skill_domains": ["backend"], "seniority": ["senior"]},
             "limit": 10,
             "offset": 0,
@@ -63,6 +84,7 @@ def test_search_skills__valid_request__returns_ranked_results(
     assert payload["results"][0]["res_id"] == 1001
     assert payload["results"][0]["matched_skills"] == ["python", "fastapi"]
     assert payload["query_time_ms"] == 42
+    assert payload["search_context"]["seniority"] == "senior"
 
 
 def test_search_skills__passes_filters_to_service(
@@ -86,6 +108,7 @@ def test_search_skills__passes_filters_to_service(
         "/api/v1/search/skills",
         json={
             "skills": ["python"],
+            "query": "mid python backend",
             "filters": {
                 "res_ids": [1001, 1002],
                 "skill_domains": ["backend"],
@@ -114,7 +137,7 @@ def test_search_skills__service_validation_error__returns_400(
 
     response = client.post(
         "/api/v1/search/skills",
-        json={"skills": ["python"]},
+        json={"skills": ["python"], "query": "python"},
     )
 
     assert response.status_code == 400
@@ -139,7 +162,12 @@ def test_search_skills__performance__returns_under_threshold(
     start = time.perf_counter()
     response = client.post(
         "/api/v1/search/skills",
-        json={"skills": ["python", "fastapi", "postgresql"], "limit": 10, "offset": 0},
+        json={
+            "skills": ["python", "fastapi", "postgresql"],
+            "query": "python fastapi postgresql",
+            "limit": 10,
+            "offset": 0,
+        },
     )
     elapsed_ms = (time.perf_counter() - start) * 1000
 

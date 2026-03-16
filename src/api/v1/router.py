@@ -9,6 +9,7 @@ from src.api.v1.embeddings import router as embeddings_router
 from src.api.v1.ingestion import router as ingestion_router
 from src.api.v1.job_match import router as job_match_router
 from src.api.v1.metrics import router as metrics_router
+from src.api.v1.pipeline_status import router as pipeline_status_router
 from src.api.v1.reskilling import router as reskilling_router
 from src.api.v1.search import router as search_router
 
@@ -19,4 +20,5 @@ router.include_router(search_router)
 router.include_router(availability_router)
 router.include_router(job_match_router)
 router.include_router(reskilling_router)
+router.include_router(pipeline_status_router)
 router.include_router(metrics_router)
