@@ -179,6 +179,13 @@ def test_process_cv__upsert_counts__includes_all_collections() -> None:
     assert len(calls) == 3
 
 
+def test_process_cv__upsert_uses_wait_false() -> None:
+    _, calls = _run_pipeline_for_upsert()
+
+    waits = [call.kwargs["wait"] for call in calls]
+    assert all(wait is False for wait in waits)
+
+
 def test_process_cv__upsert_payloads__include_skills_fields() -> None:
     _, calls = _run_pipeline_for_upsert()
 

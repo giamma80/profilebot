@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import time
 from collections.abc import Iterable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
@@ -228,6 +229,7 @@ def test_pipeline_complete__fetch_fanout_best_effort_embed_search(
     assert embed_result["status"] == "completed"
     assert embed_result["processed"] == len(res_ids)
 
+    time.sleep(0.2)  # eventual consistency — tipicamente < 100ms
     dependencies = SearchDependencies(
         qdrant_client=fake_qdrant,
         embedding_service=DummyEmbeddingService(),
