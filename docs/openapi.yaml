@@ -152,6 +152,13 @@ paths:
           schema:
             type: integer
             title: Res Id
+        - name: force
+          in: query
+          required: false
+          schema:
+            type: boolean
+            title: Force
+            default: false
       responses:
         "200":
           description: Successful Response
@@ -159,6 +166,33 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/IngestionResponse"
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /api/v1/ingestion/status/{res_id}:
+    get:
+      tags:
+        - ingestion
+      summary: Stato ingestion per res_id
+      description: "last_ingested_at riflette l'ultimo run della pipeline, non lo specifico res_id; granularità per-res_id prevista in sprint successivo."
+      operationId: get_ingestion_status_api_v1_ingestion_status__res_id__get
+      parameters:
+        - name: res_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            title: Res Id
+      responses:
+        "200":
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IngestionStatusResponse"
         "422":
           description: Validation Error
           content:
@@ -733,6 +767,31 @@ components:
         - res_id
       title: IngestionResponse
       description: Response payload for single res_id ingestion.
+    IngestionStatusResponse:
+      properties:
+        res_id:
+          type: integer
+          title: Res Id
+        last_ingested_at:
+          anyOf:
+            - type: string
+              format: date-time
+            - type: "null"
+          title: Last Ingested At
+        is_fresh:
+          type: boolean
+          title: Is Fresh
+        staleness_seconds:
+          anyOf:
+            - type: integer
+            - type: "null"
+          title: Staleness Seconds
+      type: object
+      required:
+        - res_id
+        - is_fresh
+      title: IngestionStatusResponse
+      description: "Response payload for ingestion status by res_id. Note: last_ingested_at reflects the last pipeline run, not the specific res_id; per-res_id granularity planned in a subsequent sprint."
     HTTPValidationError:
       properties:
         detail:

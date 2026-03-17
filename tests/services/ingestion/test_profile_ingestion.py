@@ -163,6 +163,34 @@ def test_ingest_res_id__freshness_skips_pipeline() -> None:
     assert scraper.downloaded == []
 
 
+def test_ingest_res_id__force_bypasses_freshness() -> None:
+    scraper = DummyScraperClient(b"docx")
+    pipeline = DummyPipeline()
+    gate = DummyGate(is_fresh=True)
+    service = ProfileIngestionService(
+        dependencies=ProfileIngestionDependencies(
+            scraper_client_factory=cast(Callable[[], ScraperClient], lambda: scraper),
+            parser=_parser,
+            extractor=cast(SkillExtractor, DummyExtractor()),
+            pipeline=cast(EmbeddingPipeline, pipeline),
+            freshness_gate=cast(FreshnessGate, gate),
+            availability_service=cast(
+                AvailabilityService, DummyAvailabilityService(available=False)
+            ),
+            reskilling_service=cast(ReskillingService, DummyReskillingService(available=False)),
+        )
+    )
+
+    outcome = service.ingest_res_id(10, force=True)
+
+    assert outcome.status == "success"
+    assert gate.released == [10]
+    assert gate.acquired == [10]
+    assert scraper.refreshed == [10]
+    assert scraper.downloaded == [10]
+    assert pipeline.calls == [10]
+
+
 def test_ingest_res_id__invalid_res_id_raises() -> None:
     service = ProfileIngestionService(
         dependencies=ProfileIngestionDependencies(

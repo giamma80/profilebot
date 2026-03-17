@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import time
 from datetime import UTC, datetime
 from typing import Any
 
@@ -20,6 +21,25 @@ SERVER_ERROR_STATUS_CODE = 500
 INGESTION_DLQ_QUEUE = "ingestion.dlq"
 PIPELINE_FAILED_COUNT_KEY = "pipeline:failed_count"
 PIPELINE_LAST_RUN_AT_KEY = "pipeline:last_run_at"
+
+
+def _log_ingestion_complete(
+    *,
+    res_id: int,
+    start_time: float,
+    status: str,
+    error_type: str | None,
+) -> None:
+    duration_ms = int((time.perf_counter() - start_time) * 1000)
+    logger.info(
+        "ingestion.complete",
+        extra={
+            "res_id": res_id,
+            "duration_ms": duration_ms,
+            "status": status,
+            "error_type": error_type,
+        },
+    )
 
 
 def _ensure_ingestion_base_url() -> str | None:
@@ -60,14 +80,27 @@ def _record_pipeline_run(*, success: bool) -> None:
     retry_backoff=True,
     retry_backoff_max=120,
 )
-def ingestion_process_res_id_task(self, *, res_id: int) -> dict[str, Any]:
+def ingestion_process_res_id_task(self, *, res_id: int, force: bool = False) -> dict[str, Any]:
     """Call the ingestion API for a single res_id."""
+    start_time = time.perf_counter()
     if not res_id:
+        _log_ingestion_complete(
+            res_id=res_id,
+            start_time=start_time,
+            status="skipped",
+            error_type="missing_res_id",
+        )
         return {"status": "skipped", "reason": "missing res_id", "res_id": res_id}
 
     settings = get_settings()
     base_url = _ensure_ingestion_base_url()
     if not base_url:
+        _log_ingestion_complete(
+            res_id=res_id,
+            start_time=start_time,
+            status="skipped",
+            error_type="config_missing",
+        )
         return {
             "status": "skipped",
             "reason": "INGESTION_API_BASE_URL not configured",
@@ -75,17 +108,30 @@ def ingestion_process_res_id_task(self, *, res_id: int) -> dict[str, Any]:
         }
 
     url = f"{base_url}/api/v1/ingestion/res-id/{res_id}"
+    params = {"force": "true"} if force else None
     try:
         with httpx.Client(timeout=settings.ingestion_api_timeout) as client:
-            response = client.post(url)
+            response = client.post(url, params=params)
             response.raise_for_status()
             payload: dict[str, Any] | None = None
             if response.content:
                 payload = response.json()
         _record_pipeline_run(success=True)
+        _log_ingestion_complete(
+            res_id=res_id,
+            start_time=start_time,
+            status="success",
+            error_type=None,
+        )
         return {"status": "success", "res_id": res_id, "response": payload}
     except httpx.RequestError as exc:
         logger.warning("Ingestion API request failed for res_id %s: %s", res_id, exc)
+        _log_ingestion_complete(
+            res_id=res_id,
+            start_time=start_time,
+            status="retrying",
+            error_type=type(exc).__name__,
+        )
         try:
             raise self.retry(exc=exc, countdown=RETRY_COUNTDOWN) from exc
         except MaxRetriesExceededError as retry_exc:
@@ -100,11 +146,23 @@ def ingestion_process_res_id_task(self, *, res_id: int) -> dict[str, Any]:
             )
             logger.error("Ingestion API exceeded retries for res_id %s", res_id)
             _record_pipeline_run(success=False)
+            _log_ingestion_complete(
+                res_id=res_id,
+                start_time=start_time,
+                status="dlq",
+                error_type=type(exc).__name__,
+            )
             raise retry_exc from exc
     except httpx.HTTPStatusError as exc:
         status_code = exc.response.status_code if exc.response is not None else None
         logger.warning("Ingestion API HTTP error for res_id %s: %s", res_id, exc)
         if status_code is not None and status_code >= SERVER_ERROR_STATUS_CODE:
+            _log_ingestion_complete(
+                res_id=res_id,
+                start_time=start_time,
+                status="retrying",
+                error_type=type(exc).__name__,
+            )
             try:
                 raise self.retry(exc=exc, countdown=RETRY_COUNTDOWN) from exc
             except MaxRetriesExceededError as retry_exc:
@@ -119,8 +177,20 @@ def ingestion_process_res_id_task(self, *, res_id: int) -> dict[str, Any]:
                 )
                 logger.error("Ingestion API exceeded retries for res_id %s", res_id)
                 _record_pipeline_run(success=False)
+                _log_ingestion_complete(
+                    res_id=res_id,
+                    start_time=start_time,
+                    status="dlq",
+                    error_type=type(exc).__name__,
+                )
                 raise retry_exc from exc
         _record_pipeline_run(success=False)
+        _log_ingestion_complete(
+            res_id=res_id,
+            start_time=start_time,
+            status="failed",
+            error_type=type(exc).__name__,
+        )
         return {
             "status": "failed",
             "res_id": res_id,

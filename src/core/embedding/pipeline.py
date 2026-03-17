@@ -85,7 +85,7 @@ class EmbeddingPipeline:
             skill_result=skill_result,
             created_at=created_at,
         )
-        chunk_points = build_chunk_points(parsed_cv, self._embedding_service)
+        chunk_points = build_chunk_points(parsed_cv, self._embedding_service, created_at)
 
         total_points = len(skills_points) + len(experience_points) + len(chunk_points)
         if total_points == 0:
@@ -251,6 +251,7 @@ class EmbeddingPipeline:
             "dictionary_version": skill_result.dictionary_version,
             "total_experience_years": years_experience_estimate,
             "created_at": created_at,
+            "ingested_at": created_at,
             "full_name": parsed_cv.metadata.full_name,
             "current_role": parsed_cv.metadata.current_role,
             "weighted_skills": weighted_skills,
@@ -302,6 +303,7 @@ class EmbeddingPipeline:
                     "related_skills": related_skills,
                     "experience_years": _calc_experience_years(experience),
                     "created_at": created_at,
+                    "ingested_at": created_at,
                 }
                 points.append(models.PointStruct(id=point_id, vector=vector, payload=payload))
 

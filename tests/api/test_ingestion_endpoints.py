@@ -19,7 +19,7 @@ def test_ingest_res_id__service_success__returns_payload(
         scraper_base_url = "https://scraper"
 
     class DummyService:
-        def ingest_res_id(self, res_id: int) -> IngestionOutcome:
+        def ingest_res_id(self, res_id: int, *, force: bool = False) -> IngestionOutcome:
             return IngestionOutcome(
                 status="success",
                 res_id=res_id,
@@ -47,6 +47,38 @@ def test_ingest_res_id__service_success__returns_payload(
     assert payload["reskilling_cached"] is False
 
 
+def test_ingest_res_id__force_query_param__passes_to_service(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    class DummySettings:
+        scraper_base_url = "https://scraper"
+
+    class DummyService:
+        last_force: bool | None = None
+
+        def ingest_res_id(self, res_id: int, *, force: bool = False) -> IngestionOutcome:
+            DummyService.last_force = force
+            return IngestionOutcome(
+                status="success",
+                res_id=res_id,
+                cv_id="cv-123",
+                totals=None,
+                availability_cached=False,
+                reskilling_cached=False,
+            )
+
+    def _get_settings() -> DummySettings:
+        return DummySettings()
+
+    monkeypatch.setattr("src.api.v1.ingestion.get_settings", _get_settings)
+    monkeypatch.setattr("src.api.v1.ingestion.ProfileIngestionService", DummyService)
+
+    response = client.post("/api/v1/ingestion/res-id/10?force=true")
+
+    assert response.status_code == 200
+    assert DummyService.last_force is True
+
+
 def test_ingest_res_id__scraper_base_url_missing__returns_503(
     client: TestClient, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -71,7 +103,7 @@ def test_ingest_res_id__invalid_res_id__returns_400(
         scraper_base_url = "https://scraper"
 
     class DummyService:
-        def ingest_res_id(self, res_id: int) -> IngestionOutcome:
+        def ingest_res_id(self, res_id: int, *, force: bool = False) -> IngestionOutcome:
             raise ValueError("res_id must be a positive integer")
 
     def _get_settings() -> DummySettings:

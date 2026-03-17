@@ -71,11 +71,12 @@ class ProfileIngestionService:
         self._availability_service = deps.availability_service or AvailabilityService()
         self._reskilling_service = deps.reskilling_service or ReskillingService()
 
-    def ingest_res_id(self, res_id: int) -> IngestionOutcome:
+    def ingest_res_id(self, res_id: int, *, force: bool = False) -> IngestionOutcome:
         """Ingest a single profile by res_id.
 
         Args:
             res_id: Resource identifier.
+            force: When True, bypass the freshness gate.
 
         Returns:
             IngestionOutcome with summary and cache flags.
@@ -87,7 +88,7 @@ class ProfileIngestionService:
         if not res_id or res_id <= 0:
             raise ValueError("res_id must be a positive integer")
 
-        if not self._acquire_freshness(res_id):
+        if not self._acquire_freshness(res_id, force=force):
             return IngestionOutcome(
                 status="skipped",
                 res_id=res_id,
@@ -160,7 +161,10 @@ class ProfileIngestionService:
             logger.exception("Failed ingestion for res_id %s", res_id)
             raise
 
-    def _acquire_freshness(self, res_id: int) -> bool:
+    def _acquire_freshness(self, res_id: int, *, force: bool = False) -> bool:
+        if force:
+            self._freshness_gate.release(res_id)
+            return self._freshness_gate.acquire(res_id)
         if self._freshness_gate.is_fresh(res_id):
             return False
         return self._freshness_gate.acquire(res_id)

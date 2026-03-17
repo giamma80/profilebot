@@ -48,7 +48,7 @@ def test_build_chunk_points__fixture_cvs__returns_points(
     docx_path = _copy_fixture_with_res_id(tmp_path, FIXTURES_DIR / fixture_name, 12345)
     parsed = parse_docx(docx_path)
 
-    points = build_chunk_points(parsed, DummyEmbeddingService())
+    points = build_chunk_points(parsed, DummyEmbeddingService(), parsed.metadata.parsed_at)
 
     assert points
     for point in points:
@@ -78,7 +78,7 @@ def test_build_chunk_points__multiple_sections__includes_expected_section_types(
         raw_text="Esperienza in backend e cloud.",
     )
 
-    points = build_chunk_points(parsed, DummyEmbeddingService())
+    points = build_chunk_points(parsed, DummyEmbeddingService(), parsed.metadata.parsed_at)
 
     section_types = {point.payload["section_type"] for point in points}
     assert {"summary", "education", "certifications", "generic"}.issubset(section_types)
@@ -95,6 +95,6 @@ def test_build_chunk_points__empty_text__returns_empty() -> None:
         raw_text="",
     )
 
-    points = build_chunk_points(parsed, DummyEmbeddingService())
+    points = build_chunk_points(parsed, DummyEmbeddingService(), parsed.metadata.parsed_at)
 
     assert points == []
