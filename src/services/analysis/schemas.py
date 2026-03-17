@@ -2,19 +2,19 @@
 
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 
 from pydantic import BaseModel
 
 
-class SeniorityLevel(str, Enum):
+class SeniorityLevel(StrEnum):
     junior = "junior"
     mid = "mid"
     senior = "senior"
     lead = "lead"
 
 
-class ProfessionalRole(str, Enum):
+class ProfessionalRole(StrEnum):
     developer = "developer"
     analyst = "analyst"
     architect = "architect"
