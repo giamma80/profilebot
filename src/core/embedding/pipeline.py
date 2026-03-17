@@ -109,21 +109,21 @@ class EmbeddingPipeline:
             self._qdrant_client.upsert(
                 collection_name="cv_skills",
                 points=skills_points,
-                wait=True,
+                wait=False,  # eventual consistency OK
             )
 
         if experience_points:
             self._qdrant_client.upsert(
                 collection_name="cv_experiences",
                 points=experience_points,
-                wait=True,
+                wait=False,  # eventual consistency OK
             )
 
         if chunk_points:
             self._qdrant_client.upsert(
                 collection_name="cv_chunks",
                 points=chunk_points,
-                wait=True,
+                wait=False,  # eventual consistency OK
             )
 
         logger.info(
