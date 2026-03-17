@@ -13,7 +13,11 @@ from qdrant_client import QdrantClient, models
 from src.core.config import Settings, get_settings
 from src.core.llm.client import LLMDecisionClient, create_llm_client
 from src.core.llm.schemas import LLMRequest
-from src.services.analysis.schemas import ProfileAnalysisLLMOutput
+from src.services.analysis.schemas import (
+    ProfessionalRole,
+    ProfileAnalysisLLMOutput,
+    SeniorityLevel,
+)
 from src.services.qdrant.client import get_qdrant_client
 from src.services.reskilling.service import ReskillingService
 from src.utils.normalization import normalize_string_list
@@ -24,7 +28,7 @@ CV_SKILLS_COLLECTION = "cv_skills"
 CV_EXPERIENCES_COLLECTION = "cv_experiences"
 LLM_TIMEOUT_SECONDS = 4.0
 LLM_MAX_TOKENS = 500
-MATCH_SCORE_MIN_WEIGHT = 0.3
+PROFILE_STRENGTH_MIN_WEIGHT = 0.3
 TOP_SKILLS_LIMIT = 10
 QDRANT_SCROLL_LIMIT = 128
 
@@ -43,7 +47,8 @@ USER_PROMPT_TEMPLATE = (
     "{{\n"
     '  "skill_gaps": ["skill1", "skill2"] or null,\n'
     '  "analysis_notes": "string" or null,\n'
-    '  "reskilling_summary": "string" or null\n'
+    '  "reskilling_summary": "string" or null,\n'
+    '  "role_inferred": "developer" | "analyst" | "architect" | "project_manager" | "tester" | "devops" | "data_scientist" | null\n'
     "}}\n"
     "Skill gaps: skill complementari tipiche per un profilo con queste top_skills e seniority.\n"
     "Analysis notes: sintetizza l'esperienza in modo neutro e basato sui dati forniti.\n"
@@ -91,8 +96,10 @@ class ProfileAnalysisService:
 
         weighted_skills = _extract_weighted_skills(skills_payload)
         top_skills = _extract_top_skills(weighted_skills, TOP_SKILLS_LIMIT)
-        match_score = _calculate_match_score(weighted_skills)
-        seniority_inferred = _extract_payload_str(skills_payload, "seniority_bucket")
+        profile_strength = _calculate_profile_strength(weighted_skills)
+        seniority_inferred = _parse_seniority_level(
+            _extract_payload_str(skills_payload, "seniority_bucket")
+        )
 
         experience_summaries = _extract_experience_summaries(skills_payload)
         experience_links = _extract_experience_links(experience_payloads)
@@ -116,8 +123,9 @@ class ProfileAnalysisService:
             "top_skills": top_skills,
             "skill_gaps": llm_output.skill_gaps if llm_output else None,
             "reskilling_summary": llm_output.reskilling_summary if llm_output else None,
-            "match_score": match_score,
+            "profile_strength": profile_strength,
             "analysis_notes": llm_output.analysis_notes if llm_output else None,
+            "role_inferred": llm_output.role_inferred if llm_output else None,
         }
 
     def _fetch_latest_skills_payload(self, res_id: int) -> dict[str, Any] | None:
@@ -182,7 +190,7 @@ class ProfileAnalysisService:
         self,
         *,
         top_skills: list[str],
-        seniority_inferred: str | None,
+        seniority_inferred: SeniorityLevel | None,
         experience_summaries: list[dict[str, Any]],
         experience_links: list[dict[str, Any]],
         reskilling_record: Any | None,
@@ -197,7 +205,7 @@ class ProfileAnalysisService:
 
         skills_context = {
             "top_skills": top_skills,
-            "seniority_inferred": seniority_inferred,
+            "seniority_inferred": seniority_inferred.value if seniority_inferred else None,
         }
         experience_context = {
             "experience_summaries": experience_summaries,
@@ -333,8 +341,8 @@ def _extract_top_skills(weighted_skills: list[tuple[str, float]], limit: int) ->
     return result
 
 
-def _calculate_match_score(weighted_skills: list[tuple[str, float]]) -> float:
-    weights = [weight for _name, weight in weighted_skills if weight > MATCH_SCORE_MIN_WEIGHT]
+def _calculate_profile_strength(weighted_skills: list[tuple[str, float]]) -> float:
+    weights = [weight for _name, weight in weighted_skills if weight > PROFILE_STRENGTH_MIN_WEIGHT]
     if not weights:
         return 0.0
     avg_weight = sum(weights) / len(weights)
@@ -401,10 +409,12 @@ def _parse_llm_output(raw_content: str) -> ProfileAnalysisLLMOutput:
     normalized_gaps = normalize_string_list(skill_gaps) if isinstance(skill_gaps, list) else None
     analysis_notes = _normalize_optional_string(payload.get("analysis_notes"))
     reskilling_summary = _normalize_optional_string(payload.get("reskilling_summary"))
+    role_inferred = _parse_role_inferred(payload.get("role_inferred"))
     return ProfileAnalysisLLMOutput(
         skill_gaps=normalized_gaps or None,
         analysis_notes=analysis_notes,
         reskilling_summary=reskilling_summary,
+        role_inferred=role_inferred,
     )
 
 
@@ -417,6 +427,30 @@ def _normalize_optional_string(value: Any) -> str | None:
     if not cleaned or cleaned.lower() in {"null", "none"}:
         return None
     return cleaned
+
+
+def _parse_seniority_level(value: str | None) -> SeniorityLevel | None:
+    if value is None:
+        return None
+    normalized = value.strip().lower()
+    if not normalized:
+        return None
+    try:
+        return SeniorityLevel(normalized)
+    except ValueError:
+        return None
+
+
+def _parse_role_inferred(value: Any) -> ProfessionalRole | None:
+    if not isinstance(value, str):
+        return None
+    normalized = value.strip().lower()
+    if not normalized:
+        return None
+    try:
+        return ProfessionalRole(normalized)
+    except ValueError:
+        return None
 
 
 def _extract_payload_str(payload: dict[str, Any], key: str) -> str | None:

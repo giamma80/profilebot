@@ -6,6 +6,7 @@ from typing import Any, cast
 import pytest
 
 from src.core.llm.client import LLMDecisionClient
+from src.services.analysis.schemas import ProfessionalRole, SeniorityLevel
 from src.services.analysis.service import (
     ProfileAnalysisNotFoundError,
     ProfileAnalysisService,
@@ -132,6 +133,7 @@ def test_profile_analysis_service__llm_success__returns_payload() -> None:
             "skill_gaps": ["kubernetes", "aws"],
             "analysis_notes": "Esperienza solida in backend e API.",
             "reskilling_summary": "Percorso di reskilling in corso.",
+            "role_inferred": "developer",
         }
     )
     reskilling_record = reskilling_schemas.ReskillingRecord(
@@ -149,12 +151,13 @@ def test_profile_analysis_service__llm_success__returns_payload() -> None:
     result = service.get_analysis(123)
 
     assert result["res_id"] == 123
-    assert result["seniority_inferred"] == "senior"
+    assert result["seniority_inferred"] == SeniorityLevel.senior
     assert result["top_skills"] == ["python", "fastapi", "docker"]
     assert result["skill_gaps"] == ["kubernetes", "aws"]
     assert result["analysis_notes"] == "Esperienza solida in backend e API."
     assert result["reskilling_summary"] == "Percorso di reskilling in corso."
-    assert result["match_score"] == pytest.approx(0.833333, rel=1e-3)
+    assert result["role_inferred"] == ProfessionalRole.developer
+    assert result["profile_strength"] == pytest.approx(0.833333, rel=1e-3)
 
 
 def test_profile_analysis_service__llm_timeout__returns_null_fields() -> None:
@@ -169,7 +172,8 @@ def test_profile_analysis_service__llm_timeout__returns_null_fields() -> None:
     result = service.get_analysis(123)
 
     assert result["top_skills"] == ["python", "fastapi", "docker"]
-    assert result["match_score"] == pytest.approx(0.833333, rel=1e-3)
+    assert result["profile_strength"] == pytest.approx(0.833333, rel=1e-3)
+    assert result["role_inferred"] is None
     assert result["skill_gaps"] is None
     assert result["analysis_notes"] is None
     assert result["reskilling_summary"] is None

@@ -12,6 +12,7 @@ from src.services.analysis import (
     ProfileAnalysisService,
     ProfileAnalysisUnavailableError,
 )
+from src.services.analysis.schemas import ProfessionalRole, SeniorityLevel
 
 router = APIRouter(prefix="/api/v1/profiles", tags=["profiles"])
 
@@ -22,11 +23,12 @@ class ProfileAnalysisResponse(BaseModel):
     """Response payload for profile analysis."""
 
     res_id: int = Field(..., ge=1)
-    seniority_inferred: str | None = None
+    seniority_inferred: SeniorityLevel | None = None
+    role_inferred: ProfessionalRole | None = None
+    profile_strength: float = Field(..., ge=0.0, le=1.0)
     top_skills: list[str]
     skill_gaps: list[str] | None = None
     reskilling_summary: str | None = None
-    match_score: float = Field(..., ge=0.0, le=1.0)
     analysis_notes: str | None = None
 
     model_config = {"extra": "forbid"}

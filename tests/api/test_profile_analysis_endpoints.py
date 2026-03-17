@@ -33,6 +33,7 @@ class FakeLLMDecisionClient:
                 "skill_gaps": ["kubernetes", "aws"],
                 "analysis_notes": "Esperienza solida in backend e API.",
                 "reskilling_summary": "Percorso di reskilling in corso.",
+                "role_inferred": "developer",
             }
         )
 
@@ -111,4 +112,5 @@ def test_profile_analysis_endpoint__mocked_dependencies__returns_payload(
     assert payload["skill_gaps"] == ["kubernetes", "aws"]
     assert payload["analysis_notes"] == "Esperienza solida in backend e API."
     assert payload["reskilling_summary"] == "Percorso di reskilling in corso."
-    assert payload["match_score"] == pytest.approx(0.833333, rel=1e-3)
+    assert payload["role_inferred"] == "developer"
+    assert payload["profile_strength"] == pytest.approx(0.833333, rel=1e-3)

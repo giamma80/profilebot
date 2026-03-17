@@ -55,9 +55,33 @@ class Settings(BaseSettings):
         default=4,
         validation_alias="CELERY_WORKER_CONCURRENCY",
     )
+    celery_worker_prefetch_multiplier: int = Field(
+        default=1,
+        validation_alias="CELERY_WORKER_PREFETCH_MULTIPLIER",
+    )
+    celery_worker_max_tasks_per_child: int | None = Field(
+        default=100,
+        validation_alias="CELERY_WORKER_MAX_TASKS_PER_CHILD",
+    )
+    celery_worker_max_memory_per_child_kb: int | None = Field(
+        default=300000,
+        validation_alias="CELERY_WORKER_MAX_MEMORY_PER_CHILD_KB",
+    )
+    celery_task_acks_late: bool = Field(
+        default=True,
+        validation_alias="CELERY_TASK_ACKS_LATE",
+    )
     celery_task_time_limit: int = Field(
         default=300,
         validation_alias="CELERY_TASK_TIME_LIMIT",
+    )
+    memory_probe_enabled: bool = Field(
+        default=False,
+        validation_alias="MEMORY_PROBE_ENABLED",
+    )
+    memory_probe_log_every: int = Field(
+        default=25,
+        validation_alias="MEMORY_PROBE_LOG_EVERY",
     )
     best_effort_chord_max_wait_seconds: int = Field(
         default=300,

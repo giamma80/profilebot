@@ -1,4 +1,4 @@
-.PHONY: help install dev lint lint-all format format-check preflight test clean run worker beat flower embed-all monitoring-up monitoring-down monitoring-create monitoring-build monitoring-rebuild monitoring-logs all-up all-down all-create all-build all-rebuild all-logs qdrant-up qdrant-down qdrant-create qdrant-build qdrant-rebuild qdrant-logs redis-up redis-down redis-create redis-build redis-rebuild redis-logs api-up api-down api-create api-build api-rebuild api-logs celery-worker-up celery-worker-down celery-worker-create celery-worker-build celery-worker-rebuild celery-worker-logs celery-beat-up celery-beat-down celery-beat-create celery-beat-build celery-beat-rebuild celery-beat-logs flower-up flower-down flower-create flower-build flower-rebuild flower-logs prometheus-up prometheus-down prometheus-create prometheus-build prometheus-rebuild prometheus-logs grafana-up grafana-down grafana-create grafana-build grafana-rebuild grafana-logs redis-exporter-up redis-exporter-down redis-exporter-create redis-exporter-build redis-exporter-rebuild redis-exporter-logs celery-exporter-up celery-exporter-down celery-exporter-create celery-exporter-build celery-exporter-rebuild celery-exporter-logs queues-clean queues-clean-all system system-down api-lint system-test
+.PHONY: help install dev lint lint-all format format-check preflight test clean run worker beat flower embed-all monitoring-up monitoring-down monitoring-create monitoring-build monitoring-rebuild monitoring-logs all-up all-down all-create all-build all-rebuild all-logs memory-probe-logs workflow-run qdrant-up qdrant-down qdrant-create qdrant-build qdrant-rebuild qdrant-logs redis-up redis-down redis-create redis-build redis-rebuild redis-logs api-up api-down api-create api-build api-rebuild api-logs celery-worker-up celery-worker-down celery-worker-create celery-worker-build celery-worker-rebuild celery-worker-logs celery-beat-up celery-beat-down celery-beat-create celery-beat-build celery-beat-rebuild celery-beat-logs flower-up flower-down flower-create flower-build flower-rebuild flower-logs prometheus-up prometheus-down prometheus-create prometheus-build prometheus-rebuild prometheus-logs grafana-up grafana-down grafana-create grafana-build grafana-rebuild grafana-logs redis-exporter-up redis-exporter-down redis-exporter-create redis-exporter-build redis-exporter-rebuild redis-exporter-logs celery-exporter-up celery-exporter-down celery-exporter-create celery-exporter-build celery-exporter-rebuild celery-exporter-logs queues-clean queues-clean-all system system-down api-lint system-test
 COMPOSE ?= $(shell docker compose version >/dev/null 2>&1 && echo "docker compose" || echo "docker-compose")
 
 ifneq (,$(wildcard .env))
@@ -45,6 +45,8 @@ help:
 	@echo "  make all-down                Stop + remove all containers (ALL)"
 	@echo "  make all-rebuild             Build + recreate all containers (ALL)"
 	@echo "  make all-logs                Tail ALL logs (follow)"
+	@echo "  make memory-probe-logs       Tail Celery memory probe logs"
+	@echo "  make workflow-run            Trigger main ingestion workflow"
 	@echo "  make queues-clean            Revoke active Celery tasks, purge queues, flush Redis"
 	@echo "  make queues-clean-all        Deep cleanup (revoke, purge, FLUSHALL)"
 	@echo "  make <service>-up            Start a single service container"
@@ -210,6 +212,14 @@ all-down:
 all-logs:
 	@echo "📄 Tailing ALL logs..."
 	$(COMPOSE) --profile full --profile monitoring logs -f --tail=200
+
+memory-probe-logs:
+	@echo "📄 Tailing memory probe logs..."
+	$(COMPOSE) --profile full logs -f --tail=200 api celery-worker | grep --line-buffered "memory_probe"
+
+workflow-run:
+	@echo "🚀 Triggering main ingestion workflow..."
+	$(COMPOSE) --profile full exec -T celery-worker python -c "from src.services.embedding.celery_app import celery_app; result = celery_app.send_task('workflow.run_ingestion'); print('Workflow triggered:', result.id)"
 
 all-rebuild:
 	@echo "♻️ Rebuilding ALL containers..."

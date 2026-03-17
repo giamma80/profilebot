@@ -782,8 +782,31 @@ components:
         seniority_inferred:
           anyOf:
             - type: string
+              enum:
+                - junior
+                - mid
+                - senior
+                - lead
             - type: "null"
           title: Seniority Inferred
+        role_inferred:
+          anyOf:
+            - type: string
+              enum:
+                - developer
+                - analyst
+                - architect
+                - project_manager
+                - tester
+                - devops
+                - data_scientist
+            - type: "null"
+          title: Role Inferred
+        profile_strength:
+          type: number
+          minimum: 0.0
+          maximum: 1.0
+          title: Profile Strength
         top_skills:
           items:
             type: string
@@ -801,11 +824,6 @@ components:
             - type: string
             - type: "null"
           title: Reskilling Summary
-        match_score:
-          type: number
-          minimum: 0.0
-          maximum: 1.0
-          title: Match Score
         analysis_notes:
           anyOf:
             - type: string
@@ -816,7 +834,7 @@ components:
       required:
         - res_id
         - top_skills
-        - match_score
+        - profile_strength
       title: ProfileAnalysisResponse
       description: Response payload for profile analysis.
     EmbeddingItem:
