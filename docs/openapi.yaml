@@ -386,6 +386,69 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HTTPValidationError"
+  /api/v1/profiles/{res_id}/analysis:
+    get:
+      tags:
+        - profiles
+      summary: Ottieni analisi profilo per res_id
+      description: Return profile analysis for a given res_id.
+      operationId: get_profile_analysis_api_v1_profiles__res_id__analysis_get
+      parameters:
+        - name: res_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            title: Res Id
+      responses:
+        "200":
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProfileAnalysisResponse"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                properties:
+                  detail:
+                    type: string
+                    title: Detail
+                type: object
+                required:
+                  - detail
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                properties:
+                  detail:
+                    type: string
+                    title: Detail
+                type: object
+                required:
+                  - detail
+        "503":
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                properties:
+                  detail:
+                    type: string
+                    title: Detail
+                type: object
+                required:
+                  - detail
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
   /api/v1/pipeline/status:
     get:
       tags:
@@ -711,6 +774,51 @@ components:
         - status
       title: ReskillingResponse
       description: Response payload for a single reskilling record.
+    ProfileAnalysisResponse:
+      properties:
+        res_id:
+          type: integer
+          title: Res Id
+        seniority_inferred:
+          anyOf:
+            - type: string
+            - type: "null"
+          title: Seniority Inferred
+        top_skills:
+          items:
+            type: string
+          type: array
+          title: Top Skills
+        skill_gaps:
+          anyOf:
+            - items:
+                type: string
+              type: array
+            - type: "null"
+          title: Skill Gaps
+        reskilling_summary:
+          anyOf:
+            - type: string
+            - type: "null"
+          title: Reskilling Summary
+        match_score:
+          type: number
+          minimum: 0.0
+          maximum: 1.0
+          title: Match Score
+        analysis_notes:
+          anyOf:
+            - type: string
+            - type: "null"
+          title: Analysis Notes
+      additionalProperties: false
+      type: object
+      required:
+        - res_id
+        - top_skills
+        - match_score
+      title: ProfileAnalysisResponse
+      description: Response payload for profile analysis.
     EmbeddingItem:
       properties:
         cv_path:
