@@ -7,6 +7,7 @@ from pathlib import Path
 
 from celery import Celery
 from celery.schedules import crontab
+from kombu import Queue
 
 from src.core.config import get_settings
 from src.core.workflows.loader import load_workflow
@@ -68,6 +69,20 @@ celery_app.conf.update(
     result_expires=settings.celery_result_expires,
     worker_prefetch_multiplier=4,
     worker_concurrency=settings.celery_worker_concurrency,
+    task_routes={
+        "embedding.*": {"queue": "embedding"},
+        "ingestion.*": {"queue": "ingestion"},
+        "scraper.*": {"queue": "scraper"},
+        "availability.*": {"queue": "availability"},
+        "workflow.*": {"queue": "workflow"},
+    },
+    task_queues=(
+        Queue("embedding"),
+        Queue("ingestion"),
+        Queue("scraper"),
+        Queue("availability"),
+        Queue("workflow"),
+    ),
     beat_schedule={
         "availability-refresh": {
             "task": "availability.refresh_cache",
