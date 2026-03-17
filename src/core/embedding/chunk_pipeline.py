@@ -7,6 +7,7 @@ import os
 import uuid
 from collections.abc import Iterable
 from dataclasses import dataclass
+from datetime import datetime
 
 from qdrant_client import models
 
@@ -29,12 +30,14 @@ class ChunkCandidate:
 def build_chunk_points(
     parsed_cv: ParsedCV,
     embedding_service: EmbeddingService,
+    ingested_at: datetime,
 ) -> list[models.PointStruct]:
     """Build cv_chunks points for chunk-based search.
 
     Args:
         parsed_cv: Parsed CV object from the parser.
         embedding_service: Embedding service for chunk vectors.
+        ingested_at: Ingestion timestamp for chunk payloads.
 
     Returns:
         List of Qdrant PointStruct for chunk indexing.
@@ -69,6 +72,7 @@ def build_chunk_points(
                 "chunk_index": candidate.chunk_index,
                 "chunk_text": candidate.text,
                 "text_preview": _build_text_preview(candidate.text),
+                "ingested_at": ingested_at,
             }
             points.append(models.PointStruct(id=point_id, vector=vector, payload=payload))
 

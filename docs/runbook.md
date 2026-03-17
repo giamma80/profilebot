@@ -84,6 +84,13 @@ Il dashboard `ProfileBot / Processing Pipeline` include il pannello **Active Ale
 2. Valutare retry manuale per res_id critici.
 3. Analizzare cause (timeout scraper, invalid payload).
 
+#### ProfileBotIngestionDLQ
+**Sintomo:** eventi DLQ (task `ingestion.process_res_id_dlq`).  
+**Azioni:**
+1. Verificare log per `res_id` falliti.
+2. Verificare reachability e timeout della Ingestion API.
+3. Valutare retry manuale sui res_id critici dopo la correzione.
+
 ---
 
 ### P3 — Info

@@ -94,6 +94,17 @@ groups:
           summary: "Scraper DLQ events detected"
           description: "DLQ task received events in the last 5 minutes."
 
+      - alert: ProfileBotIngestionDLQ
+        expr: increase(celery_task_received_total{name="ingestion.process_res_id_dlq"}[5m]) > 0
+        for: 2m
+        labels:
+          severity: warning
+          priority: P2
+          team: profilebot
+        annotations:
+          summary: "Ingestion DLQ events detected"
+          description: "DLQ task received events in the last 5 minutes."
+
   - name: profilebot.pipeline.p3
     rules:
       - alert: ProfileBotPipelineCompletion

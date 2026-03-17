@@ -39,7 +39,7 @@ class IngestionResponse(BaseModel):
     status_code=status.HTTP_200_OK,
     summary="Ingest profile by res_id",
 )
-async def ingest_res_id(res_id: int) -> IngestionResponse:
+async def ingest_res_id(res_id: int, force: bool = False) -> IngestionResponse:
     """Ingest a single profile end-to-end by res_id."""
     settings = get_settings()
     if not settings.scraper_base_url.strip():
@@ -50,7 +50,7 @@ async def ingest_res_id(res_id: int) -> IngestionResponse:
 
     service = ProfileIngestionService()
     try:
-        outcome = service.ingest_res_id(res_id)
+        outcome = service.ingest_res_id(res_id, force=force)
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
     except httpx.RequestError as exc:

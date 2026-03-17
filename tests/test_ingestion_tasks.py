@@ -53,6 +53,32 @@ def test_ingestion_process_res_id_task__success(monkeypatch: pytest.MonkeyPatch)
     assert result["response"] == {"status": "success"}
 
 
+def test_ingestion_process_res_id_task__force_adds_query_param(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.method == "POST" and request.url.path == "/api/v1/ingestion/res-id/10":
+            assert request.url.params.get("force") == "true"
+            return httpx.Response(200, json={"status": "success"})
+        return httpx.Response(404)
+
+    transport = httpx.MockTransport(handler)
+    original_client = httpx.Client
+
+    monkeypatch.setattr(ingestion_tasks, "_ensure_ingestion_base_url", lambda: "https://api")
+    monkeypatch.setattr(
+        ingestion_tasks.httpx,
+        "Client",
+        lambda **_: original_client(transport=transport),
+        raising=True,
+    )
+
+    result = ingestion_tasks.ingestion_process_res_id_task.run(res_id=10, force=True)
+
+    assert result["status"] == "success"
+    assert result["res_id"] == 10
+
+
 def test_ingestion_process_res_id_task__missing_base_url_skips(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
