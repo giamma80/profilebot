@@ -24,7 +24,7 @@ class DummyClient:
     def __exit__(self, _exc_type, _exc, _traceback) -> None:
         return None
 
-    def post(self, url: str) -> httpx.Response:
+    def post(self, url: str, **_kwargs: object) -> httpx.Response:
         request = httpx.Request("POST", url)
         raise httpx.ConnectError("boom", request=request)
 

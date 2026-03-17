@@ -47,7 +47,12 @@ class IngestionStatusService:
                 client = None
             object.__setattr__(self, "redis_client", client)
         if self.freshness_gate is None:
-            object.__setattr__(self, "freshness_gate", FreshnessGate())
+            try:
+                gate = FreshnessGate()
+            except (redis.RedisError, ValueError) as exc:
+                logger.warning("Freshness gate initialization failed: %s", exc)
+                gate = None
+            object.__setattr__(self, "freshness_gate", gate)
 
     def get_status(self, res_id: int) -> IngestionStatusResponse:
         """Return ingestion status data for a given res_id.
