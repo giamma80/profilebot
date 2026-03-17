@@ -29,7 +29,7 @@ help:
 	@echo ""
 	@echo "Run:"
 	@echo "  make run                     Start the API server"
-	@echo "  make worker                  Start Celery worker"
+	@echo "  make worker                  Start Celery workers (dedicated queues)"
 	@echo "  make beat                    Start Celery beat scheduler"
 	@echo "  make flower                  Start Flower dashboard"
 	@echo "  make embed-all               Trigger embedding from scraper"
@@ -53,7 +53,7 @@ help:
 	@echo "  make <service>-build         Build a single service image (no start)"
 	@echo "  make <service>-rebuild       Build + recreate a single service"
 	@echo "  make <service>-logs          Tail logs for a single service (follow)"
-	@echo "  services: qdrant redis api celery-worker celery-beat flower prometheus grafana redis-exporter celery-exporter"
+	@echo "  services: qdrant redis api celery-worker-embedding celery-worker-ingestion celery-worker-scraper celery-worker-availability celery-worker-workflow celery-beat flower prometheus grafana redis-exporter celery-exporter"
 	@echo "  make system                  Dev mode: infra in Docker + app local (uv run)"
 	@echo "  make system-down             Stop dev mode (infra + local processes)"
 	@echo ""
@@ -152,8 +152,8 @@ run:
 	uv run uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000
 
 worker:
-	@echo "🧵 Starting Celery worker..."
-	uv run celery -A src.services.embedding.celery_app worker -l info -c 4
+	@echo "🧵 Starting Celery workers..."
+	$(COMPOSE) --profile full up -d celery-worker-embedding celery-worker-ingestion celery-worker-scraper celery-worker-availability celery-worker-workflow
 
 beat:
 	@echo "⏲️ Starting Celery beat..."
@@ -210,6 +210,14 @@ all-down:
 all-logs:
 	@echo "📄 Tailing ALL logs..."
 	$(COMPOSE) --profile full --profile monitoring logs -f --tail=200
+
+memory-probe-logs:
+	@echo "📄 Tailing memory probe logs..."
+	$(COMPOSE) --profile full logs -f --tail=200 api celery-worker-embedding | grep --line-buffered "memory_probe"
+
+workflow-run:
+	@echo "🚀 Triggering main ingestion workflow..."
+	$(COMPOSE) --profile full exec -T celery-worker-workflow python -c "from src.services.embedding.celery_app import celery_app; result = celery_app.send_task('workflow.run_ingestion'); print('Workflow triggered:', result.id)"
 
 all-rebuild:
 	@echo "♻️ Rebuilding ALL containers..."
@@ -274,23 +282,23 @@ api-logs:
 	$(COMPOSE) --profile full logs -f --tail=200 api
 
 celery-worker-build:
-	$(COMPOSE) --profile full build celery-worker
+	$(COMPOSE) --profile full build celery-worker-embedding celery-worker-ingestion celery-worker-scraper celery-worker-availability celery-worker-workflow
 
 celery-worker-create:
-	$(COMPOSE) --profile full create celery-worker
+	$(COMPOSE) --profile full create celery-worker-embedding celery-worker-ingestion celery-worker-scraper celery-worker-availability celery-worker-workflow
 
 celery-worker-up:
-	$(COMPOSE) --profile full up -d celery-worker
+	$(COMPOSE) --profile full up -d celery-worker-embedding celery-worker-ingestion celery-worker-scraper celery-worker-availability celery-worker-workflow
 
 celery-worker-down:
-	$(COMPOSE) --profile full stop celery-worker
-	$(COMPOSE) --profile full rm -f celery-worker
+	$(COMPOSE) --profile full stop celery-worker-embedding celery-worker-ingestion celery-worker-scraper celery-worker-availability celery-worker-workflow
+	$(COMPOSE) --profile full rm -f celery-worker-embedding celery-worker-ingestion celery-worker-scraper celery-worker-availability celery-worker-workflow
 
 celery-worker-rebuild:
-	$(COMPOSE) --profile full up -d --build --force-recreate celery-worker
+	$(COMPOSE) --profile full up -d --build --force-recreate celery-worker-embedding celery-worker-ingestion celery-worker-scraper celery-worker-availability celery-worker-workflow
 
 celery-worker-logs:
-	$(COMPOSE) --profile full logs -f --tail=200 celery-worker
+	$(COMPOSE) --profile full logs -f --tail=200 celery-worker-embedding celery-worker-ingestion celery-worker-scraper celery-worker-availability celery-worker-workflow
 
 celery-beat-build:
 	$(COMPOSE) --profile full build celery-beat
@@ -408,15 +416,14 @@ celery-exporter-logs:
 
 queues-clean:
 	@echo "🧹 Cleaning Redis + Celery queues..."
-	@ACTIVE_IDS=$$(docker exec profilebot-celery-worker celery -A src.services.embedding.celery_app inspect active --json | python -c 'import json,sys; data=json.load(sys.stdin); ids=[]; [ids.extend([t.get("id") for t in tasks if t.get("id")]) for tasks in data.values() if isinstance(tasks, list)]; print(" ".join(ids))'); \
-	if [ -n "$$ACTIVE_IDS" ]; then \
-		docker exec profilebot-celery-worker celery -A src.services.embedding.celery_app control revoke $$ACTIVE_IDS; \
-		docker exec profilebot-celery-worker celery -A src.services.embedding.celery_app control terminate SIGTERM $$ACTIVE_IDS; \
-	else \
-		echo "No active tasks to revoke"; \
-	fi
-	@docker exec profilebot-celery-worker celery -A src.services.embedding.celery_app purge -f
+	@$(COMPOSE) --profile full stop celery-worker-embedding celery-worker-ingestion celery-worker-scraper celery-worker-availability celery-worker-workflow
+	@$(COMPOSE) --profile full run --rm celery-worker-embedding celery -A src.services.embedding.celery_app purge -f -Q embedding
+	@$(COMPOSE) --profile full run --rm celery-worker-embedding celery -A src.services.embedding.celery_app purge -f -Q ingestion
+	@$(COMPOSE) --profile full run --rm celery-worker-embedding celery -A src.services.embedding.celery_app purge -f -Q scraper
+	@$(COMPOSE) --profile full run --rm celery-worker-embedding celery -A src.services.embedding.celery_app purge -f -Q availability
+	@$(COMPOSE) --profile full run --rm celery-worker-embedding celery -A src.services.embedding.celery_app purge -f -Q workflow
 	@docker exec profilebot-redis redis-cli FLUSHALL
+	@$(COMPOSE) --profile full up -d celery-worker-embedding celery-worker-ingestion celery-worker-scraper celery-worker-availability celery-worker-workflow
 	@echo "✅ Done"
 
 queues-clean-all: queues-clean
@@ -425,7 +432,7 @@ system: qdrant-up redis-up
 	@echo "🚀 Starting full ProfileBot stack in background..."
 	@mkdir -p .logs
 	@sh -c 'nohup uv run uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000 > .logs/api.log 2>&1 & echo $$! > .logs/api.pid'
-	@sh -c 'nohup uv run celery -A src.services.embedding.celery_app worker -l info -c 4 > .logs/worker.log 2>&1 & echo $$! > .logs/worker.pid'
+	@sh -c 'nohup uv run celery -A src.services.embedding.celery_app worker -l info -Q embedding,ingestion,scraper,availability,workflow -c 4 > .logs/worker.log 2>&1 & echo $$! > .logs/worker.pid'
 	@sh -c 'nohup uv run celery -A src.services.embedding.celery_app beat -l info > .logs/beat.log 2>&1 & echo $$! > .logs/beat.pid'
 	@sh -c 'nohup uv run celery -A src.services.embedding.celery_app flower --port=5555 > .logs/flower.log 2>&1 & echo $$! > .logs/flower.pid'
 	@echo "✅ Started. Logs in .logs/*.log, PIDs in .logs/*.pid"

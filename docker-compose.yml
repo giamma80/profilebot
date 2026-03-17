@@ -52,13 +52,118 @@ services:
       - profilebot
     restart: unless-stopped
 
-  celery-worker:
+  # Worker dedicato embedding — concorrenza bassa (CPU+network OpenAI)
+  celery-worker-embedding:
     profiles: ["full"]
     build: .
-    container_name: profilebot-celery-worker
+    container_name: profilebot-celery-worker-embedding
     working_dir: /app
     user: "1000:1000"
-    command: celery -A src.services.embedding.celery_app worker -l info -c ${CELERY_WORKER_CONCURRENCY:-4} -E
+    command: celery -A src.services.embedding.celery_app worker -l info -Q embedding -c ${CELERY_CONCURRENCY_EMBEDDING:-2} -E
+    volumes:
+      - ./:/app
+    env_file: .env
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - QDRANT_URL=http://qdrant:6333
+      - SCRAPER_BASE_URL=http://scraper-service:8001
+    extra_hosts:
+      - "scraper-service:host-gateway"
+    depends_on:
+      - redis
+      - qdrant
+    networks:
+      - profilebot
+    restart: unless-stopped
+
+  # Worker dedicato ingestion — HTTP leggero, deve restare reattivo
+  celery-worker-ingestion:
+    profiles: ["full"]
+    build: .
+    container_name: profilebot-celery-worker-ingestion
+    working_dir: /app
+    user: "1000:1000"
+    command: celery -A src.services.embedding.celery_app worker -l info -Q ingestion -c ${CELERY_CONCURRENCY_INGESTION:-4} -E
+    volumes:
+      - ./:/app
+    env_file: .env
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - QDRANT_URL=http://qdrant:6333
+      - SCRAPER_BASE_URL=http://scraper-service:8001
+    extra_hosts:
+      - "scraper-service:host-gateway"
+    depends_on:
+      - redis
+      - qdrant
+    networks:
+      - profilebot
+    restart: unless-stopped
+
+  # Worker dedicato scraper — I/O bound, concorrenza più alta
+  celery-worker-scraper:
+    profiles: ["full"]
+    build: .
+    container_name: profilebot-celery-worker-scraper
+    working_dir: /app
+    user: "1000:1000"
+    command: celery -A src.services.embedding.celery_app worker -l info -Q scraper -c ${CELERY_CONCURRENCY_SCRAPER:-4} -E
+    volumes:
+      - ./:/app
+    env_file: .env
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - QDRANT_URL=http://qdrant:6333
+      - SCRAPER_BASE_URL=http://scraper-service:8001
+    extra_hosts:
+      - "scraper-service:host-gateway"
+    depends_on:
+      - redis
+      - qdrant
+    networks:
+      - profilebot
+    restart: unless-stopped
+
+  # Worker dedicato availability — task periodici, non urgenti
+  celery-worker-availability:
+    profiles: ["full"]
+    build: .
+    container_name: profilebot-celery-worker-availability
+    working_dir: /app
+    user: "1000:1000"
+    command: celery -A src.services.embedding.celery_app worker -l info -Q availability -c ${CELERY_CONCURRENCY_AVAILABILITY:-2} -E
+    volumes:
+      - ./:/app
+    env_file: .env
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - QDRANT_URL=http://qdrant:6333
+      - SCRAPER_BASE_URL=http://scraper-service:8001
+    extra_hosts:
+      - "scraper-service:host-gateway"
+    depends_on:
+      - redis
+      - qdrant
+    networks:
+      - profilebot
+    restart: unless-stopped
+
+  # Worker dedicato workflow — orchestrazione, non fa lavoro pesante
+  celery-worker-workflow:
+    profiles: ["full"]
+    build: .
+    container_name: profilebot-celery-worker-workflow
+    working_dir: /app
+    user: "1000:1000"
+    command: celery -A src.services.embedding.celery_app worker -l info -Q workflow -c ${CELERY_CONCURRENCY_WORKFLOW:-2} -E
     volumes:
       - ./:/app
     env_file: .env
@@ -92,7 +197,6 @@ services:
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
     depends_on:
       - redis
-      - celery-worker
     networks:
       - profilebot
     restart: unless-stopped
@@ -114,7 +218,6 @@ services:
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
     depends_on:
       - redis
-      - celery-worker
     networks:
       - profilebot
     restart: unless-stopped
