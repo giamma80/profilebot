@@ -225,7 +225,6 @@ def test_process_cv__upsert_payloads__include_chunks_and_experiences_fields() ->
     assert chunk_payload["cv_id"] == "cv-123"
     assert chunk_payload["res_id"] == 12345
     assert chunk_payload["section_type"]
-    assert chunk_payload["chunk_text"]
     assert chunk_payload["text_preview"]
 
     cv_exp_points = calls[1].kwargs["points"]

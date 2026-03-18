@@ -68,7 +68,6 @@ def get_collections_config() -> dict[str, dict]:
                 "res_id": models.PayloadSchemaType.INTEGER,
                 "section_type": models.PayloadSchemaType.KEYWORD,
                 "chunk_index": models.PayloadSchemaType.INTEGER,
-                "chunk_text": models.PayloadSchemaType.TEXT,
                 "text_preview": models.PayloadSchemaType.KEYWORD,
             },
         },
