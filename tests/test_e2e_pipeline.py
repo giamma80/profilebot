@@ -216,7 +216,7 @@ def test_pipeline_complete__fetch_fanout_best_effort_embed_search(
     monkeypatch.setattr(
         embedding_tasks,
         "parse_docx_bytes",
-        lambda _data, res_id, filename=None: _make_parsed_cv(res_id),
+        lambda _data, res_id, filename=None, **_kwargs: _make_parsed_cv(res_id),
         raising=True,
     )
     monkeypatch.setattr(embedding_tasks, "SkillExtractor", FakeSkillExtractor, raising=True)
@@ -260,7 +260,7 @@ def test_pipeline_partial_failure__chord_continues_with_successes_only(
     monkeypatch.setattr(
         embedding_tasks,
         "parse_docx_bytes",
-        lambda _data, res_id, filename=None: _make_parsed_cv(res_id),
+        lambda _data, res_id, filename=None, **_kwargs: _make_parsed_cv(res_id),
         raising=True,
     )
     monkeypatch.setattr(embedding_tasks, "SkillExtractor", FakeSkillExtractor, raising=True)

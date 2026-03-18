@@ -94,6 +94,9 @@ def main() -> int:
         docx_bytes = client.download_inside_cv(res_id)
 
     parsed_cv = parse_docx_bytes(docx_bytes, res_id)
+    if parsed_cv is None:
+        logger.info("Skipping debug output due to docx cache hit for res_id %s", res_id)
+        return 0
     summary = _summarize(parsed_cv)
 
     logger.info(

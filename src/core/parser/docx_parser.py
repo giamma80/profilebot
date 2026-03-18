@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import hashlib
 import logging
+import os
 import re
 import time
 from collections.abc import Iterable
@@ -10,6 +12,7 @@ from dataclasses import dataclass
 from io import BytesIO
 from pathlib import Path
 
+import redis
 from docx import Document
 from docx.document import Document as DocxDocument
 from docx.opc.exceptions import PackageNotFoundError
@@ -49,6 +52,9 @@ class ParsedSections:
 
 class DocxParser:
     """Parser for DOCX CV files."""
+
+    def __init__(self, redis_client: redis.Redis | None = None) -> None:
+        self.redis_client = redis_client
 
     def parse(self, file_path: str | Path) -> ParsedCV:
         """Parse a DOCX CV and return a structured ParsedCV object."""
@@ -95,7 +101,7 @@ class DocxParser:
         self._log_parse_result(parsed, sections, start_time)
         return parsed
 
-    def parse_bytes(self, data: bytes, res_id: int, filename: str | None = None) -> ParsedCV:
+    def parse_bytes(self, data: bytes, res_id: int, filename: str | None = None) -> ParsedCV | None:
         """Parse a DOCX CV from in-memory bytes.
 
         Args:
@@ -104,12 +110,27 @@ class DocxParser:
             filename: Optional filename to include in metadata.
 
         Returns:
-            ParsedCV with extracted sections and metadata.
+            ParsedCV with extracted sections and metadata, or None on cache hit.
 
         Raises:
             CVParseError: If the DOCX bytes are invalid or cannot be parsed.
         """
         start_time = time.perf_counter()
+        content_hash = hashlib.sha256(data).hexdigest()
+        cache_key = f"cv_hash:{res_id}"
+
+        if self.redis_client:
+            try:
+                cached = self.redis_client.get(cache_key)
+            except redis.RedisError as exc:
+                logger.warning("docx.cache_read_failed res_id=%s error=%s", res_id, exc)
+                cached = None
+            if cached is not None:
+                if isinstance(cached, bytes):
+                    cached = cached.decode()
+                if cached == content_hash:
+                    logger.debug("docx.cache_hit", extra={"res_id": res_id})
+                    return None
 
         try:
             document = Document(BytesIO(data))
@@ -133,6 +154,12 @@ class DocxParser:
                 raw_text="",
             )
             self._log_parse_result(parsed, ParsedSections([], [], [], [], raw_text), start_time)
+            if self.redis_client:
+                ttl = int(os.getenv("DOCX_CACHE_TTL", "86400"))
+                try:
+                    self.redis_client.setex(cache_key, ttl, content_hash)
+                except redis.RedisError as exc:
+                    logger.warning("docx.cache_write_failed res_id=%s error=%s", res_id, exc)
             return parsed
 
         sections = self._extract_sections(lines, raw_text)
@@ -147,6 +174,12 @@ class DocxParser:
             raw_text=sections.raw_text,
         )
         self._log_parse_result(parsed, sections, start_time)
+        if self.redis_client:
+            ttl = int(os.getenv("DOCX_CACHE_TTL", "86400"))
+            try:
+                self.redis_client.setex(cache_key, ttl, content_hash)
+            except redis.RedisError as exc:
+                logger.warning("docx.cache_write_failed res_id=%s error=%s", res_id, exc)
         return parsed
 
     def _extract_lines(self, document: DocxDocument) -> Iterable[str]:
@@ -385,9 +418,15 @@ class DocxParser:
         return tokens
 
 
-def parse_docx_bytes(data: bytes, res_id: int, filename: str | None = None) -> ParsedCV:
+def parse_docx_bytes(
+    data: bytes,
+    res_id: int,
+    filename: str | None = None,
+    *,
+    redis_client: redis.Redis | None = None,
+) -> ParsedCV | None:
     """Convenience function to parse a DOCX CV from bytes."""
-    return DocxParser().parse_bytes(data, res_id, filename=filename)
+    return DocxParser(redis_client=redis_client).parse_bytes(data, res_id, filename=filename)
 
 
 def parse_docx(file_path: str | Path) -> ParsedCV:

@@ -375,7 +375,7 @@ def test_embed_from_scraper_task__processes_res_ids(
     def _make_pipeline() -> DummyPipeline:
         return pipeline
 
-    def _parse_docx_bytes(data: bytes, res_id: int) -> tuple[bytes, int]:
+    def _parse_docx_bytes(data: bytes, res_id: int, **_kwargs: object) -> tuple[bytes, int]:
         return data, res_id
 
     monkeypatch.setattr(tasks, "ScraperResIdCache", FakeCache, raising=True)
@@ -439,7 +439,7 @@ def test_embed_from_scraper_task__uses_best_effort_results(
     def _make_extractor(_: object) -> DummyExtractor:
         return DummyExtractor({})
 
-    def _parse_docx_bytes(data: bytes, res_id: int) -> tuple[bytes, int]:
+    def _parse_docx_bytes(data: bytes, res_id: int, **_kwargs: object) -> tuple[bytes, int]:
         return data, res_id
 
     monkeypatch.setattr(tasks, "ScraperResIdCache", FakeCache, raising=True)
@@ -503,7 +503,7 @@ def test_embed_from_scraper_task__continues_on_failure(
     def _make_extractor(_: object) -> DummyExtractor:
         return DummyExtractor({})
 
-    def _parse_docx_bytes(data: bytes, res_id: int) -> tuple[bytes, int]:
+    def _parse_docx_bytes(data: bytes, res_id: int, **_kwargs: object) -> tuple[bytes, int]:
         return data, res_id
 
     monkeypatch.setattr(tasks, "ScraperResIdCache", FakeCache, raising=True)

@@ -2,9 +2,11 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
+from io import BytesIO
 from typing import cast
 
 import pytest
+from docx import Document
 
 from src.core.embedding.pipeline import EmbeddingPipeline
 from src.core.parser.schemas import CVMetadata, ParsedCV
@@ -96,6 +98,14 @@ class DummyReskillingService:
 
     def get(self, _res_id: int) -> object | None:
         return object() if self.available else None
+
+
+def _make_docx_bytes(text: str) -> bytes:
+    document = Document()
+    document.add_paragraph(text)
+    buffer = BytesIO()
+    document.save(buffer)
+    return buffer.getvalue()
 
 
 def _parser(_docx_bytes: bytes, res_id: int) -> ParsedCV:
@@ -210,3 +220,32 @@ def test_ingest_res_id__invalid_res_id_raises() -> None:
 
     with pytest.raises(ValueError):
         service.ingest_res_id(0)
+
+
+def test_ingest_res_id__redis_unavailable__parser_works_without_cache(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    docx_bytes = _make_docx_bytes("Test CV")
+    scraper = DummyScraperClient(docx_bytes)
+    pipeline = DummyPipeline()
+    monkeypatch.setattr(
+        "src.services.ingestion.profile_service.build_docx_redis_client",
+        lambda: None,
+    )
+    service = ProfileIngestionService(
+        dependencies=ProfileIngestionDependencies(
+            scraper_client_factory=cast(Callable[[], ScraperClient], lambda: scraper),
+            extractor=cast(SkillExtractor, DummyExtractor()),
+            pipeline=cast(EmbeddingPipeline, pipeline),
+            freshness_gate=cast(FreshnessGate, DummyGate()),
+            availability_service=cast(
+                AvailabilityService, DummyAvailabilityService(available=False)
+            ),
+            reskilling_service=cast(ReskillingService, DummyReskillingService(available=False)),
+        )
+    )
+
+    outcome = service.ingest_res_id(10)
+
+    assert outcome.status == "success"
+    assert pipeline.calls == [10]
