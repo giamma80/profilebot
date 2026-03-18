@@ -1,4 +1,4 @@
-.PHONY: help install dev lint lint-all format format-check preflight test clean run worker beat flower embed-all monitoring-up monitoring-down monitoring-create monitoring-build monitoring-rebuild monitoring-logs all-up all-down all-create all-build all-rebuild all-logs qdrant-up qdrant-down qdrant-create qdrant-build qdrant-rebuild qdrant-logs redis-up redis-down redis-create redis-build redis-rebuild redis-logs api-up api-down api-create api-build api-rebuild api-logs celery-worker-up celery-worker-down celery-worker-create celery-worker-build celery-worker-rebuild celery-worker-logs celery-beat-up celery-beat-down celery-beat-create celery-beat-build celery-beat-rebuild celery-beat-logs flower-up flower-down flower-create flower-build flower-rebuild flower-logs prometheus-up prometheus-down prometheus-create prometheus-build prometheus-rebuild prometheus-logs grafana-up grafana-down grafana-create grafana-build grafana-rebuild grafana-logs redis-exporter-up redis-exporter-down redis-exporter-create redis-exporter-build redis-exporter-rebuild redis-exporter-logs celery-exporter-up celery-exporter-down celery-exporter-create celery-exporter-build celery-exporter-rebuild celery-exporter-logs queues-clean queues-clean-all system system-down api-lint system-test
+.PHONY: help install dev lint lint-all format format-check preflight test clean run worker beat flower monitoring-up monitoring-down monitoring-create monitoring-build monitoring-rebuild monitoring-logs all-up all-down all-create all-build all-rebuild all-logs qdrant-up qdrant-down qdrant-create qdrant-build qdrant-rebuild qdrant-logs redis-up redis-down redis-create redis-build redis-rebuild redis-logs api-up api-down api-create api-build api-rebuild api-logs celery-worker-up celery-worker-down celery-worker-create celery-worker-build celery-worker-rebuild celery-worker-logs celery-beat-up celery-beat-down celery-beat-create celery-beat-build celery-beat-rebuild celery-beat-logs flower-up flower-down flower-create flower-build flower-rebuild flower-logs prometheus-up prometheus-down prometheus-create prometheus-build prometheus-rebuild prometheus-logs grafana-up grafana-down grafana-create grafana-build grafana-rebuild grafana-logs redis-exporter-up redis-exporter-down redis-exporter-create redis-exporter-build redis-exporter-rebuild redis-exporter-logs celery-exporter-up celery-exporter-down celery-exporter-create celery-exporter-build celery-exporter-rebuild celery-exporter-logs queues-clean queues-clean-all system system-down api-lint system-test
 COMPOSE ?= $(shell docker compose version >/dev/null 2>&1 && echo "docker compose" || echo "docker-compose")
 
 ifneq (,$(wildcard .env))
@@ -32,7 +32,7 @@ help:
 	@echo "  make worker                  Start Celery workers (dedicated queues)"
 	@echo "  make beat                    Start Celery beat scheduler"
 	@echo "  make flower                  Start Flower dashboard"
-	@echo "  make embed-all               Trigger embedding from scraper"
+
 	@echo "  make workflow-run            Trigger main ingestion workflow"
 	@echo "  make monitoring-build        Build monitoring images (no start)"
 	@echo "  make monitoring-create       Create monitoring containers (no start)"
@@ -164,9 +164,7 @@ flower:
 	@echo "🌸 Starting Flower dashboard..."
 	uv run celery -A src.services.embedding.celery_app flower --port=5555
 
-embed-all:
-	@echo "🧩 Triggering embedding from scraper..."
-	@uv run python -c 'from src.services.embedding.tasks import embed_from_scraper_task; print(embed_from_scraper_task.run())'
+
 
 monitoring-build:
 	@echo "🐳 Building monitoring images..."

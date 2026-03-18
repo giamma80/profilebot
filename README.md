@@ -213,7 +213,7 @@ erDiagram
 | embedding.index_cv | Indexes a single local CV file into Qdrant. |
 | embedding.index_cv_batch | Indexes a batch of local CV files in one task. |
 | embedding.index_all_cvs | Indexes all provided CV items with internal batching. |
-| embedding.index_from_scraper | Downloads CVs by res_id from scraper and indexes them. |
+
 
 ## Workflow Hierarchy (res_id_ingestion)
 
@@ -225,7 +225,7 @@ erDiagram
   - workflow.fanout_by_res_id
     - Parallel fanout tasks (one per res_id):
       - scraper.refresh_inside_profile
-  - embedding.index_from_scraper
+
 
 ### Embedding tasks not included in the ingestion workflow
 

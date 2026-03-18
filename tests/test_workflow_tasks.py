@@ -179,42 +179,6 @@ def test_run_workflow_fanout_task__empty_source_key_raises_value_error() -> None
         )
 
 
-def test_run_workflow_fanout_task__best_effort_chord_triggers_callback(
-    monkeypatch,
-) -> None:
-    monkeypatch.setattr(
-        workflow_tasks,
-        "_load_fanout_res_ids",
-        lambda _: [101, 202],
-        raising=True,
-    )
-    monkeypatch.setattr(workflow_tasks, "signature", _make_signature, raising=True)
-    monkeypatch.setattr(workflow_tasks, "BestEffortChord", DummyBestEffortChord, raising=True)
-
-    result = workflow_tasks.run_workflow_fanout_task(
-        fanout_source="redis:profilebot:scraper:inside:res_ids",
-        fanout_task="tasks.child",
-        fanout_parameter_name="res_id",
-        options={
-            "callback_task": "embedding.index_from_scraper",
-            "on_error_task": "workflow.log_failed_profiles",
-            "min_success_ratio": 0.8,
-        },
-    )
-
-    assert result["status"] == "triggered"
-    assert result["res_ids_count"] == 2
-    assert result["chord_task_id"] == "chord-123"
-
-    instance = DummyBestEffortChord.last_instance
-    assert instance is not None
-    assert instance.min_success_ratio == 0.8
-    assert instance.called_with is not None
-    assert instance.called_with["body"].task == "embedding.index_from_scraper"
-    assert instance.called_with["on_error"].task == "workflow.log_failed_profiles"
-    assert len(instance.called_with["header"]) == 2
-
-
 def test_log_failed_profiles_task__returns_failed_res_ids() -> None:
     result = workflow_tasks.log_failed_profiles_task(
         errors=[

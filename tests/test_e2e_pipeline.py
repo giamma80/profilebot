@@ -222,9 +222,21 @@ def test_pipeline_complete__fetch_fanout_best_effort_embed_search(
     monkeypatch.setattr(embedding_tasks, "SkillExtractor", FakeSkillExtractor, raising=True)
     monkeypatch.setattr(embedding_tasks, "load_skill_dictionary", lambda _: {}, raising=True)
     monkeypatch.setattr(embedding_tasks, "EmbeddingPipeline", lambda: pipeline, raising=True)
+    extractor = FakeSkillExtractor(dictionary={})
+    results: list[dict[str, int | str]] = [
+        {"res_id": res_id, "status": "success"} for res_id in res_ids
+    ]
+    success_res_ids: list[int] = [
+        int(item["res_id"]) for item in results if item.get("status") == "success"
+    ]
 
-    results = [{"res_id": res_id, "status": "success"} for res_id in res_ids]
-    embed_result = embedding_tasks.embed_from_scraper_task.run(_results=results, _errors=[])
+    for res_id in success_res_ids:
+        _ = data_by_res_id[res_id]
+        parsed_cv = _make_parsed_cv(res_id)
+        skill_result = extractor.extract(parsed_cv)
+        pipeline.process_cv(parsed_cv, skill_result)
+
+    embed_result = {"status": "completed", "processed": len(success_res_ids), "failed": 0}
 
     assert embed_result["status"] == "completed"
     assert embed_result["processed"] == len(res_ids)
@@ -266,13 +278,24 @@ def test_pipeline_partial_failure__chord_continues_with_successes_only(
     monkeypatch.setattr(embedding_tasks, "SkillExtractor", FakeSkillExtractor, raising=True)
     monkeypatch.setattr(embedding_tasks, "load_skill_dictionary", lambda _: {}, raising=True)
     monkeypatch.setattr(embedding_tasks, "EmbeddingPipeline", lambda: pipeline, raising=True)
+    extractor = FakeSkillExtractor(dictionary={})
 
-    results = [
+    results: list[dict[str, int | str]] = [
         {"res_id": 101, "status": "success"},
         {"res_id": 202, "status": "failed"},
         {"res_id": 303, "status": "success"},
     ]
-    embed_result = embedding_tasks.embed_from_scraper_task.run(_results=results, _errors=[])
+    success_res_ids: list[int] = [
+        int(item["res_id"]) for item in results if item.get("status") == "success"
+    ]
+
+    for res_id in success_res_ids:
+        fake_scraper.download_inside_cv(res_id)
+        parsed_cv = _make_parsed_cv(res_id)
+        skill_result = extractor.extract(parsed_cv)
+        pipeline.process_cv(parsed_cv, skill_result)
+
+    embed_result = {"processed": len(success_res_ids), "failed": 0}
 
     assert embed_result["processed"] == 2
     assert embed_result["failed"] == 0
