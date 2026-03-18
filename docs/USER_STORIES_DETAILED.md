@@ -1399,16 +1399,81 @@ services:
       - redis_data:/data
     restart: unless-stopped
 
-  celery-worker:
+  celery-worker-embedding:
+    profiles: ["full"]
     build: .
-    container_name: profilebot-celery-worker
-    command: celery -A src.services.embedding.celery_app worker -l info -c 4
+    container_name: profilebot-celery-worker-embedding
+    command: celery -A src.services.embedding.celery_app worker -l info -Q embedding -c 2 -E
     environment:
       - REDIS_URL=redis://redis:6379/0
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
       - QDRANT_URL=http://qdrant:6333
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - SCRAPER_BASE_URL=http://scraper-service:8001
+    depends_on:
+      - redis
+      - qdrant
+    restart: unless-stopped
+
+  celery-worker-ingestion:
+    profiles: ["full"]
+    build: .
+    container_name: profilebot-celery-worker-ingestion
+    command: celery -A src.services.embedding.celery_app worker -l info -Q ingestion -c 4 -E
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - QDRANT_URL=http://qdrant:6333
+      - SCRAPER_BASE_URL=http://scraper-service:8001
+    depends_on:
+      - redis
+      - qdrant
+    restart: unless-stopped
+
+  celery-worker-scraper:
+    profiles: ["full"]
+    build: .
+    container_name: profilebot-celery-worker-scraper
+    command: celery -A src.services.embedding.celery_app worker -l info -Q scraper -c 4 -E
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - QDRANT_URL=http://qdrant:6333
+      - SCRAPER_BASE_URL=http://scraper-service:8001
+    depends_on:
+      - redis
+      - qdrant
+    restart: unless-stopped
+
+  celery-worker-availability:
+    profiles: ["full"]
+    build: .
+    container_name: profilebot-celery-worker-availability
+    command: celery -A src.services.embedding.celery_app worker -l info -Q availability -c 2 -E
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - QDRANT_URL=http://qdrant:6333
+      - SCRAPER_BASE_URL=http://scraper-service:8001
+    depends_on:
+      - redis
+      - qdrant
+    restart: unless-stopped
+
+  celery-worker-workflow:
+    profiles: ["full"]
+    build: .
+    container_name: profilebot-celery-worker-workflow
+    command: celery -A src.services.embedding.celery_app worker -l info -Q workflow -c 2 -E
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - QDRANT_URL=http://qdrant:6333
+      - SCRAPER_BASE_URL=http://scraper-service:8001
     depends_on:
       - redis
       - qdrant
@@ -1424,7 +1489,6 @@ services:
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
     depends_on:
       - redis
-      - celery-worker
     restart: unless-stopped
 
   flower:
@@ -1439,7 +1503,6 @@ services:
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
     depends_on:
       - redis
-      - celery-worker
     restart: unless-stopped
 ```
 

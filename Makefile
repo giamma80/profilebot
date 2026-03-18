@@ -33,6 +33,7 @@ help:
 	@echo "  make beat                    Start Celery beat scheduler"
 	@echo "  make flower                  Start Flower dashboard"
 	@echo "  make embed-all               Trigger embedding from scraper"
+	@echo "  make workflow-run            Trigger main ingestion workflow"
 	@echo "  make monitoring-build        Build monitoring images (no start)"
 	@echo "  make monitoring-create       Create monitoring containers (no start)"
 	@echo "  make monitoring-up           Start monitoring containers"

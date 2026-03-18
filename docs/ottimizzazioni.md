@@ -89,10 +89,70 @@ services:
     networks:
       - profilebot
 
-  celery-worker:
+  celery-worker-embedding:
     profiles: ["full"]
     build: .
-    command: celery -A src.services.embedding.celery_app worker -l info -c 4
+    command: celery -A src.services.embedding.celery_app worker -l info -Q embedding -c 2 -E
+    volumes:
+      - ./:/app
+      - prometheus_multiproc:/var/lib/prometheus/multiproc
+    environment:
+      - PROMETHEUS_MULTIPROC_DIR=/var/lib/prometheus/multiproc
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - redis
+    networks:
+      - profilebot
+
+  celery-worker-ingestion:
+    profiles: ["full"]
+    build: .
+    command: celery -A src.services.embedding.celery_app worker -l info -Q ingestion -c 4 -E
+    volumes:
+      - ./:/app
+      - prometheus_multiproc:/var/lib/prometheus/multiproc
+    environment:
+      - PROMETHEUS_MULTIPROC_DIR=/var/lib/prometheus/multiproc
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - redis
+    networks:
+      - profilebot
+
+  celery-worker-scraper:
+    profiles: ["full"]
+    build: .
+    command: celery -A src.services.embedding.celery_app worker -l info -Q scraper -c 4 -E
+    volumes:
+      - ./:/app
+      - prometheus_multiproc:/var/lib/prometheus/multiproc
+    environment:
+      - PROMETHEUS_MULTIPROC_DIR=/var/lib/prometheus/multiproc
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - redis
+    networks:
+      - profilebot
+
+  celery-worker-availability:
+    profiles: ["full"]
+    build: .
+    command: celery -A src.services.embedding.celery_app worker -l info -Q availability -c 2 -E
+    volumes:
+      - ./:/app
+      - prometheus_multiproc:/var/lib/prometheus/multiproc
+    environment:
+      - PROMETHEUS_MULTIPROC_DIR=/var/lib/prometheus/multiproc
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - redis
+    networks:
+      - profilebot
+
+  celery-worker-workflow:
+    profiles: ["full"]
+    build: .
+    command: celery -A src.services.embedding.celery_app worker -l info -Q workflow -c 2 -E
     volumes:
       - ./:/app
       - prometheus_multiproc:/var/lib/prometheus/multiproc

@@ -262,4 +262,4 @@ ora crea una cartella nel progetto dove creiamo una semplicissima gui di fronten
 
 
 
-docker exec profilebot-celery-worker celery -A src.services.embedding.celery_app call workflow.run_scraper
+docker exec profilebot-celery-worker-workflow celery -A src.services.embedding.celery_app call workflow.run_ingestion
