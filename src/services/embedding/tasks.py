@@ -8,6 +8,7 @@ from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
 
+from src.core.config import get_settings
 from src.core.embedding.pipeline import EmbeddingPipeline
 from src.core.parser import parse_docx, parse_docx_bytes
 from src.core.redis_utils import build_docx_redis_client
@@ -16,11 +17,19 @@ from src.services.embedding.celery_app import celery_app
 from src.services.embedding.freshness import FreshnessGate
 from src.services.scraper.cache import ScraperResIdCache
 from src.services.scraper.client import ScraperClient
-from src.services.scraper.tasks import _ensure_scraper_base_url
 
 logger = logging.getLogger(__name__)
 
 DEFAULT_DICTIONARY_PATH = "data/skills_dictionary.yaml"
+
+
+def _ensure_scraper_base_url() -> str | None:
+    settings = get_settings()
+    base_url = settings.scraper_base_url.strip()
+    if not base_url:
+        logger.warning("SCRAPER_BASE_URL not configured")
+        return None
+    return base_url
 
 
 def _coerce_res_id(value: str | int | None) -> int | None:
