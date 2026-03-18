@@ -10,6 +10,7 @@ from typing import Any
 
 from src.core.embedding.pipeline import EmbeddingPipeline
 from src.core.parser import parse_docx, parse_docx_bytes
+from src.core.redis_utils import build_docx_redis_client
 from src.core.skills import SkillExtractor, load_skill_dictionary
 from src.services.embedding.celery_app import celery_app
 from src.services.embedding.freshness import FreshnessGate
@@ -329,7 +330,7 @@ def embed_all_task(  # noqa: PLR0913, PLR0915 - task signature mirrors API paylo
 
 
 @celery_app.task(bind=True, name="embedding.index_from_scraper")
-def embed_from_scraper_task(  # noqa: PLR0912 - task flow is intentionally explicit
+def embed_from_scraper_task(  # noqa: PLR0912, PLR0915 - task flow is intentionally explicit
     self,
     _results: list[Any] | None = None,
     _errors: list[dict[str, Any]] | None = None,
@@ -373,6 +374,7 @@ def embed_from_scraper_task(  # noqa: PLR0912 - task flow is intentionally expli
     pipeline = EmbeddingPipeline()
 
     gate = FreshnessGate()
+    redis_client = build_docx_redis_client()
     processed = 0
     failed = 0
     totals = {"cv_skills": 0, "cv_experiences": 0, "cv_chunks": 0, "total": 0}
@@ -386,7 +388,10 @@ def embed_from_scraper_task(  # noqa: PLR0912 - task flow is intentionally expli
                 continue
             try:
                 data = client.download_inside_cv(res_id)
-                parsed_cv = parse_docx_bytes(data, res_id)
+                parsed_cv = parse_docx_bytes(data, res_id, redis_client=redis_client)
+                if parsed_cv is None:
+                    logger.info("Skipping CV due to docx cache hit for res_id %s", res_id)
+                    continue
                 skill_result = extractor.extract(parsed_cv)
                 result = pipeline.process_cv(parsed_cv, skill_result)
                 totals["cv_skills"] += result.get("cv_skills", 0)

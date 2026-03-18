@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import functools
 import logging
 import os
 from collections.abc import Callable
@@ -12,6 +13,7 @@ from typing import Literal
 from src.core.embedding.pipeline import EmbeddingPipeline
 from src.core.parser import parse_docx_bytes
 from src.core.parser.schemas import ParsedCV
+from src.core.redis_utils import build_docx_redis_client
 from src.core.skills import SkillExtractor, load_skill_dictionary
 from src.services.availability.service import AvailabilityService
 from src.services.embedding.freshness import FreshnessGate
@@ -41,7 +43,7 @@ class ProfileIngestionDependencies:
     """Optional dependencies for ProfileIngestionService."""
 
     scraper_client_factory: Callable[[], ScraperClient] | None = None
-    parser: Callable[[bytes, int], ParsedCV] | None = None
+    parser: Callable[[bytes, int], ParsedCV | None] | None = None
     extractor: SkillExtractor | None = None
     pipeline: EmbeddingPipeline | None = None
     freshness_gate: FreshnessGate | None = None
@@ -60,7 +62,11 @@ class ProfileIngestionService:
     ) -> None:
         deps = dependencies or ProfileIngestionDependencies()
         self._scraper_client_factory = deps.scraper_client_factory or ScraperClient
-        self._parser = deps.parser or parse_docx_bytes
+        if deps.parser is not None:
+            self._parser = deps.parser
+        else:
+            redis_client = build_docx_redis_client()
+            self._parser = functools.partial(parse_docx_bytes, redis_client=redis_client)
         extractor = deps.extractor
         if extractor is None:
             dictionary = load_skill_dictionary(_resolve_dictionary_path(deps.dictionary_path))
@@ -105,6 +111,17 @@ class ProfileIngestionService:
                 docx_bytes = client.download_inside_cv(res_id)
 
             parsed_cv = self._parser(docx_bytes, res_id)
+            if parsed_cv is None:
+                logger.info("Ingestion skipped (cache_hit) for res_id %s", res_id)
+                return IngestionOutcome(
+                    status="skipped",
+                    res_id=res_id,
+                    cv_id=None,
+                    totals=None,
+                    availability_cached=False,
+                    reskilling_cached=False,
+                    reason="cache_hit",
+                )
             skills_keywords_count = (
                 len(parsed_cv.skills.skill_keywords)
                 if parsed_cv.skills and parsed_cv.skills.skill_keywords
